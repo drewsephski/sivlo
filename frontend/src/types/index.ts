@@ -108,3 +108,11 @@ export interface TranscriptSegmentData {
   text: string;
   confidence?: number;
 }
+
+// Transcript search result from api_search_transcripts (serde camelCase)
+export interface TranscriptSearchResult {
+  id: string;
+  title: string;
+  matchContext: string;
+  timestamp: string;
+}

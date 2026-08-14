@@ -16,7 +16,6 @@ import { toast } from 'sonner';
 import { useRecordingState } from '@/contexts/RecordingStateContext';
 import { useImportDialog } from '@/contexts/ImportDialogContext';
 import { useConfig } from '@/contexts/ConfigContext';
-import { SEARCH_FOCUS_EVENT } from '@/components/sivlo/app-shell/navigation';
 
 import {
   Dialog,
@@ -74,7 +73,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
   const { betaFeatures } = useConfig();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['meetings']));
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [pendingSearchFocus, setPendingSearchFocus] = useState(false);
   const [showModelSettings, setShowModelSettings] = useState(false);
   const [modelConfig, setModelConfig] = useState<ModelConfig>({
     provider: 'ollama',
@@ -105,27 +103,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
       setExpandedFolders(newExpanded);
     }
   }, [expandedFolders]);
-
-  // Allow the NavigationRail Search action to activate the context sidebar search
-  useEffect(() => {
-    const handleFocusSearch = () => {
-      const input = document.querySelector<HTMLInputElement>('input[placeholder="Search meeting content..."]');
-      if (!isCollapsed) {
-        input?.focus();
-      } else {
-        setPendingSearchFocus(true);
-      }
-    };
-    window.addEventListener(SEARCH_FOCUS_EVENT, handleFocusSearch);
-    return () => window.removeEventListener(SEARCH_FOCUS_EVENT, handleFocusSearch);
-  }, [isCollapsed]);
-
-  useEffect(() => {
-    if (!isCollapsed && pendingSearchFocus) {
-      setPendingSearchFocus(false);
-      document.querySelector<HTMLInputElement>('input[placeholder="Search meeting content..."]')?.focus();
-    }
-  }, [isCollapsed, pendingSearchFocus]);
 
   // useEffect(() => {
   //   if (settingsSaveSuccess !== null) {

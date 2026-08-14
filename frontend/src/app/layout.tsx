@@ -2,9 +2,9 @@
 
 import './globals.css'
 import { Source_Sans_3 } from 'next/font/google'
-import Sidebar from '@/components/Sidebar'
 import { SidebarProvider } from '@/components/Sidebar/SidebarProvider'
 import { AppShell, NavigationRail } from '@/components/sivlo/app-shell'
+import { CommandPalette } from '@/components/sivlo/command-palette/CommandPalette'
 import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { Toaster, toast } from 'sonner'
 import "sonner/dist/styles.css"
@@ -253,13 +253,12 @@ export default function RootLayout({
                                 {showOnboarding ? (
                                   <OnboardingFlow onComplete={handleOnboardingComplete} />
                                 ) : (
-                                  <AppShell
-                                    navigation={<NavigationRail />}
-                                    sidebar={<Sidebar mode="context" />}
-                                  >
+                                  <AppShell navigation={<NavigationRail />}>
                                     {children}
                                   </AppShell>
                                 )}
+                                {/* Command palette (⌘K) */}
+                                <CommandPalette />
                                 {/* Import audio overlay and dialog */}
                                 <ImportDropOverlay visible={showDropOverlay} />
                                 <ConditionalImportDialog

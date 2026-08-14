@@ -6,7 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { Transcript, MeetingMetadata } from '@/types';
+import { Transcript, MeetingMetadata, TranscriptSearchResult } from '@/types';
 
 export interface SaveMeetingRequest {
   meetingTitle: string;
@@ -92,6 +92,16 @@ export class StorageService {
    */
   async deleteMeeting(meetingId: string): Promise<void> {
     return invoke<void>('api_delete_meeting', { meetingId });
+  }
+
+  /**
+   * Search transcripts locally by query.
+   * Pure 1-to-1 wrapper - no error handling changes, exact same behavior as direct invoke calls.
+   * @param query - Search query string
+   * @returns Promise with transcript search results (one per matching transcript segment)
+   */
+  async searchTranscripts(query: string): Promise<TranscriptSearchResult[]> {
+    return invoke<TranscriptSearchResult[]>('api_search_transcripts', { query });
   }
 }
 

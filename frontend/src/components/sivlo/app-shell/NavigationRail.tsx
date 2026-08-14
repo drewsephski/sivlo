@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Info, Library, Mic, Search, Settings, Square, Upload } from 'lucide-react';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
@@ -18,12 +18,7 @@ import {
 import { About } from '@/components/About';
 import { brand } from '@/config/brand';
 import { cn } from '@/lib/utils';
-import {
-  getActiveNavigationItem,
-  NAV_RAIL_WIDTH,
-  SEARCH_FOCUS_EVENT,
-  type NavigationItemId,
-} from './navigation';
+import { getActiveNavigationItem, NAV_RAIL_WIDTH } from './navigation';
 
 interface RailButtonProps {
   label: string;
@@ -64,29 +59,18 @@ function RailButton({ label, tooltip, icon: Icon, onClick, active = false, disab
 export function NavigationRail() {
   const router = useRouter();
   const pathname = usePathname();
-  const { isCollapsed, setIsCollapsed, handleRecordingToggle } = useSidebar();
+  const { handleRecordingToggle } = useSidebar();
   const { isRecording } = useRecordingState();
   const { openImportDialog } = useImportDialog();
 
-  const [localActive, setLocalActive] = useState<NavigationItemId | null>(null);
-
-  const routeActive = getActiveNavigationItem(pathname ?? '');
-  const active = routeActive ?? localActive;
-
-  useEffect(() => {
-    setLocalActive(null);
-  }, [pathname]);
-
-  const revealContextPanel = () => setIsCollapsed(false);
+  const active = getActiveNavigationItem(pathname ?? '');
 
   const handleMeetings = () => {
     router.push('/meetings');
   };
 
   const handleSearch = () => {
-    revealContextPanel();
-    setLocalActive('search');
-    window.dispatchEvent(new CustomEvent(SEARCH_FOCUS_EVENT));
+    router.push('/search');
   };
 
   const handleImport = () => {
