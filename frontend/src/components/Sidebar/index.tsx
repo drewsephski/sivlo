@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, ChevronRight, File, Settings, ChevronLeftCircle, ChevronRightCircle, Calendar, StickyNote, Home, Trash2, Mic, Square, Plus, Search, Pencil, NotebookPen, SearchIcon, X, Upload } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSidebar } from './SidebarProvider';
@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useRecordingState } from '@/contexts/RecordingStateContext';
 import { useImportDialog } from '@/contexts/ImportDialogContext';
 import { useConfig } from '@/contexts/ConfigContext';
+import { SEARCH_FOCUS_EVENT } from '@/components/sivlo/app-shell/navigation';
 
 import {
   Dialog,
@@ -39,7 +40,17 @@ interface SidebarItem {
   children?: SidebarItem[];
 }
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  /**
+   * 'legacy' renders the original standalone navigation surface.
+   * 'context' renders a temporary compatibility/context panel that sits
+   * beside the new Sivlo NavigationRail (no competing primary nav).
+   */
+  mode?: 'legacy' | 'context';
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
+  const isContextMode = mode === 'context';
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -63,6 +74,8 @@ const Sidebar: React.FC = () => {
   const { betaFeatures } = useConfig();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['meetings']));
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [pendingSearchFocus, setPendingSearchFocus] = useState(false);
   const [showModelSettings, setShowModelSettings] = useState(false);
   const [modelConfig, setModelConfig] = useState<ModelConfig>({
     provider: 'ollama',
@@ -93,6 +106,26 @@ const Sidebar: React.FC = () => {
       setExpandedFolders(newExpanded);
     }
   }, [expandedFolders]);
+
+  // Allow the NavigationRail Search action to activate the context sidebar search
+  useEffect(() => {
+    const handleFocusSearch = () => {
+      if (!isCollapsed) {
+        searchInputRef.current?.focus();
+      } else {
+        setPendingSearchFocus(true);
+      }
+    };
+    window.addEventListener(SEARCH_FOCUS_EVENT, handleFocusSearch);
+    return () => window.removeEventListener(SEARCH_FOCUS_EVENT, handleFocusSearch);
+  }, [isCollapsed]);
+
+  useEffect(() => {
+    if (!isCollapsed && pendingSearchFocus) {
+      setPendingSearchFocus(false);
+      searchInputRef.current?.focus();
+    }
+  }, [isCollapsed, pendingSearchFocus]);
 
   // useEffect(() => {
   //   if (settingsSaveSuccess !== null) {
@@ -447,6 +480,31 @@ const Sidebar: React.FC = () => {
   const renderCollapsedIcons = () => {
     if (!isCollapsed) return null;
 
+    // In context mode the collapsed panel is just a minimal strip that
+    // re-opens the meeting/search context. Primary nav lives on the rail.
+    if (isContextMode) {
+      return (
+        <TooltipProvider>
+          <div className="flex flex-col items-center space-y-4 mt-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={toggleCollapse}
+                  className="p-2 rounded-lg transition-colors duration-150 hover:bg-gray-100"
+                  aria-label="Show meetings"
+                >
+                  <NotebookPen className="w-5 h-5 text-gray-600" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Meeting Notes</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      );
+    }
+
     const isHomePage = pathname === '/';
     const isMeetingPage = pathname?.includes('/meeting-details');
     const isSettingsPage = pathname === '/settings';
@@ -661,7 +719,13 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 h-screen z-40">
+    <div
+      className={
+        isContextMode
+          ? 'relative h-full shrink-0'
+          : 'fixed top-0 left-0 h-screen z-40'
+      }
+    >
       {/* Floating collapse button */}
       <button
         onClick={toggleCollapse}
@@ -676,7 +740,7 @@ const Sidebar: React.FC = () => {
       </button>
 
       <div
-        className={`h-screen bg-white border-r shadow-sm flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'
+        className={`${isContextMode ? 'h-full' : 'h-screen'} bg-white border-r shadow-sm flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'
           }`}
       >
         {/*  Header with traffic light spacing */}
@@ -692,11 +756,13 @@ const Sidebar: React.FC = () => {
                 {/* <span className="text-lg text-center border rounded-full bg-blue-50 border-white font-semibold text-gray-700 mb-2 block items-center">
                   <span>Meetily</span>
                 </span> */}
-                <Logo isCollapsed={isCollapsed} />
+                {!isContextMode && <Logo isCollapsed={isCollapsed} />}
 
                 <div className="relative mb-1">
                   <InputGroup >
-                    <InputGroupInput placeholder='Search meeting content...' value={searchQuery}
+                    <InputGroupInput
+                      ref={searchInputRef}
+                      placeholder='Search meeting content...' value={searchQuery}
                       onChange={(e) => handleSearchChange(e.target.value)}
                     />
                     <InputGroupAddon>
@@ -722,7 +788,7 @@ const Sidebar: React.FC = () => {
         <div className="flex-1 flex flex-col min-h-0">
           {/* Fixed navigation items */}
           <div className="flex-shrink-0">
-            {!isCollapsed && (
+            {!isContextMode && !isCollapsed && (
               <div
                 onClick={() => router.push('/')}
                 className="p-3  text-lg font-semibold items-center hover:bg-gray-100 h-10   flex mx-3 mt-3 rounded-lg cursor-pointer"
@@ -771,7 +837,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* Footer */}
-        {!isCollapsed && (
+        {!isContextMode && !isCollapsed && (
 
           <div className="flex-shrink-0 p-2 border-t border-gray-100">
             <button

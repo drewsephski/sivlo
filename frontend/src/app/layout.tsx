@@ -4,7 +4,7 @@ import './globals.css'
 import { Source_Sans_3 } from 'next/font/google'
 import Sidebar from '@/components/Sidebar'
 import { SidebarProvider } from '@/components/Sidebar/SidebarProvider'
-import MainContent from '@/components/MainContent'
+import { AppShell, NavigationRail } from '@/components/sivlo/app-shell'
 import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { Toaster, toast } from 'sonner'
 import "sonner/dist/styles.css"
@@ -253,10 +253,12 @@ export default function RootLayout({
                                 {showOnboarding ? (
                                   <OnboardingFlow onComplete={handleOnboardingComplete} />
                                 ) : (
-                                  <div className="flex">
-                                    <Sidebar />
-                                    <MainContent>{children}</MainContent>
-                                  </div>
+                                  <AppShell
+                                    navigation={<NavigationRail />}
+                                    sidebar={<Sidebar mode="context" />}
+                                  >
+                                    {children}
+                                  </AppShell>
                                 )}
                                 {/* Import audio overlay and dialog */}
                                 <ImportDropOverlay visible={showDropOverlay} />

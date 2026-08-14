@@ -33,6 +33,7 @@ interface SidebarContextType {
   sidebarItems: SidebarItem[];
   isCollapsed: boolean;
   toggleCollapse: () => void;
+  setIsCollapsed: (collapsed: boolean) => void;
   meetings: CurrentMeeting[];
   setMeetings: (meetings: CurrentMeeting[]) => void;
   isMeetingActive: boolean;
@@ -296,6 +297,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       sidebarItems,
       isCollapsed,
       toggleCollapse,
+      setIsCollapsed,
       meetings,
       setMeetings,
       isMeetingActive,
