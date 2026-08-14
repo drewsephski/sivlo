@@ -7,6 +7,9 @@ import { invoke } from "@tauri-apps/api/core"
 import Analytics from "@/lib/analytics"
 import AnalyticsConsentSwitch from "./AnalyticsConsentSwitch"
 import { useConfig, NotificationSettings } from "@/contexts/ConfigContext"
+import { useTheme } from "@/features/theme/useTheme"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import type { ThemeMode } from "@/features/theme/theme"
 
 export function PreferenceSettings() {
   const {
@@ -16,6 +19,8 @@ export function PreferenceSettings() {
     loadPreferences,
     updateNotificationSettings
   } = useConfig();
+
+  const { theme, setTheme } = useTheme();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -148,6 +153,26 @@ export function PreferenceSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Appearance Section */}
+      <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between gap-6">
+          <div>
+            <h3 className="text-lg font-semibold text-card-foreground mb-2">Appearance</h3>
+            <p className="text-sm text-muted-foreground">Choose how Sivlo looks. System follows your device appearance.</p>
+          </div>
+          <Select value={theme} onValueChange={(value) => setTheme(value as ThemeMode)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Appearance" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Notifications Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between">
