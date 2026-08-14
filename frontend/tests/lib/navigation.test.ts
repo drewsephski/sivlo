@@ -11,6 +11,10 @@ describe("getActiveNavigationItem", () => {
     expect(getActiveNavigationItem("/")).toBe("home");
   });
 
+  test('"/meetings" maps to meetings', () => {
+    expect(getActiveNavigationItem("/meetings")).toBe("meetings");
+  });
+
   test('"/settings" maps to settings', () => {
     expect(getActiveNavigationItem("/settings")).toBe("settings");
   });

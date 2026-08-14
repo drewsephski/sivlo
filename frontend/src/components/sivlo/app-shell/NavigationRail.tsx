@@ -80,7 +80,7 @@ export function NavigationRail() {
   const revealContextPanel = () => setIsCollapsed(false);
 
   const handleMeetings = () => {
-    revealContextPanel();
+    router.push('/meetings');
   };
 
   const handleSearch = () => {

@@ -801,8 +801,49 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
           {/* Content area */}
           <div className="flex-1 flex flex-col min-h-0">
             {renderCollapsedIcons()}
-            {/* Meeting Notes folder header - fixed */}
-            {!isCollapsed && (
+
+            {/* Context mode: search results replace the meeting-history browser.
+                Primary meeting navigation now lives in the Meetings workspace. */}
+            {isContextMode && !isCollapsed && (
+              <div className="flex-1 flex flex-col min-h-0">
+                {searchQuery.trim() === '' ? (
+                  <div className="px-3 py-8 text-center text-xs text-gray-400">
+                    Search your meeting content to find transcripts.
+                  </div>
+                ) : isSearching ? (
+                  <div className="px-3 py-8 text-center text-xs text-gray-500">
+                    Searching...
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="px-3 py-8 text-center text-xs text-gray-400">
+                    No results found.
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
+                    {searchResults.map(result => (
+                      <button
+                        key={result.id}
+                        onClick={() => {
+                          setCurrentMeeting({ id: result.id, title: result.title });
+                          const basePath = result.id.startsWith('intro-call') ? '/' :
+                            result.id.includes('-') ? `/meeting-details?id=${result.id}` : `/notes/${result.id}`;
+                          router.push(basePath);
+                        }}
+                        className="w-full px-3 py-2 my-0.5 rounded-md text-sm hover:bg-gray-50 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      >
+                        <div className="font-medium text-gray-700 truncate">{result.title}</div>
+                        <div className="text-xs text-gray-500 line-clamp-2 mt-0.5">
+                          {result.matchContext}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Meeting Notes folder header - fixed (legacy mode only) */}
+            {!isContextMode && !isCollapsed && (
               <div className="flex-shrink-0">
                 {filteredSidebarItems.filter(item => item.type === 'folder').map(item => (
                   <div key={item.id}>
@@ -820,8 +861,8 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
               </div>
             )}
 
-            {/* Scrollable meeting items */}
-            {!isCollapsed && (
+            {/* Scrollable meeting items (legacy mode only) */}
+            {!isContextMode && !isCollapsed && (
               <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
                 {filteredSidebarItems
                   .filter(item => item.type === 'folder' && expandedFolders.has(item.id) && item.children)

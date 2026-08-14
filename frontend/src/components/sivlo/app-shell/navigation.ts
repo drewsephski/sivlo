@@ -11,6 +11,7 @@ export type NavigationItemId = 'home' | 'meetings' | 'search' | 'import' | 'sett
 export function getActiveNavigationItem(pathname: string): NavigationItemId | null {
   if (!pathname) return null;
   if (pathname === '/') return 'home';
+  if (pathname === '/meetings') return 'meetings';
   if (pathname === '/settings') return 'settings';
   if (pathname.startsWith('/meeting-details')) return 'meetings';
   if (pathname.startsWith('/notes/')) return 'meetings';

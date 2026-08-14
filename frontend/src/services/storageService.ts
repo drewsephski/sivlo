@@ -6,7 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { Transcript } from '@/types';
+import { Transcript, MeetingMetadata } from '@/types';
 
 export interface SaveMeetingRequest {
   meetingTitle: string;
@@ -63,6 +63,35 @@ export class StorageService {
    */
   async getMeetings(): Promise<Meeting[]> {
     return invoke<Meeting[]>('api_get_meetings');
+  }
+
+  /**
+   * Get lightweight metadata (timestamps, folder path) for a single meeting.
+   * Lighter than getMeeting (no transcripts loaded).
+   * @param meetingId - ID of the meeting to fetch metadata for
+   * @returns Promise with meeting metadata
+   */
+  async getMeetingMetadata(meetingId: string): Promise<MeetingMetadata> {
+    return invoke<MeetingMetadata>('api_get_meeting_metadata', { meetingId });
+  }
+
+  /**
+   * Rename a meeting
+   * @param meetingId - ID of the meeting to rename
+   * @param title - New meeting title
+   * @returns Promise with no value
+   */
+  async renameMeeting(meetingId: string, title: string): Promise<void> {
+    return invoke<void>('api_save_meeting_title', { meetingId, title });
+  }
+
+  /**
+   * Delete a meeting and all its associated data
+   * @param meetingId - ID of the meeting to delete
+   * @returns Promise with no value
+   */
+  async deleteMeeting(meetingId: string): Promise<void> {
+    return invoke<void>('api_delete_meeting', { meetingId });
   }
 }
 
