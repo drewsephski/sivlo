@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
+import { brand } from '@/config/brand'
 
 export const metadata: Metadata = {
-  title: 'Meetily',
-  description: 'AI-powered meeting assistant',
+  title: brand.name,
+  description: brand.description,
 }

@@ -3,6 +3,7 @@ import { Lock, Sparkles, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { brand } from '@/config/brand';
 
 export function WelcomeStep() {
   const { goNext } = useOnboarding();
@@ -24,8 +25,8 @@ export function WelcomeStep() {
 
   return (
     <OnboardingContainer
-      title="Welcome to Meetily"
-      description="Record. Transcribe. Summarize. All on your device."
+      title={`Welcome to ${brand.name}`}
+      description={brand.tagline}
       step={1}
       hideProgress={true}
     >
