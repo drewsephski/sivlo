@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronRight, File, Settings, ChevronLeftCircle, ChevronRightCircle, Calendar, StickyNote, Home, Trash2, Mic, Square, Plus, Search, Pencil, NotebookPen, SearchIcon, X, Upload } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSidebar } from './SidebarProvider';
@@ -74,7 +74,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
   const { betaFeatures } = useConfig();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['meetings']));
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const [pendingSearchFocus, setPendingSearchFocus] = useState(false);
   const [showModelSettings, setShowModelSettings] = useState(false);
   const [modelConfig, setModelConfig] = useState<ModelConfig>({
@@ -110,8 +109,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
   // Allow the NavigationRail Search action to activate the context sidebar search
   useEffect(() => {
     const handleFocusSearch = () => {
+      const input = document.querySelector<HTMLInputElement>('input[placeholder="Search meeting content..."]');
       if (!isCollapsed) {
-        searchInputRef.current?.focus();
+        input?.focus();
       } else {
         setPendingSearchFocus(true);
       }
@@ -123,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
   useEffect(() => {
     if (!isCollapsed && pendingSearchFocus) {
       setPendingSearchFocus(false);
-      searchInputRef.current?.focus();
+      document.querySelector<HTMLInputElement>('input[placeholder="Search meeting content..."]')?.focus();
     }
   }, [isCollapsed, pendingSearchFocus]);
 
@@ -761,7 +761,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
                 <div className="relative mb-1">
                   <InputGroup >
                     <InputGroupInput
-                      ref={searchInputRef}
                       placeholder='Search meeting content...' value={searchQuery}
                       onChange={(e) => handleSearchChange(e.target.value)}
                     />
