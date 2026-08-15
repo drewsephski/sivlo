@@ -8,8 +8,8 @@ use crate::{
     database::{
         models::MeetingModel,
         repositories::{
-            meeting::MeetingsRepository, setting::SettingsRepository,
-            transcript::TranscriptsRepository,
+            meeting::MeetingsRepository, meeting_notes::MeetingNotesRepository,
+            setting::SettingsRepository, transcript::TranscriptsRepository,
         },
     },
     state::AppState,
@@ -156,6 +156,16 @@ pub struct PaginatedTranscriptsResponse {
     pub transcripts: Vec<MeetingTranscript>,
     pub total_count: i64,
     pub has_more: bool,
+}
+
+/// Notes response returned to the frontend.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MeetingNotesResponse {
+    pub meeting_id: String,
+    pub notes_markdown: String,
+    pub notes_json: serde_json::Value,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -837,6 +847,99 @@ pub async fn api_get_meeting_metadata<R: Runtime>(
         Err(e) => {
             log_error!("Error retrieving meeting metadata {}: {}", meeting_id, e);
             Err(format!("Failed to retrieve meeting metadata: {}", e))
+        }
+    }
+}
+
+fn meeting_notes_to_response(notes: crate::database::models::MeetingNotes) -> MeetingNotesResponse {
+    let parsed_json = notes
+        .notes_json
+        .as_deref()
+        .and_then(|raw| serde_json::from_str(raw).ok())
+        .unwrap_or(serde_json::Value::Null);
+
+    MeetingNotesResponse {
+        meeting_id: notes.meeting_id,
+        notes_markdown: notes.notes_markdown.unwrap_or_default(),
+        notes_json: parsed_json,
+        created_at: notes.created_at.0.to_rfc3339(),
+        updated_at: notes.updated_at.0.to_rfc3339(),
+    }
+}
+
+/// Get persisted notes for a meeting.
+///
+/// Returns `null` when the meeting has no notes yet (missing notes are
+/// distinguishable from an existing-but-empty document). Errors when the
+/// meeting does not exist.
+#[tauri::command]
+pub async fn api_get_meeting_notes<R: Runtime>(
+    _app: AppHandle<R>,
+    meeting_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<Option<MeetingNotesResponse>, String> {
+    log_info!("api_get_meeting_notes called for meeting_id: {}", meeting_id);
+
+    let pool = state.db_manager.pool();
+
+    match MeetingsRepository::get_meeting_metadata(pool, &meeting_id).await {
+        Ok(Some(_)) => {}
+        Ok(None) => {
+            log_warn!("Meeting not found: {}", meeting_id);
+            return Err(format!("Meeting not found: {}", meeting_id));
+        }
+        Err(e) => {
+            log_error!("Error retrieving meeting metadata {}: {}", meeting_id, e);
+            return Err(format!("Failed to retrieve meeting metadata: {}", e));
+        }
+    }
+
+    match MeetingNotesRepository::get_notes(pool, &meeting_id).await {
+        Ok(Some(notes)) => {
+            log_info!("Successfully retrieved notes for meeting {}", meeting_id);
+            Ok(Some(meeting_notes_to_response(notes)))
+        }
+        Ok(None) => {
+            log_info!("No notes found for meeting {}", meeting_id);
+            Ok(None)
+        }
+        Err(e) => {
+            log_error!("Error retrieving notes for meeting {}: {}", meeting_id, e);
+            Err(format!("Failed to retrieve notes: {}", e))
+        }
+    }
+}
+
+/// Save (insert or update) notes for a meeting. Errors when the meeting does
+/// not exist.
+#[tauri::command]
+pub async fn api_save_meeting_notes<R: Runtime>(
+    _app: AppHandle<R>,
+    state: tauri::State<'_, AppState>,
+    meeting_id: String,
+    notes_markdown: String,
+    notes_json: serde_json::Value,
+) -> Result<MeetingNotesResponse, String> {
+    log_info!("api_save_meeting_notes called for meeting_id: {}", meeting_id);
+
+    let notes_json_str = serde_json::to_string(&notes_json)
+        .map_err(|e| format!("Failed to serialize notes JSON: {}", e))?;
+
+    let pool = state.db_manager.pool();
+
+    match MeetingNotesRepository::save_notes(pool, &meeting_id, &notes_markdown, &notes_json_str).await
+    {
+        Ok(saved) => {
+            log_info!("Successfully saved notes for meeting {}", meeting_id);
+            Ok(meeting_notes_to_response(saved))
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            log_warn!("Meeting not found: {}", meeting_id);
+            Err(format!("Meeting not found: {}", meeting_id))
+        }
+        Err(e) => {
+            log_error!("Error saving notes for meeting {}: {}", meeting_id, e);
+            Err(format!("Failed to save notes: {}", e))
         }
     }
 }

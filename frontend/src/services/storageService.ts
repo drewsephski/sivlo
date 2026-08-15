@@ -6,7 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { Transcript, MeetingMetadata, TranscriptSearchResult } from '@/types';
+import { Transcript, MeetingMetadata, TranscriptSearchResult, BlockNoteBlock, MeetingNotes } from '@/types';
 
 export interface SaveMeetingRequest {
   meetingTitle: string;
@@ -102,6 +102,38 @@ export class StorageService {
    */
   async searchTranscripts(query: string): Promise<TranscriptSearchResult[]> {
     return invoke<TranscriptSearchResult[]>('api_search_transcripts', { query });
+  }
+
+  /**
+   * Get persisted notes for a meeting.
+   * Returns null when the meeting has no notes yet (missing is distinct from
+   * an existing-but-empty document).
+   * @param meetingId - ID of the meeting
+   * @returns Promise with notes or null
+   */
+  async getMeetingNotes(meetingId: string): Promise<MeetingNotes | null> {
+    return invoke<MeetingNotes | null>('api_get_meeting_notes', { meetingId });
+  }
+
+  /**
+   * Save (insert or update) notes for a meeting.
+   * Both the full-fidelity BlockNote JSON and a portable markdown export are
+   * persisted together.
+   * @param meetingId - ID of the meeting
+   * @param notesMarkdown - Markdown export of the notes
+   * @param notesJson - Full-fidelity BlockNote document
+   * @returns Promise with the saved notes
+   */
+  async saveMeetingNotes(
+    meetingId: string,
+    notesMarkdown: string,
+    notesJson: BlockNoteBlock[]
+  ): Promise<MeetingNotes> {
+    return invoke<MeetingNotes>('api_save_meeting_notes', {
+      meetingId,
+      notesMarkdown,
+      notesJson,
+    });
   }
 }
 

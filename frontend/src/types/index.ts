@@ -100,6 +100,15 @@ export interface PaginatedTranscriptsResponse {
   has_more: boolean;
 }
 
+// Persisted meeting notes (wire format from api_get_meeting_notes / api_save_meeting_notes)
+export interface MeetingNotes {
+  meeting_id: string;
+  notes_markdown: string;
+  notes_json: BlockNoteBlock[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Transcript segment data for virtualized display
 export interface TranscriptSegmentData {
   id: string;

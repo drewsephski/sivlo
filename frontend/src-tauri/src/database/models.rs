@@ -67,6 +67,15 @@ pub struct TranscriptChunk {
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+pub struct MeetingNotes {
+    pub meeting_id: String,
+    pub notes_markdown: Option<String>,
+    pub notes_json: Option<String>,
+    pub created_at: DateTimeUtc,
+    pub updated_at: DateTimeUtc,
+}
+
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Setting {
     pub id: String,
     pub provider: String,
