@@ -12,7 +12,7 @@ interface HomeWorkspaceProps {
 
 export function HomeWorkspace({ onStartRecording, onImport }: HomeWorkspaceProps) {
   return (
-    <div className="flex h-full flex-col items-center overflow-y-auto px-8 py-12">
+    <div className="flex h-full w-full flex-col items-center overflow-y-auto px-8 py-12">
       <div className="w-full max-w-4xl">
         <div className="text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-foreground">
