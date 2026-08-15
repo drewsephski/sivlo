@@ -1,13 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Summary, SummaryResponse } from '@/types';
+import { Summary } from '@/types';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
 import Analytics from '@/lib/analytics';
 import { invoke } from '@tauri-apps/api/core';
 import { toast } from 'sonner';
-import { TranscriptPanel } from '@/components/MeetingDetails/TranscriptPanel';
-import { SummaryPanel } from '@/components/MeetingDetails/SummaryPanel';
+import { MeetingIntelligenceWorkspace } from '@/components/sivlo/meeting-intelligence';
 import { ModelConfig } from '@/components/ModelSettingsModal';
 
 // Custom hooks
@@ -55,8 +54,6 @@ export default function PageContent({
 
   // State
   const [customPrompt, setCustomPrompt] = useState<string>('');
-  const [isRecording] = useState(false);
-  const [summaryResponse] = useState<SummaryResponse | null>(null);
 
   // Ref to store the modal open function from SummaryGeneratorButtonGroup
   const openModelSettingsRef = useRef<(() => void) | null>(null);
@@ -168,66 +165,52 @@ export default function PageContent({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="flex flex-col h-screen bg-gray-50"
+      className="flex flex-col h-screen bg-background"
     >
-      <div className="flex flex-1 overflow-hidden">
-        <TranscriptPanel
-          transcripts={meetingData.transcripts}
-          customPrompt={customPrompt}
-          onPromptChange={setCustomPrompt}
-          onCopyTranscript={copyOperations.handleCopyTranscript}
-          onOpenMeetingFolder={meetingOperations.handleOpenMeetingFolder}
-          isRecording={isRecording}
-          disableAutoScroll={true}
-          // Pagination props for efficient loading
-          usePagination={true}
-          segments={segments}
-          hasMore={hasMore}
-          isLoadingMore={isLoadingMore}
-          totalCount={totalCount}
-          loadedCount={loadedCount}
-          onLoadMore={onLoadMore}
-          // Retranscription props
-          meetingId={meeting.id}
-          meetingFolderPath={meeting.folder_path}
-          onRefetchTranscripts={onRefetchTranscripts}
-        />
-        <SummaryPanel
-          meeting={meeting}
-          meetingTitle={meetingData.meetingTitle}
-          onTitleChange={meetingData.handleTitleChange}
-          isEditingTitle={meetingData.isEditingTitle}
-          onStartEditTitle={() => meetingData.setIsEditingTitle(true)}
-          onFinishEditTitle={() => meetingData.setIsEditingTitle(false)}
-          isTitleDirty={meetingData.isTitleDirty}
-          summaryRef={meetingData.blockNoteSummaryRef}
-          isSaving={meetingData.isSaving}
-          onSaveAll={meetingData.saveAllChanges}
-          onCopySummary={copyOperations.handleCopySummary}
-          onOpenFolder={meetingOperations.handleOpenMeetingFolder}
-          aiSummary={meetingData.aiSummary}
-          summaryStatus={summaryGeneration.summaryStatus}
-          transcripts={meetingData.transcripts}
-          modelConfig={modelConfig}
-          setModelConfig={setModelConfig}
-          onSaveModelConfig={handleSaveModelConfig}
-          onGenerateSummary={summaryGeneration.handleGenerateSummary}
-          onStopGeneration={summaryGeneration.handleStopGeneration}
-          customPrompt={customPrompt}
-          summaryResponse={summaryResponse}
-          onSaveSummary={meetingData.handleSaveSummary}
-          onSummaryChange={meetingData.handleSummaryChange}
-          onDirtyChange={meetingData.setIsSummaryDirty}
-          summaryError={summaryGeneration.summaryError}
-          onRegenerateSummary={summaryGeneration.handleRegenerateSummary}
-          getSummaryStatusMessage={summaryGeneration.getSummaryStatusMessage}
-          availableTemplates={templates.availableTemplates}
-          selectedTemplate={templates.selectedTemplate}
-          onTemplateSelect={templates.handleTemplateSelection}
-          isModelConfigLoading={false}
-          onOpenModelSettings={handleRegisterModalOpen}
-        />
-      </div>
+      <MeetingIntelligenceWorkspace
+        meeting={meeting}
+        meetingTitle={meetingData.meetingTitle}
+        isSaving={meetingData.isSaving}
+        isTitleDirty={meetingData.isTitleDirty}
+        aiSummary={meetingData.aiSummary}
+        summaryRef={meetingData.blockNoteSummaryRef}
+        transcripts={meetingData.transcripts}
+        onRenameMeeting={async (title) => {
+          meetingData.handleTitleChange(title);
+          await meetingData.handleSaveMeetingTitle();
+        }}
+        onCopyTranscript={copyOperations.handleCopyTranscript}
+        onOpenFolder={meetingOperations.handleOpenMeetingFolder}
+        onCopySummary={copyOperations.handleCopySummary}
+        onSaveAll={meetingData.saveAllChanges}
+        onPromptChange={setCustomPrompt}
+        summaryStatus={summaryGeneration.summaryStatus}
+        summaryError={summaryGeneration.summaryError}
+        onGenerateSummary={summaryGeneration.handleGenerateSummary}
+        onStopGeneration={summaryGeneration.handleStopGeneration}
+        customPrompt={customPrompt}
+        onSaveSummary={meetingData.handleSaveSummary}
+        onSummaryChange={meetingData.handleSummaryChange}
+        onDirtyChange={meetingData.setIsSummaryDirty}
+        onRegenerateSummary={summaryGeneration.handleRegenerateSummary}
+        getSummaryStatusMessage={summaryGeneration.getSummaryStatusMessage}
+        availableTemplates={templates.availableTemplates}
+        selectedTemplate={templates.selectedTemplate}
+        onTemplateSelect={templates.handleTemplateSelection}
+        modelConfig={modelConfig}
+        setModelConfig={setModelConfig}
+        onSaveModelConfig={handleSaveModelConfig}
+        onOpenModelSettings={handleRegisterModalOpen}
+        // Pagination props for efficient transcript loading
+        segments={segments}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        totalCount={totalCount}
+        loadedCount={loadedCount}
+        onLoadMore={onLoadMore}
+        // Retranscription props
+        onRefetchTranscripts={onRefetchTranscripts}
+      />
     </motion.div>
   );
 }
