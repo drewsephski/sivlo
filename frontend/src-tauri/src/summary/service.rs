@@ -53,6 +53,10 @@ fn strip_title_if_present(markdown: &str) -> String {
     }
 }
 
+fn is_valid_generated_markdown(markdown: &str) -> bool {
+    !strip_title_if_present(markdown).trim().is_empty()
+}
+
 const ENGLISH_CACHE_FIELD: &str = "english_cache";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -541,46 +545,17 @@ impl SummaryService {
                 );
                 info!("Final markdown generated ({} chars)", final_markdown.len());
 
-                if let Some(name) = extract_meeting_name_from_markdown(&final_markdown)
-                    .filter(|n| !n.is_empty())
-                {
-                    info!("Extracted meeting name from summary: '{}'", name);
-                    if let Err(e) =
-                        MeetingsRepository::update_meeting_name(&pool, &meeting_id, &name).await
-                    {
-                        error!("Failed to update meeting name for {}: {}", meeting_id, e);
-                    } else {
-                        info!("Successfully updated meeting name for {}", meeting_id);
-                    }
-                }
-
-                let result_json = build_summary_result_json(
+                Self::commit_generated_summary(
+                    &pool,
+                    &meeting_id,
                     &final_markdown,
                     &english_markdown,
                     cache_source,
                     summary_language.as_deref(),
-                );
-
-                // Update database with completed status
-                if let Err(e) = SummaryProcessesRepository::update_process_completed(
-                    &pool,
-                    &meeting_id,
-                    result_json,
                     num_chunks,
                     duration,
                 )
-                .await
-                {
-                    error!(
-                        "Failed to save completed process for {}: {}",
-                        meeting_id, e
-                    );
-                } else {
-                    info!(
-                        "Summary saved successfully for meeting_id: {}",
-                        meeting_id
-                    );
-                }
+                .await;
             }
             Err(e) => {
                 // Check if error is due to cancellation
@@ -593,6 +568,64 @@ impl SummaryService {
                     Self::update_process_failed(&pool, &meeting_id, &e).await;
                 }
             }
+        }
+    }
+
+    async fn commit_generated_summary(
+        pool: &SqlitePool,
+        meeting_id: &str,
+        final_markdown: &str,
+        english_markdown: &str,
+        cache_source: SummaryCacheSource,
+        summary_language: Option<&str>,
+        num_chunks: i64,
+        duration: f64,
+    ) {
+        if !is_valid_generated_markdown(final_markdown) {
+            warn!(
+                "Generated summary was empty for meeting_id: {}",
+                meeting_id
+            );
+            Self::update_process_failed(pool, meeting_id, "Generated summary was empty").await;
+            return;
+        }
+
+        if let Some(name) = extract_meeting_name_from_markdown(final_markdown)
+            .filter(|n| !n.is_empty())
+        {
+            info!("Extracted meeting name from summary: '{}'", name);
+            if let Err(e) = MeetingsRepository::update_meeting_name(pool, meeting_id, &name).await {
+                error!("Failed to update meeting name for {}: {}", meeting_id, e);
+            } else {
+                info!("Successfully updated meeting name for {}", meeting_id);
+            }
+        }
+
+        let result_json = build_summary_result_json(
+            final_markdown,
+            english_markdown,
+            cache_source,
+            summary_language,
+        );
+
+        if let Err(e) = SummaryProcessesRepository::update_process_completed(
+            pool,
+            meeting_id,
+            result_json,
+            num_chunks,
+            duration,
+        )
+        .await
+        {
+            error!(
+                "Failed to save completed process for {}: {}",
+                meeting_id, e
+            );
+        } else {
+            info!(
+                "Summary saved successfully for meeting_id: {}",
+                meeting_id
+            );
         }
     }
 
@@ -975,5 +1008,185 @@ mod tests {
     fn test_extract_cached_english_from_malformed_json_errors() {
         let raw = r#"{ not valid json"#;
         assert!(extract_cached_english_markdown(raw, &sample_cache_source(), Some("de")).is_err());
+    }
+
+    async fn test_db_pool() -> SqlitePool {
+        let options = sqlx::sqlite::SqliteConnectOptions::new()
+            .filename(":memory:")
+            .create_if_missing(true);
+        let pool = sqlx::pool::PoolOptions::new()
+            .max_connections(1)
+            .connect_with(options)
+            .await
+            .expect("failed to create test database");
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("failed to run migrations");
+        pool
+    }
+
+    async fn seed_meeting_with_summary(pool: &SqlitePool, meeting_id: &str, result: Option<&str>) {
+        let now = chrono::Utc::now();
+        sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at) VALUES (?, ?, ?, ?)")
+            .bind(meeting_id)
+            .bind("Existing Meeting")
+            .bind(now)
+            .bind(now)
+            .execute(pool)
+            .await
+            .expect("failed to insert meeting");
+        sqlx::query(
+            "INSERT INTO summary_processes (meeting_id, status, created_at, updated_at, result) VALUES (?, 'completed', ?, ?, ?)",
+        )
+        .bind(meeting_id)
+        .bind(now)
+        .bind(now)
+        .bind(result)
+        .execute(pool)
+        .await
+        .expect("failed to insert summary process");
+    }
+
+    async fn load_process(pool: &SqlitePool, meeting_id: &str) -> crate::database::models::SummaryProcess {
+        SummaryProcessesRepository::get_summary_data(pool, meeting_id)
+            .await
+            .expect("failed to reload process")
+            .expect("process row missing")
+    }
+
+    #[test]
+    fn empty_markdown_is_rejected_as_generated_summary() {
+        assert!(!is_valid_generated_markdown(""));
+        assert!(!is_valid_generated_markdown("   \n\t "));
+        assert!(!is_valid_generated_markdown("# Title"));
+        assert!(!is_valid_generated_markdown("# Title\n"));
+        assert!(is_valid_generated_markdown("# Title\nBody"));
+        assert!(is_valid_generated_markdown("## Decisions\nShort"));
+    }
+
+    #[tokio::test]
+    async fn empty_regeneration_restores_previous_summary() {
+        let pool = test_db_pool().await;
+        let meeting_id = "meeting-empty-regen";
+        let previous = build_summary_result_json(
+            "# Previous good summary\n## Decisions\nKeep this",
+            "# Previous good summary\n## Decisions\nKeep this",
+            sample_cache_source(),
+            None,
+        );
+        let previous_json = previous.to_string();
+        seed_meeting_with_summary(&pool, meeting_id, Some(&previous_json)).await;
+
+        SummaryProcessesRepository::create_or_reset_process(&pool, meeting_id)
+            .await
+            .expect("failed to back up existing summary");
+
+        SummaryService::commit_generated_summary(
+            &pool,
+            meeting_id,
+            "   ",
+            "   ",
+            sample_cache_source(),
+            None,
+            1,
+            0.5,
+        )
+        .await;
+
+        let process = load_process(&pool, meeting_id).await;
+        assert_eq!(process.status, "failed");
+        assert_eq!(process.result.as_deref(), Some(previous_json.as_str()));
+        assert_eq!(process.result_backup, None);
+        assert!(
+            process
+                .error
+                .as_deref()
+                .unwrap_or("")
+                .to_lowercase()
+                .contains("empty"),
+            "expected a meaningful empty-summary error, got: {:?}",
+            process.error
+        );
+    }
+
+    #[tokio::test]
+    async fn valid_regeneration_commits_new_summary_and_clears_backup() {
+        let pool = test_db_pool().await;
+        let meeting_id = "meeting-valid-regen";
+        let previous = build_summary_result_json(
+            "# Previous good summary\n## Decisions\nOld",
+            "# Previous good summary\n## Decisions\nOld",
+            sample_cache_source(),
+            None,
+        );
+        let previous_json = previous.to_string();
+        seed_meeting_with_summary(&pool, meeting_id, Some(&previous_json)).await;
+
+        SummaryProcessesRepository::create_or_reset_process(&pool, meeting_id)
+            .await
+            .expect("failed to back up existing summary");
+
+        SummaryService::commit_generated_summary(
+            &pool,
+            meeting_id,
+            "# New Title\n## Decisions\nNew and improved",
+            "# New Title\n## Decisions\nNew and improved",
+            sample_cache_source(),
+            None,
+            1,
+            0.5,
+        )
+        .await;
+
+        let process = load_process(&pool, meeting_id).await;
+        assert_eq!(process.status, "completed");
+        assert_eq!(process.result_backup, None);
+        assert_ne!(
+            process.result.as_deref(),
+            Some(previous_json.as_str()),
+            "new valid summary must replace the previous result"
+        );
+        let stored: serde_json::Value =
+            serde_json::from_str(process.result.as_deref().unwrap()).unwrap();
+        assert_eq!(stored["markdown"], "## Decisions\nNew and improved");
+    }
+
+    #[tokio::test]
+    async fn empty_initial_generation_fails_cleanly_without_fabricated_content() {
+        let pool = test_db_pool().await;
+        let meeting_id = "meeting-empty-initial";
+        seed_meeting_with_summary(&pool, meeting_id, None).await;
+
+        SummaryProcessesRepository::create_or_reset_process(&pool, meeting_id)
+            .await
+            .expect("failed to reset process");
+
+        SummaryService::commit_generated_summary(
+            &pool,
+            meeting_id,
+            "",
+            "",
+            sample_cache_source(),
+            None,
+            1,
+            0.5,
+        )
+        .await;
+
+        let process = load_process(&pool, meeting_id).await;
+        assert_eq!(process.status, "failed");
+        assert_eq!(process.result, None);
+        assert_eq!(process.result_backup, None);
+        assert!(
+            process
+                .error
+                .as_deref()
+                .unwrap_or("")
+                .to_lowercase()
+                .contains("empty"),
+            "expected a meaningful empty-summary error, got: {:?}",
+            process.error
+        );
     }
 }
