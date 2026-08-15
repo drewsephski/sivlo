@@ -23,8 +23,14 @@ export default function Editor({ initialContent, onChange, editable = true }: Ed
     editable
   });
 
+  // BlockNote throws when given an empty array (`initialContent must be a
+  // non-empty array of blocks`), so normalize it to undefined to start with an
+  // empty paragraph instead of crashing.
+  const safeInitialContent =
+    initialContent && initialContent.length > 0 ? (initialContent as PartialBlock[]) : undefined;
+
   const editor = useCreateBlockNote({
-    initialContent: initialContent as PartialBlock[] | undefined,
+    initialContent: safeInitialContent,
   });
 
   console.log('📝 EDITOR: BlockNote editor created successfully');
