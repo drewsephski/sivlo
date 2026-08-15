@@ -37,6 +37,7 @@ import { useRouter } from 'next/navigation';
 import { useSidebar } from '../Sidebar/SidebarProvider';
 import { LANGUAGES } from '@/constants/languages';
 import { useTranscriptionModels, ModelOption } from '@/hooks/useTranscriptionModels';
+import { requestAiMeetingTitle } from '@/lib/meeting-titles';
 
 
 interface ImportAudioDialogProps {
@@ -97,12 +98,20 @@ export function ImportAudioDialog({
   const handleImportComplete = useCallback((result: ImportResult) => {
     toast.success(`Import complete! ${result.segments_count} segments created.`);
 
+    // Best-effort AI meeting title for untouched (filename-derived) titles.
+    // Non-blocking: the filename title is kept on any failure.
+    if (!titleModifiedByUser) {
+      void requestAiMeetingTitle(result.meeting_id, result.title, {
+        onRetitled: () => refetchMeetings(),
+      });
+    }
+
     // Refresh meetings list then navigate to the imported meeting
     refetchMeetings();
     onComplete?.();
     onOpenChange(false);
     router.push(`/meeting-details?id=${result.meeting_id}`);
-  }, [router, refetchMeetings, onComplete, onOpenChange]);
+  }, [router, refetchMeetings, onComplete, onOpenChange, titleModifiedByUser]);
 
   const handleImportError = useCallback((error: string) => {
     toast.error('Import failed', { description: error });

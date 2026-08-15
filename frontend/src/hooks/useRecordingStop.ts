@@ -12,6 +12,10 @@ import {
   applyPinnedSummaryLanguageToMeeting,
   detectAndCacheSummaryLanguage,
 } from '@/lib/summary-language-preferences';
+import {
+  isDefaultRecordingTitle,
+  requestAiMeetingTitle,
+} from '@/lib/meeting-titles';
 
 type SummaryStatus = 'idle' | 'processing' | 'summarizing' | 'regenerating' | 'completed' | 'error';
 
@@ -304,6 +308,15 @@ export function useRecordingStop(
 
           // Refetch meetings and set current meeting
           await refetchMeetings();
+
+          // Best-effort AI meeting title for default-named recordings.
+          // Non-blocking: the default title is kept on any failure.
+          const aiTitleSource = savedMeetingName || meetingTitle || '';
+          if (aiTitleSource && isDefaultRecordingTitle(aiTitleSource)) {
+            void requestAiMeetingTitle(meetingId, aiTitleSource, {
+              onRetitled: () => refetchMeetings(),
+            });
+          }
 
           try {
             const meetingData = await storageService.getMeeting(meetingId);

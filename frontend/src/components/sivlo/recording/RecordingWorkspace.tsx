@@ -64,12 +64,14 @@ export function RecordingWorkspace({
       />
 
       <div className="min-h-0 flex-1 overflow-hidden">
-        <TranscriptPanel
-          isProcessingStop={isProcessing}
-          isStopping={isStopping}
-          showModal={showModal}
-          showStatusBar={false}
-        />
+        <div className="mx-auto h-full w-full max-w-4xl border-x border-border">
+          <TranscriptPanel
+            isProcessingStop={isProcessing}
+            isStopping={isStopping}
+            showModal={showModal}
+            showStatusBar={false}
+          />
+        </div>
       </div>
 
       {state === 'error' ? (

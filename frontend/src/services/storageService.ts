@@ -24,6 +24,12 @@ export interface Meeting {
   [key: string]: any; // Allow additional properties from backend
 }
 
+export interface GenerateMeetingTitleResult {
+  retitled: boolean;
+  title: string | null;
+  reason: string;
+}
+
 /**
  * Storage Service
  * Singleton service for managing meeting storage operations
@@ -92,6 +98,24 @@ export class StorageService {
    */
   async deleteMeeting(meetingId: string): Promise<void> {
     return invoke<void>('api_delete_meeting', { meetingId });
+  }
+
+  /**
+   * Ask the backend to generate a short AI meeting title from the transcript.
+   * Best-effort: only retitles when the stored title still equals
+   * `expectedTitle` (so user-renamed meetings are never overwritten).
+   * @param meetingId - ID of the meeting
+   * @param expectedTitle - Title the meeting was saved with (safety check)
+   * @returns Promise with the generation result
+   */
+  async generateMeetingTitle(
+    meetingId: string,
+    expectedTitle: string
+  ): Promise<GenerateMeetingTitleResult> {
+    return invoke<GenerateMeetingTitleResult>('api_generate_meeting_title', {
+      meetingId,
+      expectedTitle,
+    });
   }
 
   /**

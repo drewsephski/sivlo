@@ -8,4 +8,4 @@ export {
   sortMeetingsNewestFirst,
 } from './meeting-date';
 export { deleteMeeting, fetchMeetingRecords, renameMeeting } from './meeting-actions';
-export { useMeetings } from './useMeetings';
+export { useMeetings, refreshMeetings } from './useMeetings';

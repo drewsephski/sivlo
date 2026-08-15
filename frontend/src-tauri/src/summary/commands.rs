@@ -1,7 +1,9 @@
 use crate::database::repositories::{
     meeting::MeetingsRepository,
+    setting::SettingsRepository,
     summary::SummaryProcessesRepository, transcript_chunk::TranscriptChunksRepository,
 };
+use crate::summary::llm_client::{generate_summary, LLMProvider};
 use crate::state::AppState;
 use crate::summary::metadata::{
     read_detected_summary_language_from_metadata, read_summary_language_from_metadata,
@@ -14,7 +16,7 @@ use crate::summary::service::SummaryService;
 use log::{error as log_error, info as log_info, warn as log_warn};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SummaryResponse {
@@ -442,3 +444,400 @@ pub async fn api_cancel_summary<R: Runtime>(
         }))
     }
 }
+
+const MIN_TRANSCRIPT_CHARS: usize = 40;
+const MAX_TRANSCRIPT_CHARS: usize = 8000;
+const MAX_TITLE_WORDS: usize = 8;
+
+/// Result of an AI meeting-title generation attempt.
+///
+/// `retitled` is true only when the stored title was actually updated.
+/// `reason` explains why generation was skipped (never a user-facing error —
+/// callers keep the default title and stay silent).
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerateMeetingTitleResponse {
+    pub retitled: bool,
+    pub title: Option<String>,
+    pub reason: String,
+}
+
+/// Generates a short, professional meeting title from the transcript via the
+/// configured summary LLM provider.
+///
+/// Race-safe: only retitles when the stored title still equals `expected_title`,
+/// so user-renamed or user-entered titles are never overwritten. Best-effort by
+/// design — every skip/failure returns `Ok(retitled: false)` so the caller keeps
+/// the default title without blocking the save/navigation flow.
+#[tauri::command]
+pub async fn api_generate_meeting_title<R: Runtime>(
+    app: AppHandle<R>,
+    state: tauri::State<'_, AppState>,
+    meeting_id: String,
+    expected_title: String,
+) -> Result<GenerateMeetingTitleResponse, String> {
+    log_info!(
+        "api_generate_meeting_title called for meeting_id: {}, expected_title: {:?}",
+        meeting_id,
+        expected_title
+    );
+
+    let pool = state.db_manager.pool();
+
+    // Confirm the meeting exists and its stored title is still the expected default.
+    let meeting = match MeetingsRepository::get_meeting_metadata(pool, &meeting_id).await {
+        Ok(Some(meeting)) => meeting,
+        Ok(None) => {
+            log_warn!("Meeting not found for AI title: {}", meeting_id);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "meeting_not_found".to_string(),
+            });
+        }
+        Err(e) => {
+            log_error!("Failed to load meeting metadata for AI title ({}): {}", meeting_id, e);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "metadata_load_failed".to_string(),
+            });
+        }
+    };
+
+    if meeting.title.trim() != expected_title.trim() {
+        log_warn!(
+            "Meeting title changed since save, skipping AI title for {} (expected {:?}, got {:?})",
+            meeting_id,
+            expected_title,
+            meeting.title
+        );
+        return Ok(GenerateMeetingTitleResponse {
+            retitled: false,
+            title: None,
+            reason: "title_changed".to_string(),
+        });
+    }
+
+    // Build the transcript text for the prompt.
+    let transcript_text = match MeetingsRepository::get_meeting(pool, &meeting_id).await {
+        Ok(Some(details)) => details
+            .transcripts
+            .iter()
+            .map(|t| t.text.trim())
+            .filter(|t| !t.is_empty())
+            .collect::<Vec<_>>()
+            .join(" "),
+        Ok(None) => {
+            log_warn!("Meeting transcripts not found for AI title: {}", meeting_id);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "meeting_not_found".to_string(),
+            });
+        }
+        Err(e) => {
+            log_error!("Failed to load transcripts for AI title ({}): {}", meeting_id, e);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "transcript_load_failed".to_string(),
+            });
+        }
+    };
+
+    if transcript_text.trim().chars().count() < MIN_TRANSCRIPT_CHARS {
+        log_warn!(
+            "Transcript too short for AI title ({} chars), skipping for {}",
+            transcript_text.trim().chars().count(),
+            meeting_id
+        );
+        return Ok(GenerateMeetingTitleResponse {
+            retitled: false,
+            title: None,
+            reason: "transcript_too_short".to_string(),
+        });
+    }
+
+    // Resolve the configured summary LLM provider (mirrors summary service).
+    let config = match SettingsRepository::get_model_config(pool).await {
+        Ok(Some(config)) => config,
+        Ok(None) => {
+            log_warn!("No summary model configured, skipping AI title for {}", meeting_id);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "no_model_configured".to_string(),
+            });
+        }
+        Err(e) => {
+            log_error!("Failed to load model config for AI title: {}", e);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "model_config_load_failed".to_string(),
+            });
+        }
+    };
+
+    let provider = match LLMProvider::from_str(&config.provider) {
+        Ok(provider) => provider,
+        Err(e) => {
+            log_warn!("Invalid summary provider {:?}: {}", config.provider, e);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "invalid_provider".to_string(),
+            });
+        }
+    };
+
+    let mut model_name = config.model.clone();
+
+    let api_key = if provider == LLMProvider::Ollama
+        || provider == LLMProvider::BuiltInAI
+        || provider == LLMProvider::CustomOpenAI
+    {
+        String::new()
+    } else {
+        match SettingsRepository::get_api_key(pool, &config.provider).await {
+            Ok(Some(key)) if !key.is_empty() => key,
+            _ => {
+                log_warn!("No API key for provider {}, skipping AI title", config.provider);
+                return Ok(GenerateMeetingTitleResponse {
+                    retitled: false,
+                    title: None,
+                    reason: "no_api_key".to_string(),
+                });
+            }
+        }
+    };
+
+    let ollama_endpoint = if provider == LLMProvider::Ollama {
+        config.ollama_endpoint.clone()
+    } else {
+        None
+    };
+
+    let (custom_openai_endpoint, custom_openai_api_key, custom_openai_max_tokens, custom_openai_temperature, custom_openai_top_p) =
+        if provider == LLMProvider::CustomOpenAI {
+            match SettingsRepository::get_custom_openai_config(pool).await {
+                Ok(Some(cfg)) => {
+                    model_name = cfg.model.clone();
+                    (
+                        Some(cfg.endpoint),
+                        cfg.api_key,
+                        cfg.max_tokens.map(|t| t as u32),
+                        cfg.temperature,
+                        cfg.top_p,
+                    )
+                }
+                _ => {
+                    log_warn!("Custom OpenAI provider selected but no config found, skipping AI title");
+                    return Ok(GenerateMeetingTitleResponse {
+                        retitled: false,
+                        title: None,
+                        reason: "no_custom_openai_config".to_string(),
+                    });
+                }
+            }
+        } else {
+            (None, None, None, None, None)
+        };
+
+    let final_api_key = if provider == LLMProvider::CustomOpenAI {
+        custom_openai_api_key.unwrap_or_default()
+    } else {
+        api_key
+    };
+
+    // Cap the transcript sent to the LLM to bound cost/latency.
+    let prompt_transcript: String = transcript_text
+        .chars()
+        .take(MAX_TRANSCRIPT_CHARS)
+        .collect();
+
+    let system_prompt = "You write short, professional meeting titles. \
+        Respond with ONLY the title: 3-7 words, plain text, no quotes, no markdown, \
+        no leading article like 'Meeting about' or 'Weekly', no dates, no timestamps, \
+        no trailing punctuation.";
+
+    let user_prompt = format!(
+        "Suggest a short professional meeting title (3-7 words) for the following transcript:\n\n{}",
+        prompt_transcript
+    );
+
+    let app_data_dir = app.path().app_data_dir().ok();
+    let client = reqwest::Client::new();
+
+    let raw_title = match generate_summary(
+        &client,
+        &provider,
+        &model_name,
+        &final_api_key,
+        system_prompt,
+        &user_prompt,
+        ollama_endpoint.as_deref(),
+        custom_openai_endpoint.as_deref(),
+        custom_openai_max_tokens,
+        custom_openai_temperature,
+        custom_openai_top_p,
+        app_data_dir.as_ref(),
+        None,
+    )
+    .await
+    {
+        Ok(title) => title,
+        Err(e) => {
+            log_warn!("LLM request failed for AI title ({}): {}", meeting_id, e);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "llm_failed".to_string(),
+            });
+        }
+    };
+
+    let clean_title = sanitize_generated_title(&raw_title);
+    if clean_title.is_empty() {
+        log_warn!("LLM returned empty title, skipping for {}", meeting_id);
+        return Ok(GenerateMeetingTitleResponse {
+            retitled: false,
+            title: None,
+            reason: "empty_title".to_string(),
+        });
+    }
+
+    // Re-check the title still matches before applying (user may have renamed meanwhile).
+    let current = match MeetingsRepository::get_meeting_metadata(pool, &meeting_id).await {
+        Ok(Some(meeting)) => meeting,
+        _ => {
+            log_warn!("Meeting vanished while generating AI title: {}", meeting_id);
+            return Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "meeting_not_found".to_string(),
+            });
+        }
+    };
+
+    if current.title.trim() != expected_title.trim() {
+        log_warn!(
+            "Meeting title changed while generating AI title, skipping for {}",
+            meeting_id
+        );
+        return Ok(GenerateMeetingTitleResponse {
+            retitled: false,
+            title: None,
+            reason: "title_changed".to_string(),
+        });
+    }
+
+    match MeetingsRepository::update_meeting_title(pool, &meeting_id, &clean_title).await {
+        Ok(true) => {
+            log_info!(
+                "AI-generated meeting title set for {}: '{}'",
+                meeting_id,
+                clean_title
+            );
+            Ok(GenerateMeetingTitleResponse {
+                retitled: true,
+                title: Some(clean_title),
+                reason: "ok".to_string(),
+            })
+        }
+        Ok(false) => {
+            log_warn!("Failed to persist AI meeting title for {}", meeting_id);
+            Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "update_failed".to_string(),
+            })
+        }
+        Err(e) => {
+            log_error!("Failed to persist AI meeting title for {}: {}", meeting_id, e);
+            Ok(GenerateMeetingTitleResponse {
+                retitled: false,
+                title: None,
+                reason: "update_failed".to_string(),
+            })
+        }
+    }
+}
+
+/// Cleans an LLM title response: first non-empty line, surrounding quotes
+/// stripped, whitespace collapsed, capped at `MAX_TITLE_WORDS` words, and a
+/// single trailing period removed.
+fn sanitize_generated_title(raw: &str) -> String {
+    let first_line = raw
+        .lines()
+        .map(str::trim)
+        .find(|line| !line.is_empty())
+        .unwrap_or("");
+
+    let trimmed = first_line
+        .trim()
+        .trim_matches(|c| c == '"' || c == '\'' || c == '\u{201c}' || c == '\u{201d}');
+
+    let mut collapsed = String::new();
+    let mut prev_whitespace = false;
+    for ch in trimmed.chars() {
+        if ch.is_whitespace() {
+            if !prev_whitespace && !collapsed.is_empty() {
+                collapsed.push(' ');
+            }
+            prev_whitespace = true;
+        } else {
+            collapsed.push(ch);
+            prev_whitespace = false;
+        }
+    }
+
+    let words: Vec<&str> = collapsed.split(' ').filter(|w| !w.is_empty()).collect();
+    let mut words = words;
+    words.truncate(MAX_TITLE_WORDS);
+    let mut title = words.join(" ");
+
+    if title.ends_with('.') {
+        title.pop();
+    }
+
+    title
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sanitize_generated_title;
+
+    #[test]
+    fn sanitize_returns_first_non_empty_line() {
+        assert_eq!(sanitize_generated_title("Q3 Planning\n\nBody"), "Q3 Planning");
+        assert_eq!(sanitize_generated_title("  \nDesign Review  "), "Design Review");
+    }
+
+    #[test]
+    fn sanitize_strips_quotes_and_collapses_whitespace() {
+        assert_eq!(sanitize_generated_title("\"Roadmap Prioritization\""), "Roadmap Prioritization");
+        assert_eq!(
+            sanitize_generated_title("  Launch   Readiness   Check  "),
+            "Launch Readiness Check"
+        );
+    }
+
+    #[test]
+    fn sanitize_trims_to_max_words_and_trailing_period() {
+        assert_eq!(
+            sanitize_generated_title("One Two Three Four Five Six Seven Eight Nine Ten"),
+            "One Two Three Four Five Six Seven Eight"
+        );
+        assert_eq!(sanitize_generated_title("Sprint Planning."), "Sprint Planning");
+    }
+
+    #[test]
+    fn sanitize_empty_input_returns_empty() {
+        assert_eq!(sanitize_generated_title(""), "");
+        assert_eq!(sanitize_generated_title("   \n\t "), "");
+        assert_eq!(sanitize_generated_title("\"\"\""), "");
+    }
+}
+
