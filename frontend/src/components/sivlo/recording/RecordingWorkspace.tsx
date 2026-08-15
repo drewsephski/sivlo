@@ -53,18 +53,18 @@ export function RecordingWorkspace({
   }, [handleStopRecording]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
-      <RecordingHeader
-        title={meetingTitle}
-        state={state}
-        elapsedSeconds={elapsedSeconds}
-        isPaused={isPaused}
-        micDevice={selectedDevices?.micDevice ?? null}
-        systemDevice={selectedDevices?.systemDevice ?? null}
-      />
+    <div className="flex h-full w-full min-w-0 flex-col bg-background px-6">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-[850px] flex-col border-x border-border">
+        <RecordingHeader
+          title={meetingTitle}
+          state={state}
+          elapsedSeconds={elapsedSeconds}
+          isPaused={isPaused}
+          micDevice={selectedDevices?.micDevice ?? null}
+          systemDevice={selectedDevices?.systemDevice ?? null}
+        />
 
-      <div className="min-h-0 flex-1 overflow-hidden">
-        <div className="mx-auto h-full w-full max-w-4xl border-x border-border">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <TranscriptPanel
             isProcessingStop={isProcessing}
             isStopping={isStopping}
@@ -72,27 +72,27 @@ export function RecordingWorkspace({
             showStatusBar={false}
           />
         </div>
-      </div>
 
-      {state === 'error' ? (
-        <div
-          role="alert"
-          className="border-t border-border bg-destructive/10 px-6 py-4 text-center text-sm font-medium text-destructive"
-        >
-          Recording encountered an error. Your meeting was not saved.
-        </div>
-      ) : state === 'starting' || state === 'recording' ? (
-        <RecordingTransport
-          state={state}
-          isPaused={isPaused}
-          isPausing={isPausing}
-          isResuming={isResuming}
-          onTogglePauseResume={() => void togglePauseResume()}
-          onStop={handleStop}
-        />
-      ) : (
-        <ProcessingWorkspace state={state} />
-      )}
+        {state === 'error' ? (
+          <div
+            role="alert"
+            className="border-t border-border bg-destructive/10 px-6 py-4 text-center text-sm font-medium text-destructive"
+          >
+            Recording encountered an error. Your meeting was not saved.
+          </div>
+        ) : state === 'starting' || state === 'recording' ? (
+          <RecordingTransport
+            state={state}
+            isPaused={isPaused}
+            isPausing={isPausing}
+            isResuming={isResuming}
+            onTogglePauseResume={() => void togglePauseResume()}
+            onStop={handleStop}
+          />
+        ) : (
+          <ProcessingWorkspace state={state} />
+        )}
+      </div>
     </div>
   );
 }
