@@ -99,4 +99,3 @@ Decision recorded for the Phase 2 acceptance gate: **analytics ships disabled in
 - Device identity comes from the OS plugin (`app_platform`, `app_os_version`, `app_arch`); the `meetily_user_id` fallback and `navigator.userAgent`-based detection were removed.
 - Product networking (OpenAI/Anthropic/Groq/OpenRouter/Ollama, model downloads) is untouched; only telemetry was hardened.
 - To re-enable analytics in a future release, the "No analytics re-enablement" non-goal above must be revisited and a new decision recorded.
-
