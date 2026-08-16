@@ -88,3 +88,14 @@ Nothing after Phase 1 should be implemented until Phase 1's acceptance gate has 
 
 - Phase 1: `2026-08-15-sivlo-production-identity-storage.md` (written; the only detailed plan so far).
 - Phases 2–10: write a detailed plan per phase when that phase starts, following the same structure and review process used for Phase 1.
+
+## Phase 2 privacy posture (recorded)
+
+Decision recorded for the Phase 2 acceptance gate: **analytics ships disabled in v0.1.0** — the telemetry opt-in remains user-controlled (off by default) and no analytics is ever transmitted without it.
+
+- No PostHog/analytics credentials are committed to the repository (`rg "phc_"` and `rg "us\.i\.posthog\.com"` in `frontend/src-tauri` return nothing).
+- Analytics config is built only from `SIVLO_ANALYTICS_API_KEY` / `SIVLO_ANALYTICS_HOST` env vars; absent both, the inner PostHog client is never constructed and all track/identify commands are no-ops with no network I/O.
+- Property payloads are deny-by-default: a Rust-side allowlist (`frontend/src-tauri/src/analytics/analytics.rs`) and a mirroring frontend guard (`frontend/src/features/analytics/guard.ts`) drop every key not in the allowlist, so meeting content (transcripts, titles, summaries, notes, prompts, responses, paths, device names) cannot be captured.
+- Device identity comes from the OS plugin (`app_platform`, `app_os_version`, `app_arch`); the `meetily_user_id` fallback and `navigator.userAgent`-based detection were removed.
+- Product networking (OpenAI/Anthropic/Groq/OpenRouter/Ollama, model downloads) is untouched; only telemetry was hardened.
+- To re-enable analytics in a future release, the "No analytics re-enablement" non-goal above must be revisited and a new decision recorded.

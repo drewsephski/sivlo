@@ -1,13 +1,14 @@
 import { invoke } from '@tauri-apps/api/core';
+import { sanitizeAnalyticsProperties } from '@/features/analytics/guard';
 
 export interface AnalyticsProperties {
   [key: string]: string;
 }
 
 export interface DeviceInfo {
-  platform: string;
-  os_version: string;
-  architecture: string;
+  app_platform: string;
+  app_os_version: string;
+  app_arch: string;
 }
 
 export interface UserSession {
@@ -82,7 +83,7 @@ export class Analytics {
     }
 
     try {
-      await invoke('track_event', { eventName, properties });
+      await invoke('track_event', { eventName, properties: sanitizeAnalyticsProperties(properties) });
     } catch (error) {
       console.error(`Failed to track event ${eventName}:`, error);
     }
@@ -95,7 +96,7 @@ export class Analytics {
     }
 
     try {
-      await invoke('identify_user', { userId, properties });
+      await invoke('identify_user', { userId, properties: sanitizeAnalyticsProperties(properties) });
       this.currentUserId = userId;
     } catch (error) {
       console.error(`Failed to identify user ${userId}:`, error);
@@ -181,14 +182,7 @@ export class Analytics {
       return userId;
     } catch (error) {
       console.error('Failed to get persistent user ID:', error);
-      // Fallback to session storage
-      let userId = sessionStorage.getItem('meetily_user_id');
-      if (!userId) {
-        userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        sessionStorage.setItem('meetily_user_id', userId);
-        sessionStorage.setItem('is_first_launch', 'true');
-      }
-      return userId;
+      return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
   }
 
@@ -238,63 +232,24 @@ export class Analytics {
   }
 
   // Platform/Device detection methods
-  static async getPlatform(): Promise<string> {
-    try {
-      // Use browser's user agent as fallback
-      const userAgent = navigator.userAgent.toLowerCase();
-      if (userAgent.includes('mac')) return 'macOS';
-      if (userAgent.includes('win')) return 'Windows';
-      if (userAgent.includes('linux')) return 'Linux';
-      return 'unknown';
-    } catch (error) {
-      console.error('Failed to get platform:', error);
-      return 'unknown';
-    }
-  }
-
-  static async getOSVersion(): Promise<string> {
-    try {
-      const platform = await this.getPlatform();
-      // Use navigator.userAgent for version info
-      const userAgent = navigator.userAgent;
-      return `${platform} (${userAgent})`;
-    } catch (error) {
-      console.error('Failed to get OS version:', error);
-      return 'unknown';
-    }
-  }
-
   static async getDeviceInfo(): Promise<DeviceInfo> {
     if (this.deviceInfo) return this.deviceInfo;
 
     try {
-      const platform = await this.getPlatform();
-      const osVersion = await this.getOSVersion();
-
-      // Detect architecture from user agent
-      const userAgent = navigator.userAgent.toLowerCase();
-      let architecture = 'unknown';
-      if (userAgent.includes('arm') || userAgent.includes('aarch64')) {
-        architecture = 'aarch64';
-      } else if (userAgent.includes('x86_64') || userAgent.includes('x64')) {
-        architecture = 'x86_64';
-      } else if (userAgent.includes('x86')) {
-        architecture = 'x86';
-      }
-
+      const { platform, version, arch } = await import('@tauri-apps/plugin-os');
       this.deviceInfo = {
-        platform: platform,
-        os_version: osVersion,
-        architecture: architecture
+        app_platform: platform(),
+        app_os_version: version(),
+        app_arch: arch(),
       };
 
       return this.deviceInfo;
     } catch (error) {
       console.error('Failed to get device info:', error);
       return {
-        platform: 'unknown',
-        os_version: 'unknown',
-        architecture: 'unknown'
+        app_platform: 'unknown',
+        app_os_version: 'unknown',
+        app_arch: 'unknown',
       };
     }
   }
@@ -400,9 +355,9 @@ export class Analytics {
         session_id: sessionId,
         days_since_last_meeting: daysSinceLast?.toString() || 'null',
         total_meetings: totalMeetings.toString(),
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version,
-        architecture: deviceInfo.architecture
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version,
+        app_arch: deviceInfo.app_arch
       });
     } catch (error) {
       console.error('Failed to track session started:', error);
@@ -420,8 +375,8 @@ export class Analytics {
         session_id: sessionId,
         session_duration_seconds: sessionDuration.toString(),
         meetings_in_session: this.meetingsInSession.toString(),
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version
       });
     } catch (error) {
       console.error('Failed to track session ended:', error);
@@ -450,8 +405,8 @@ export class Analytics {
         meetings_today: metrics.meetings_today.toString(),
         day_of_week: new Date().getDay().toString(),
         hour_of_day: new Date().getHours().toString(),
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version
       });
 
       this.meetingsInSession++;
@@ -472,8 +427,8 @@ export class Analytics {
       const trackingProperties: AnalyticsProperties = {
         feature_name: featureName,
         is_first_use: isFirstUse.toString(),
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version
       };
 
       // Add additional properties if provided
@@ -513,8 +468,8 @@ export class Analytics {
       const trackingProperties: AnalyticsProperties = {
         copy_type: copyType,
         copy_count_today: (copyCount + 1).toString(),
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version
       };
 
       // Add additional properties if provided
@@ -654,11 +609,11 @@ export class Analytics {
       console.log('Tracking backend connection event:', { success, error });
       await invoke('track_event', {
         eventName: 'backend_connection',
-        properties: {
+        properties: sanitizeAnalyticsProperties({
           success: success.toString(),
-          error: error || '',
+          error_message: error || '',
           timestamp: new Date().toISOString()
-        }
+        })
       });
       console.log('Backend connection event tracked successfully');
     } catch (error) {
@@ -677,10 +632,10 @@ export class Analytics {
       console.log('Tracking transcription error event:', { errorMessage });
       await invoke('track_event', {
         eventName: 'transcription_error',
-        properties: {
+        properties: sanitizeAnalyticsProperties({
           error_message: errorMessage,
           timestamp: new Date().toISOString()
-        }
+        })
       });
       console.log('Transcription error event tracked successfully');
     } catch (error) {
@@ -699,10 +654,10 @@ export class Analytics {
       console.log('Tracking transcription success event:', { duration });
       await invoke('track_event', {
         eventName: 'transcription_success',
-        properties: {
+        properties: sanitizeAnalyticsProperties({
           duration: duration ? duration.toString() : '',
           timestamp: new Date().toISOString()
-        }
+        })
       });
       console.log('Transcription success event tracked successfully');
     } catch (error) {
@@ -735,8 +690,8 @@ export class Analytics {
         model_provider: modelProvider,
         model_name: modelName,
         transcript_length: transcriptLength.toString(),
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version
       };
 
       if (timeSinceRecordingMinutes !== undefined) {

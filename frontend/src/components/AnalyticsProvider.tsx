@@ -3,6 +3,7 @@
 import React, { useEffect, ReactNode, useRef, useState, createContext } from 'react';
 import Analytics from '@/lib/analytics';
 import { load } from '@tauri-apps/plugin-store';
+import { resolveAnalyticsConsent } from '@/features/analytics/guard';
 
 const ANALYTICS_DEFAULT_OFF_MIGRATION_KEY = 'analyticsDefaultOffMigrationV1';
 
@@ -48,8 +49,8 @@ export default function AnalyticsProvider({ children }: AnalyticsProviderProps) 
         await store.set('analyticsOptedIn', false);
         await store.set(ANALYTICS_DEFAULT_OFF_MIGRATION_KEY, true);
         await store.save();
-      } else if (analyticsOptedIn !== true) {
-        analyticsOptedIn = false;
+      } else {
+        analyticsOptedIn = resolveAnalyticsConsent(analyticsOptedIn);
       }
 
       setIsAnalyticsOptedIn(analyticsOptedIn as boolean);
@@ -80,9 +81,9 @@ export default function AnalyticsProvider({ children }: AnalyticsProviderProps) 
           analyticsOptedIn: false
         }
       });
-      await store.set('platform', deviceInfo.platform);
-      await store.set('os_version', deviceInfo.os_version);
-      await store.set('architecture', deviceInfo.architecture);
+      await store.set('app_platform', deviceInfo.app_platform);
+      await store.set('app_os_version', deviceInfo.app_os_version);
+      await store.set('app_arch', deviceInfo.app_arch);
 
       // Set first launch date if not exists
       if (!(await store.has('first_launch_date'))) {
@@ -94,10 +95,9 @@ export default function AnalyticsProvider({ children }: AnalyticsProviderProps) 
       // Identify user with enhanced properties immediately after init
       await Analytics.identify(userId, {
         app_version: '0.4.0',
-        platform: deviceInfo.platform,
-        os_version: deviceInfo.os_version,
-        architecture: deviceInfo.architecture,
-        first_seen: new Date().toISOString(),
+        app_platform: deviceInfo.app_platform,
+        app_os_version: deviceInfo.app_os_version,
+        app_arch: deviceInfo.app_arch,
       });
 
       // Start analytics session with platform info
