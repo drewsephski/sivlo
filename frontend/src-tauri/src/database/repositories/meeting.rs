@@ -228,6 +228,43 @@ impl MeetingsRepository {
         transaction.commit().await?;
         Ok(true)
     }
+
+    /// Delete multiple meetings atomically in a single transaction.
+    /// Missing meetings are skipped (not treated as errors). If any delete
+    /// fails, the whole batch is rolled back and the error is returned.
+    pub async fn delete_meetings(
+        pool: &SqlitePool,
+        meeting_ids: &[String],
+    ) -> Result<usize, SqlxError> {
+        if meeting_ids.is_empty() {
+            return Ok(0);
+        }
+
+        let mut seen = std::collections::HashSet::new();
+        let mut conn = pool.acquire().await?;
+        let mut transaction = conn.begin().await?;
+
+        let mut deleted = 0usize;
+        for meeting_id in meeting_ids {
+            let meeting_id = meeting_id.trim();
+            if meeting_id.is_empty() || !seen.insert(meeting_id.to_string()) {
+                continue;
+            }
+            match delete_meeting_with_transaction(&mut transaction, meeting_id).await {
+                Ok(true) => deleted += 1,
+                Ok(false) => continue,
+                Err(e) => {
+                    let _ = transaction.rollback().await;
+                    error!("Failed to delete meeting {} during bulk delete: {}", meeting_id, e);
+                    return Err(e);
+                }
+            }
+        }
+
+        transaction.commit().await?;
+        info!("Successfully deleted {} meetings in bulk", deleted);
+        Ok(deleted)
+    }
 }
 
 async fn delete_meeting_with_transaction(

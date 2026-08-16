@@ -101,6 +101,19 @@ export class StorageService {
   }
 
   /**
+   * Delete multiple meetings and all their associated data in one atomic
+   * backend transaction.
+   * @param meetingIds - IDs of the meetings to delete
+   * @returns Promise with the number of meetings actually deleted
+   */
+  async deleteMeetings(meetingIds: string[]): Promise<number> {
+    const result = await invoke<{ status: string; deleted: number }>('api_delete_meetings', {
+      meetingIds,
+    });
+    return result.deleted;
+  }
+
+  /**
    * Ask the backend to generate a short AI meeting title from the transcript.
    * Best-effort: only retitles when the stored title still equals
    * `expectedTitle` (so user-renamed meetings are never overwritten).

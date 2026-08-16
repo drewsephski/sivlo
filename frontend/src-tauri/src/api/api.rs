@@ -788,6 +788,40 @@ pub async fn api_delete_meeting<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn api_delete_meetings<R: Runtime>(
+    _app: AppHandle<R>,
+    state: tauri::State<'_, AppState>,
+    meeting_ids: Vec<String>,
+    auth_token: Option<String>,
+) -> Result<serde_json::Value, String> {
+    log_info!(
+        "api_delete_meetings called for {} meeting(s), auth_token: {}",
+        meeting_ids.len(),
+        auth_token.is_some()
+    );
+
+    if meeting_ids.is_empty() {
+        return Err("No meeting IDs provided".to_string());
+    }
+
+    let pool = state.db_manager.pool();
+
+    match MeetingsRepository::delete_meetings(pool, &meeting_ids).await {
+        Ok(deleted) => {
+            log_info!("Successfully deleted {} meeting(s) in bulk", deleted);
+            Ok(serde_json::json!({
+                "status": "success",
+                "deleted": deleted,
+            }))
+        }
+        Err(e) => {
+            log_error!("Error during bulk delete: {}", e);
+            Err(format!("Failed to delete meetings: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
 pub async fn api_get_meeting<R: Runtime>(
     _app: AppHandle<R>,
     meeting_id: String,
