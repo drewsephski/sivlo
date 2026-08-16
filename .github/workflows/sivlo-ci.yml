@@ -1,0 +1,331 @@
+name: "Sivlo macOS CI"
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: sivlo-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-macos:
+    name: Build ${{ matrix.arch_label }} (${{ matrix.rust_target }})
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            arch_label: Apple Silicon
+            rust_target: aarch64-apple-darwin
+            runner: macos-15
+          - arch: x86_64
+            arch_label: Intel
+            rust_target: x86_64-apple-darwin
+            runner: macos-15-intel
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version from tauri.conf.json
+        id: get-version
+        shell: bash
+        run: |
+          VERSION=$(grep -o '"version": "[^"]*"' frontend/src-tauri/tauri.conf.json | cut -d'"' -f4)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+          key: sivlo-${{ matrix.rust_target }}
+
+      - name: Install frontend dependencies
+        run: pnpm install
+        working-directory: frontend
+
+      - name: Build llama-helper sidecar
+        shell: bash
+        run: |
+          cargo build --release -p llama-helper \
+            --target "${{ matrix.rust_target }}" \
+            --features metal
+          mkdir -p frontend/src-tauri/binaries
+          cp "target/${{ matrix.rust_target }}/release/llama-helper" \
+            "frontend/src-tauri/binaries/llama-helper-${{ matrix.rust_target }}"
+
+      - name: Cache FFmpeg binary
+        uses: actions/cache@v4
+        with:
+          path: frontend/src-tauri/binaries/ffmpeg-*
+          key: ${{ runner.os }}-${{ matrix.rust_target }}-ffmpeg-${{ hashFiles('frontend/src-tauri/build/ffmpeg.rs') }}
+
+      - name: Import Developer ID certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        shell: bash
+        run: |
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 16)
+
+          # Decode certificate
+          printf '%s' "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+
+          # Create and configure temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+
+          # Import certificate
+          security import certificate.p12 \
+            -k build.keychain \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign
+
+          # Set partition list for codesign access
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+          # Verify identity
+          security find-identity -v -p codesigning build.keychain
+
+          # Clean up certificate file immediately
+          rm -f certificate.p12
+
+      - name: Verify Developer ID identity
+        shell: bash
+        run: |
+          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application")
+          if [ -z "$CERT_INFO" ]; then
+            echo "::error::Developer ID Application certificate not found in keychain"
+            exit 1
+          fi
+          CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
+          echo "Certificate identity: $CERT_ID"
+
+      - name: Setup notarization credentials
+        env:
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_PRIVATE_KEY: ${{ secrets.APPLE_API_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          printf '%s' "$APPLE_API_PRIVATE_KEY" > "/tmp/AuthKey_${APPLE_API_KEY}.p8"
+          chmod 600 "/tmp/AuthKey_${APPLE_API_KEY}.p8"
+
+      - name: Run Rust tests
+        run: cargo test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: pnpm build
+
+      - name: Tauri production build
+        working-directory: frontend
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_PATH: /tmp/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+        run: |
+          pnpm tauri build \
+            --target "${{ matrix.rust_target }}" \
+            --config '{"bundle":{"createUpdaterArtifacts":true}}'
+
+      - name: Validate architecture
+        shell: bash
+        run: |
+          APP_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/macos" -name "*.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::No .app bundle found"
+            exit 1
+          fi
+          BINARY="$APP_PATH/Contents/MacOS/sivlo"
+          ARCH_OUTPUT=$(file "$BINARY")
+          echo "Binary info: $ARCH_OUTPUT"
+          case "${{ matrix.arch }}" in
+            aarch64)
+              if ! echo "$ARCH_OUTPUT" | grep -q "arm64"; then
+                echo "::error::Expected arm64 binary, got: $ARCH_OUTPUT"
+                exit 1
+              fi
+              ;;
+            x86_64)
+              if ! echo "$ARCH_OUTPUT" | grep -q "x86_64"; then
+                echo "::error::Expected x86_64 binary, got: $ARCH_OUTPUT"
+                exit 1
+              fi
+              ;;
+          esac
+          echo "Architecture check passed"
+
+      - name: Validate version and bundle ID
+        shell: bash
+        run: |
+          APP_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/macos" -name "*.app" -type d | head -1)
+          PLIST="$APP_PATH/Contents/Info.plist"
+
+          # Version check
+          APP_VERSION=$(defaults read "$PLIST" CFBundleShortVersionString)
+          EXPECTED_VERSION="${{ steps.get-version.outputs.version }}"
+          if [ "$APP_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "::error::Version mismatch: expected $EXPECTED_VERSION, got $APP_VERSION"
+            exit 1
+          fi
+          echo "Version check passed: $APP_VERSION"
+
+          # Bundle ID check
+          BUNDLE_ID=$(defaults read "$PLIST" CFBundleIdentifier)
+          if [ "$BUNDLE_ID" != "com.drewsepeczi.sivlo" ]; then
+            echo "::error::Bundle ID mismatch: expected com.drewsepeczi.sivlo, got $BUNDLE_ID"
+            exit 1
+          fi
+          echo "Bundle ID check passed: $BUNDLE_ID"
+
+      - name: Validate code signing
+        shell: bash
+        run: |
+          APP_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/macos" -name "*.app" -type d | head -1)
+
+          # Deep verify
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          echo "codesign --verify --deep --strict passed"
+
+          # Check signing details
+          codesign -dv --verbose=4 "$APP_PATH" 2>&1 | tee /tmp/codesign-details.txt
+
+          # Team ID check
+          if ! grep -q "2NHJGX6A7S" /tmp/codesign-details.txt; then
+            echo "::error::TeamIdentifier 2NHJGX6A7S not found in signing details"
+            exit 1
+          fi
+          echo "Team ID check passed: 2NHJGX6A7S"
+
+          # Hardened runtime check
+          if ! grep -qi "hardened runtime" /tmp/codesign-details.txt; then
+            echo "::error::Hardened runtime not found in signing details"
+            exit 1
+          fi
+          echo "Hardened runtime check passed"
+
+      - name: Validate nested binaries signed
+        shell: bash
+        run: |
+          APP_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/macos" -name "*.app" -type d | head -1)
+
+          for BIN in sivlo llama-helper ffmpeg; do
+            BIN_PATH="$APP_PATH/Contents/MacOS/$BIN"
+            if [ -f "$BIN_PATH" ]; then
+              codesign --verify --verbose=2 "$BIN_PATH"
+              echo "$BIN signed and verified"
+            else
+              echo "::warning::Binary $BIN not found, skipping"
+            fi
+          done
+
+      - name: Validate notarization
+        shell: bash
+        run: |
+          APP_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/macos" -name "*.app" -type d | head -1)
+          xcrun stapler validate "$APP_PATH"
+          echo "Notarization stapler validation passed"
+
+      - name: Validate DMG
+        shell: bash
+        run: |
+          DMG_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/dmg" -name "*.dmg" | head -1)
+          if [ -z "$DMG_PATH" ]; then
+            echo "::error::No DMG found"
+            exit 1
+          fi
+          hdiutil verify "$DMG_PATH"
+          echo "DMG verification passed: $DMG_PATH"
+
+      - name: Validate updater artifacts
+        shell: bash
+        run: |
+          MACOS_BUNDLE="target/${{ matrix.rust_target }}/release/bundle/macos"
+          APP_TAR_GZ=$(find "$MACOS_BUNDLE" -name "*.app.tar.gz" | head -1)
+          APP_TAR_GZ_SIG=$(find "$MACOS_BUNDLE" -name "*.app.tar.gz.sig" | head -1)
+
+          if [ -z "$APP_TAR_GZ" ]; then
+            echo "::error::No .app.tar.gz found"
+            exit 1
+          fi
+          if [ -z "$APP_TAR_GZ_SIG" ]; then
+            echo "::error::No .app.tar.gz.sig found"
+            exit 1
+          fi
+          echo "Updater archive: $APP_TAR_GZ ($(stat -f%z "$APP_TAR_GZ") bytes)"
+          echo "Updater signature: $APP_TAR_GZ_SIG ($(stat -f%z "$APP_TAR_GZ_SIG") bytes)"
+
+      - name: Check for secret files in build output
+        shell: bash
+        run: |
+          FOUND=$(find target/ -name "*.p12" -o -name "*.p8" -o -name "*.key" 2>/dev/null)
+          if [ -n "$FOUND" ]; then
+            echo "::error::Secret files found in build output:"
+            echo "$FOUND"
+            exit 1
+          fi
+          echo "No secret files in build output"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sivlo-macos-${{ matrix.arch }}-${{ steps.get-version.outputs.version }}
+          path: |
+            target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
+            target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz
+            target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz.sig
+          retention-days: 30
+
+      - name: Cleanup credentials
+        if: always()
+        shell: bash
+        run: |
+          security delete-keychain build.keychain 2>/dev/null || true
+          rm -f certificate.p12 2>/dev/null || true
+          rm -f /tmp/AuthKey_*.p8 2>/dev/null || true
