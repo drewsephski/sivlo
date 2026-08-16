@@ -1,6 +1,5 @@
 (function () {
   document.documentElement.classList.add('js');
-
   // Scroll reveal — quiet opacity only, settled before any capture.
   var sections = document.querySelectorAll('.section');
   if ('IntersectionObserver' in window) {
@@ -23,7 +22,6 @@
       s.classList.add('inline');
     });
   }
-
   // The specimen's signature interaction: the brand word draws weight as it
   // rises toward the top of the viewport — a live reading axis on the variable
   // face. Disabled under prefers-reduced-motion; no-op when the face is static.
