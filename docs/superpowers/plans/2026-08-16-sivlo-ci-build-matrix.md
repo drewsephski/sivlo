@@ -83,7 +83,7 @@
 | Label | Architecture | CPU | RAM | SSD | Notes |
 |-------|-------------|-----|-----|-----|-------|
 | `macos-latest` | arm64 (Apple Silicon) | 3 cores (M1) | 7 GB | 14 GB | Current default; resolves to `macos-26` |
-| `macos-15` | arm64 (Apple Silicon) | 3 cores (M1) | 7 GB | 14 GB | macOS 15 Sonoma |
+| `macos-15` | arm64 (Apple Silicon) | 3 cores (M1) | 7 GB | 14 GB | macOS 15 Sequoia |
 | `macos-26` | arm64 (Apple Silicon) | 3 cores (M1) | 7 GB | 14 GB | macOS 26; current GA |
 | `macos-15-intel` | x86_64 (Intel) | 4 cores | 14 GB | 14 GB | Last Intel label; supported until August 2027 |
 | `macos-26-intel` | x86_64 (Intel) | 4 cores | 14 GB | 14 GB | macOS 26 Intel; current GA |
@@ -92,7 +92,7 @@
 
 | Architecture | Label | Rationale |
 |-------------|-------|-----------|
-| Apple Silicon (aarch64) | `macos-15` | Stable, well-tested image; avoids bleeding-edge `macos-26` for first CI pass |
+| Apple Silicon (aarch64) | `macos-15` | Stable macOS Sequoia image; avoids bleeding-edge `macos-26` for first CI pass |
 | Intel (x86_64) | `macos-15-intel` | Stable Intel runner; `macos-26-intel` also available but `15` is safer for initial validation |
 
 **Key constraint for Intel:** `macos-15-intel` is the **last** Intel runner GitHub will provide. It is supported until August 2027. This is sufficient for v0.1.0 but should be noted in the project's long-term planning.
@@ -219,15 +219,15 @@ rm -f certificate.p12 || true
 
 ### Approach: Tauri-Managed Notarization
 
-Tauri's bundler performs notarization automatically when these environment variables are present during `tauri build`:
+Tauri supports two notarization approaches:
 
-```bash
-APPLE_API_ISSUER="<issuer-uuid>"
-APPLE_API_KEY="<key-id>"
-APPLE_API_KEY_PATH="/tmp/AuthKey_<key-id>.p8"
-```
+1. **Tauri-managed (env vars):** When `APPLE_API_ISSUER`, `APPLE_API_KEY`, and `APPLE_API_KEY_PATH` are set, Tauri's bundler handles submission, waiting, and stapling automatically. This approach is documented as supported by Tauri ([Updater docs](https://v2.tauri.app/ko/plugin/updater/)).
 
-The `.p8` file is written from the `APPLE_API_PRIVATE_KEY` secret to a temporary path. Tauri handles submission, waiting, and stapling.
+2. **Manual notarytool:** Use `xcrun notarytool submit --key ...` with a temp `.p8` file, then `xcrun stapler staple`. This was the approach proven locally in Phase 4 (`xcrun notarytool submit --keychain-profile "SivloNotary"`).
+
+**CI recommendation:** Use Tauri-managed notarization (option 1) since it is officially supported and keeps the workflow simpler. It was not proven locally in Phase 4, but is the documented approach for CI. If issues arise, fall back to option 2.
+
+The `.p8` file is written from the `APPLE_API_PRIVATE_KEY` secret to a temporary path for either approach.
 
 ### Secrets
 
@@ -272,7 +272,7 @@ rm -f /tmp/AuthKey_*.p8
 
 ### CI Mechanism
 
-Phase 3 proved that `TAURI_SIGNING_PRIVATE_KEY` accepts raw key **contents** (not a file path) when set as an environment variable. In CI:
+Tauri officially supports `TAURI_SIGNING_PRIVATE_KEY` accepting either a **file path** or **raw key contents** when set as an environment variable ([Tauri docs](https://v2.tauri.app/ko/plugin/updater/)). Phase 3 locally proved the file-path variant. For CI, using raw contents is valid and documented. In CI:
 
 ```bash
 export TAURI_SIGNING_PRIVATE_KEY="$TAURI_SIGNING_PRIVATE_KEY"
