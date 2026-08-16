@@ -80,7 +80,7 @@ jobs:
           key: sivlo-${{ matrix.rust_target }}
 
       - name: Install frontend dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: frontend
 
       - name: Build llama-helper sidecar
@@ -169,6 +169,7 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_PATH: /tmp/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          APPLE_SIGNING_IDENTITY: "Developer ID Application: ANDREW DOUGLAS SEPECZI (2NHJGX6A7S)"
         run: |
           pnpm tauri build \
             --target "${{ matrix.rust_target }}" \
@@ -243,9 +244,10 @@ jobs:
           fi
           echo "Team ID check passed: 2NHJGX6A7S"
 
-          # Hardened runtime check
-          if ! grep -qi "hardened runtime" /tmp/codesign-details.txt; then
-            echo "::error::Hardened runtime not found in signing details"
+          # Hardened runtime check — look for the runtime flag in codesign flags
+          # flags output looks like: flags=0x10000(runtime) or flags=0x10003(library-validation,runtime)
+          if ! grep -q "flags=.*runtime" /tmp/codesign-details.txt; then
+            echo "::error::Hardened runtime flag not found in signing details"
             exit 1
           fi
           echo "Hardened runtime check passed"
@@ -257,12 +259,12 @@ jobs:
 
           for BIN in sivlo llama-helper ffmpeg; do
             BIN_PATH="$APP_PATH/Contents/MacOS/$BIN"
-            if [ -f "$BIN_PATH" ]; then
-              codesign --verify --verbose=2 "$BIN_PATH"
-              echo "$BIN signed and verified"
-            else
-              echo "::warning::Binary $BIN not found, skipping"
+            if [ ! -f "$BIN_PATH" ]; then
+              echo "::error::Expected binary $BIN not found at $BIN_PATH"
+              exit 1
             fi
+            codesign --verify --verbose=2 "$BIN_PATH"
+            echo "$BIN signed and verified"
           done
 
       - name: Validate notarization
