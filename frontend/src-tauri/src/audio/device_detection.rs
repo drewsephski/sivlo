@@ -483,7 +483,9 @@ mod tests {
             3840,
             48000,
         );
-        assert_eq!(timeout, Duration::from_millis(160));
+        // f64/f32 rounding yields 159.999996ms, so allow a small tolerance
+        assert!(timeout >= Duration::from_millis(159));
+        assert!(timeout <= Duration::from_millis(161));
     }
 
     #[test]
