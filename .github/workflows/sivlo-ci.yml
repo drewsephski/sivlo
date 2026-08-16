@@ -154,6 +154,15 @@ jobs:
           printf '%s' "$APPLE_API_PRIVATE_KEY" > "/tmp/AuthKey_${APPLE_API_KEY}.p8"
           chmod 600 "/tmp/AuthKey_${APPLE_API_KEY}.p8"
 
+      - name: Ensure FFmpeg for tests
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            brew install ffmpeg
+          fi
+          command -v ffmpeg
+          ffmpeg -version | head -1
+
       - name: Run Rust tests
         run: cargo test
 
@@ -208,8 +217,8 @@ jobs:
           APP_PATH=$(find "target/${{ matrix.rust_target }}/release/bundle/macos" -name "*.app" -type d | head -1)
           PLIST="$APP_PATH/Contents/Info.plist"
 
-          # Version check
-          APP_VERSION=$(defaults read "$PLIST" CFBundleShortVersionString)
+          # Version check via plutil (Tauri 2.x plist)
+          APP_VERSION=$(plutil -extract CFBundleShortVersionString raw "$PLIST")
           EXPECTED_VERSION="${{ steps.get-version.outputs.version }}"
           if [ "$APP_VERSION" != "$EXPECTED_VERSION" ]; then
             echo "::error::Version mismatch: expected $EXPECTED_VERSION, got $APP_VERSION"
@@ -217,8 +226,14 @@ jobs:
           fi
           echo "Version check passed: $APP_VERSION"
 
+          # Assert CFBundleVersion exists (build number may differ from short version)
+          if ! plutil -extract CFBundleVersion raw "$PLIST" >/dev/null 2>&1; then
+            echo "::error::CFBundleVersion key missing from Info.plist"
+            exit 1
+          fi
+
           # Bundle ID check
-          BUNDLE_ID=$(defaults read "$PLIST" CFBundleIdentifier)
+          BUNDLE_ID=$(plutil -extract CFBundleIdentifier raw "$PLIST")
           if [ "$BUNDLE_ID" != "com.drewsepeczi.sivlo" ]; then
             echo "::error::Bundle ID mismatch: expected com.drewsepeczi.sivlo, got $BUNDLE_ID"
             exit 1
