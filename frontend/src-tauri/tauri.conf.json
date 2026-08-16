@@ -2,7 +2,8 @@
     "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
     "productName": "Sivlo",
     "version": "0.4.0",
-    "identifier": "com.meetily.ai",
+    "identifier": "com.drewsepeczi.sivlo",
+    "mainBinaryName": "sivlo",
     "build": {
         "frontendDist": "../out",
         "devUrl": "http://localhost:3118",
@@ -102,6 +103,7 @@
             "binaries/ffmpeg"
         ],
         "macOS": {
+            "minimumSystemVersion": "13.0",
             "entitlements": "entitlements.plist",
             "signingIdentity": "-",
             "hardenedRuntime": true
