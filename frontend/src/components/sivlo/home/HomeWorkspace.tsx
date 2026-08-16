@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { brand } from '@/config/brand';
 import { PrimaryActions } from './PrimaryActions';
 import { RecentMeetings } from './RecentMeetings';
@@ -15,7 +16,14 @@ export function HomeWorkspace({ onStartRecording, onImport }: HomeWorkspaceProps
     <div className="flex h-full w-full flex-col items-center overflow-y-auto px-8 py-12">
       <div className="w-full max-w-4xl">
         <div className="text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+          <Image
+            src="/brand/sivlo-icon.png"
+            alt={`${brand.name} logo`}
+            width={56}
+            height={56}
+            className="mx-auto"
+          />
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-foreground">
             {brand.name}
           </h1>
           <p className="mt-2.5 text-base text-muted-foreground">{brand.tagline}</p>

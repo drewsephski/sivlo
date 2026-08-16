@@ -45,7 +45,7 @@ export function About() {
             <div className="text-center">
                 <div className="mb-3">
                     <Image
-                        src="icon_128x128.png"
+                        src="/brand/sivlo-icon.png"
                         alt={`${brand.name} Logo`}
                         width={64}
                         height={64}

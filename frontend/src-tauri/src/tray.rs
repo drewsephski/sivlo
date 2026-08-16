@@ -23,8 +23,11 @@ pub fn create_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 
     TrayIconBuilder::with_id("main-tray")
         .menu(&menu)
-        .tooltip("Meetily")
+        .tooltip("Sivlo")
         .icon(app.default_window_icon().unwrap().clone())
+        // macOS menu bar convention: render the mark as a monochrome template
+        // so it adapts to light/dark menu bars. No-op on Windows/Linux.
+        .icon_as_template(cfg!(target_os = "macos"))
         .on_menu_event(|app, event| handle_menu_event(app, event.id.as_ref()))
         .build(app)?;
 

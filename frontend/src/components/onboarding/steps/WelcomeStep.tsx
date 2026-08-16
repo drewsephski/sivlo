@@ -31,6 +31,9 @@ export function WelcomeStep() {
       hideProgress={true}
     >
       <div className="flex flex-col items-center space-y-10">
+        {/* Logo */}
+        <img src="/brand/sivlo-icon.png" alt={`${brand.name} logo`} className="h-20 w-20" />
+
         {/* Divider */}
         <div className="w-16 h-px bg-gray-300" />
 

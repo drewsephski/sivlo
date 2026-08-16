@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { brand } from '@/config/brand';
 
 interface BrandMarkProps {
@@ -9,21 +10,23 @@ interface BrandMarkProps {
 export function BrandMark({ isCollapsed = false, className = '' }: BrandMarkProps) {
   if (isCollapsed) {
     return (
-      <span
-        aria-label={brand.name}
-        className={`flex h-8 w-10 items-center justify-center rounded-full bg-blue-50 text-lg font-semibold text-gray-700 select-none ${className}`}
-      >
-        S
-      </span>
+      <Image
+        src="/brand/sivlo-icon.png"
+        alt={brand.name}
+        width={32}
+        height={32}
+        className={`h-8 w-8 select-none ${className}`}
+      />
     );
   }
 
   return (
-    <span
-      aria-label={brand.name}
-      className={`text-lg font-semibold text-gray-700 select-none ${className}`}
-    >
-      {brand.wordmark}
-    </span>
+    <Image
+      src="/brand/sivlo-logo.png"
+      alt={brand.name}
+      width={120}
+      height={120}
+      className={`select-none ${className}`}
+    />
   );
 }
