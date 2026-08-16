@@ -112,10 +112,12 @@ impl<R: Runtime> ConsentManager<R> {
 
     /// Get the path where notification settings are stored
     fn get_settings_path() -> Result<PathBuf> {
+        use crate::config::NOTIFICATION_SETTINGS_DIR_NAME;
+
         let mut path = dirs::config_dir()
             .ok_or_else(|| anyhow!("Could not find config directory"))?;
 
-        path.push("meetily");
+        path.push(NOTIFICATION_SETTINGS_DIR_NAME);
         path.push("notifications.json");
 
         // Ensure parent directory exists
@@ -273,5 +275,29 @@ pub fn merge_with_defaults(partial: NotificationSettings) -> NotificationSetting
         consent_given: partial.consent_given,
         manual_dnd_mode: partial.manual_dnd_mode,
         notification_preferences: partial.notification_preferences,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_settings_path_uses_sivlo_dir() {
+        let path = ConsentManager::<tauri::Wry>::get_settings_path().expect("settings path resolves");
+        let dir_name = path
+            .parent()
+            .expect("settings path must have a parent")
+            .file_name()
+            .expect("settings parent must have a name")
+            .to_string_lossy()
+            .to_string();
+        assert_eq!(dir_name, crate::config::NOTIFICATION_SETTINGS_DIR_NAME);
+        assert_eq!(
+            path.file_name()
+                .expect("settings path must have a filename")
+                .to_string_lossy(),
+            "notifications.json"
+        );
     }
 }

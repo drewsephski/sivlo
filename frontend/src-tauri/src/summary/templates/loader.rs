@@ -19,12 +19,14 @@ pub fn set_bundled_templates_dir(path: PathBuf) {
 /// Get the user's custom templates directory path
 ///
 /// Returns the platform-specific application data directory for custom templates:
-/// - macOS: ~/Library/Application Support/Meetily/templates/
-/// - Windows: %APPDATA%\Meetily\templates\
-/// - Linux: ~/.config/Meetily/templates/
+/// - macOS: ~/Library/Application Support/Sivlo/templates/
+/// - Windows: %APPDATA%\Sivlo\templates\
+/// - Linux: ~/.config/Sivlo/templates/
 fn get_custom_templates_dir() -> Option<PathBuf> {
+    use crate::config::STORAGE_DIR_NAME;
+
     let mut path = dirs::data_dir()?;
-    path.push("Meetily");
+    path.push(STORAGE_DIR_NAME);
     path.push("templates");
     Some(path)
 }
@@ -248,5 +250,23 @@ mod tests {
     fn test_validate_invalid_json() {
         let result = validate_and_parse_template("invalid json");
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_custom_templates_dir_uses_sivlo_storage() {
+        let dir = get_custom_templates_dir().expect("templates dir resolves");
+        let path = dir.to_string_lossy().to_lowercase();
+        let dir_name = dir
+            .file_name()
+            .expect("templates dir must have a name")
+            .to_string_lossy()
+            .to_string();
+        assert_eq!(dir_name, "templates");
+        assert!(
+            path.contains(&crate::config::STORAGE_DIR_NAME.to_lowercase()),
+            "templates dir {} must resolve under {}",
+            dir.display(),
+            crate::config::STORAGE_DIR_NAME
+        );
     }
 }
