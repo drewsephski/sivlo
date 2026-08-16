@@ -6,24 +6,72 @@ use tokio::sync::Mutex;
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
 
-const SENSITIVE_ANALYTICS_KEYS: &[&str] = &[
-    "meeting_title",
-    "meetingTitle",
-    "meeting_name",
-    "meetingName",
-    "file_name",
-    "filename",
-    "file_path",
-    "folder_path",
-    "path",
-    "source_path",
-    "meeting_folder_path",
-    "device_name",
-    "user_agent",
+const ALLOWED_ANALYTICS_PROPERTY_KEYS: &[&str] = &[
+    "meeting_id",
+    "session_id",
+    "session_duration",
+    "session_duration_seconds",
+    "timestamp",
+    "app_version",
+    "is_first_launch",
+    "is_daily_active",
+    "app_platform",
+    "app_os_version",
+    "app_arch",
+    "feature",
+    "feature_name",
+    "beta_feature_name",
+    "setting_type",
+    "new_value",
+    "model_provider",
+    "model_name",
+    "error_message",
+    "error_type",
+    "success",
+    "count",
+    "duration_seconds",
+    "viewed_at",
+    "old_provider",
+    "old_model",
+    "new_provider",
+    "new_model",
+    "transcription_provider",
+    "transcription_model",
+    "summary_provider",
+    "summary_model",
+    "transcript_length",
+    "prompt_length",
+    "total_duration_seconds",
+    "active_duration_seconds",
+    "pause_duration_seconds",
+    "microphone_device_type",
+    "system_audio_device_type",
+    "chunks_processed",
+    "transcript_segments_count",
+    "transcript_segments",
+    "transcript_word_count",
+    "words_per_minute",
+    "had_fatal_error",
+    "days_since_last_meeting",
+    "total_meetings",
+    "meetings_in_session",
+    "meetings_today",
+    "day_of_week",
+    "hour_of_day",
+    "is_first_use",
+    "copy_type",
+    "copy_count_today",
+    "duration",
+    "segments_count",
+    "file_size_bytes",
+    "language",
+    "time_since_recording_minutes",
+    "date",
+    "enabled",
 ];
 
 fn sanitize_analytics_properties(mut properties: HashMap<String, String>) -> HashMap<String, String> {
-    properties.retain(|key, _| !SENSITIVE_ANALYTICS_KEYS.contains(&key.as_str()));
+    properties.retain(|key, _| ALLOWED_ANALYTICS_PROPERTY_KEYS.contains(&key.as_str()));
     properties
 }
 
@@ -45,10 +93,24 @@ impl Default for AnalyticsConfig {
     fn default() -> Self {
         Self {
             api_key: String::new(),
-            host: Some("https://us.i.posthog.com".to_string()),
+            host: None,
             enabled: false,
         }
     }
+}
+
+pub(crate) fn build_analytics_config_from_env() -> AnalyticsConfig {
+    build_analytics_config_from_reader(|key| std::env::var(key).ok())
+}
+
+fn build_analytics_config_from_reader<R>(env: R) -> AnalyticsConfig
+where
+    R: Fn(&str) -> Option<String>,
+{
+    let api_key = env("SIVLO_ANALYTICS_API_KEY").unwrap_or_default();
+    let host = env("SIVLO_ANALYTICS_HOST");
+    let enabled = !api_key.is_empty();
+    AnalyticsConfig { api_key, host, enabled }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -85,7 +147,21 @@ pub struct AnalyticsClient {
 impl AnalyticsClient {
     pub async fn new(config: AnalyticsConfig) -> Self {
         let client = if config.enabled && !config.api_key.is_empty() {
-            Some(Arc::new(posthog_rs::client(config.api_key.as_str()).await))
+            let mut options = posthog_rs::ClientOptionsBuilder::default();
+            options.api_key(config.api_key.clone());
+            if let Some(host) = config.host.as_deref() {
+                if !host.is_empty() {
+                    let endpoint = format!("{}/i/v0/e/", host.trim_end_matches('/'));
+                    options.api_endpoint(endpoint);
+                }
+            }
+            match options.build() {
+                Ok(options) => Some(Arc::new(posthog_rs::client(options).await)),
+                Err(e) => {
+                    log::error!("Failed to build analytics client options: {}", e);
+                    None
+                }
+            }
         } else {
             None
         };
@@ -420,6 +496,10 @@ impl AnalyticsClient {
         self.config.enabled && self.client.is_some()
     }
 
+    pub fn is_disabled(&self) -> bool {
+        !self.is_enabled()
+    }
+
     pub async fn set_user_properties(&self, properties: HashMap<String, String>) -> Result<(), String> {
         let client = match &self.client {
             Some(client) => Arc::clone(client),
@@ -481,6 +561,7 @@ mod tests {
         properties.insert("duration_seconds".to_string(), "125".to_string());
         properties.insert("segments_count".to_string(), "42".to_string());
         properties.insert("model_name".to_string(), "parakeet".to_string());
+        properties.insert("app_platform".to_string(), "macos".to_string());
         properties.insert("platform".to_string(), "Windows".to_string());
 
         let sanitized = sanitize_analytics_properties(properties);
@@ -507,7 +588,8 @@ mod tests {
         assert_eq!(sanitized.get("duration_seconds"), Some(&"125".to_string()));
         assert_eq!(sanitized.get("segments_count"), Some(&"42".to_string()));
         assert_eq!(sanitized.get("model_name"), Some(&"parakeet".to_string()));
-        assert_eq!(sanitized.get("platform"), Some(&"Windows".to_string()));
+        assert_eq!(sanitized.get("app_platform"), Some(&"macos".to_string()));
+        assert!(!sanitized.contains_key("platform"), "unallowlisted platform key remained");
     }
 
     #[test]
@@ -517,5 +599,127 @@ mod tests {
         assert_eq!(properties.get("meeting_id"), Some(&"meeting-123".to_string()));
         assert!(properties.contains_key("timestamp"));
         assert!(!properties.contains_key("meeting_title"));
+    }
+
+    #[test]
+    fn analytics_allowlist_drops_content_keys() {
+        let mut properties = HashMap::new();
+        for key in [
+            "transcript",
+            "title",
+            "summary",
+            "notes",
+            "prompt",
+            "response",
+            "content",
+            "meeting_content",
+            "audio_path",
+            "file_path",
+            "folder_path",
+            "meeting_name",
+            "device_name",
+            "user_agent",
+        ] {
+            properties.insert(key.to_string(), "sensitive-value".to_string());
+        }
+
+        properties.insert("meeting_id".to_string(), "meeting-123".to_string());
+        properties.insert("duration_seconds".to_string(), "125".to_string());
+        properties.insert("segments_count".to_string(), "42".to_string());
+        properties.insert("model_name".to_string(), "parakeet".to_string());
+
+        let sanitized = sanitize_analytics_properties(properties);
+
+        assert_eq!(sanitized.get("meeting_id"), Some(&"meeting-123".to_string()));
+        assert_eq!(sanitized.get("duration_seconds"), Some(&"125".to_string()));
+        assert_eq!(sanitized.get("segments_count"), Some(&"42".to_string()));
+        assert_eq!(sanitized.get("model_name"), Some(&"parakeet".to_string()));
+
+        for key in [
+            "transcript",
+            "title",
+            "summary",
+            "notes",
+            "prompt",
+            "response",
+            "content",
+            "meeting_content",
+            "audio_path",
+            "file_path",
+            "folder_path",
+            "meeting_name",
+            "device_name",
+            "user_agent",
+        ] {
+            assert!(!sanitized.contains_key(key), "content key remained: {}", key);
+        }
+    }
+
+    #[test]
+    fn analytics_allowlist_keeps_all_operational_keys() {
+        let mut properties = HashMap::new();
+        for key in ALLOWED_ANALYTICS_PROPERTY_KEYS {
+            properties.insert((*key).to_string(), "value".to_string());
+        }
+
+        let sanitized = sanitize_analytics_properties(properties);
+
+        assert_eq!(sanitized.len(), ALLOWED_ANALYTICS_PROPERTY_KEYS.len());
+    }
+
+    #[test]
+    fn env_config_defaults_to_disabled_when_empty() {
+        let config = build_analytics_config_from_reader(|_| None);
+
+        assert_eq!(config.api_key, "");
+        assert_eq!(config.host, None);
+        assert!(!config.enabled);
+    }
+
+    #[test]
+    fn env_config_enables_with_api_key() {
+        let config = build_analytics_config_from_reader(|key| match key {
+            "SIVLO_ANALYTICS_API_KEY" => Some("test-key".to_string()),
+            _ => None,
+        });
+
+        assert_eq!(config.api_key, "test-key");
+        assert_eq!(config.host, None);
+        assert!(config.enabled);
+    }
+
+    #[test]
+    fn env_config_reads_host() {
+        let config = build_analytics_config_from_reader(|key| match key {
+            "SIVLO_ANALYTICS_API_KEY" => Some("test-key".to_string()),
+            "SIVLO_ANALYTICS_HOST" => Some("https://analytics.example.com".to_string()),
+            _ => None,
+        });
+
+        assert_eq!(config.host.as_deref(), Some("https://analytics.example.com"));
+        assert!(config.enabled);
+    }
+
+    #[tokio::test]
+    async fn default_client_is_disabled_without_inner_client() {
+        let client = AnalyticsClient::new(AnalyticsConfig::default()).await;
+
+        assert!(client.is_disabled());
+    }
+
+    #[tokio::test]
+    async fn disabled_client_track_and_identify_are_noops() {
+        let client = AnalyticsClient::new(AnalyticsConfig::default()).await;
+        assert!(client.is_disabled());
+
+        let mut props = HashMap::new();
+        props.insert("meeting_id".to_string(), "meeting-123".to_string());
+        let track_result = client.track_event("meeting_started", Some(props)).await;
+        assert!(track_result.is_ok());
+
+        let mut props = HashMap::new();
+        props.insert("app_version".to_string(), "0.4.0".to_string());
+        let identify_result = client.identify("user-123".to_string(), Some(props)).await;
+        assert!(identify_result.is_ok());
     }
 }
