@@ -1,18 +1,14 @@
 use std::sync::Arc;
 use std::collections::HashMap;
 use tauri::command;
-use crate::analytics::{AnalyticsClient, AnalyticsConfig};
+use crate::analytics::AnalyticsClient;
 
 // Global analytics client
 static ANALYTICS_CLIENT: std::sync::Mutex<Option<Arc<AnalyticsClient>>> = std::sync::Mutex::new(None);
 
 #[command]
 pub async fn init_analytics() -> Result<(), String> {
-    let config = AnalyticsConfig {
-        api_key: "phc_Aa9PqeCkDkVbtbRsYjtmHANBfcscjCVupxZwrtL5vZ77".to_string(),
-        host: Some("https://us.i.posthog.com".to_string()),
-        enabled: true,
-    };
+    let config = crate::analytics::build_analytics_config_from_env();
     
     let client = Arc::new(AnalyticsClient::new(config).await);
     
