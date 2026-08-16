@@ -5,9 +5,10 @@ import { refreshMeetings } from '@/features/meetings';
  * Auto-generated recording title patterns.
  * Frontend-generated: "Meeting DD_MM_YY_HH_MM_SS" (useRecordingStart).
  * Backend-generated fallback: "Meeting YYYY-MM-DD_HH-MM-SS" (audio default).
+ * Save fallback: "New Meeting" (used when no title exists at save time).
  */
 const DEFAULT_RECORDING_TITLE_PATTERN =
-  /^Meeting (?:\d{2}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}|\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})$/;
+  /^(?:Meeting (?:\d{2}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}|\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})|New Meeting)$/;
 
 /** True when a title is an auto-generated recording default (not user-customized). */
 export function isDefaultRecordingTitle(title: string): boolean {

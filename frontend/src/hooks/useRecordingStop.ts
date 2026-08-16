@@ -311,9 +311,9 @@ export function useRecordingStop(
 
           // Best-effort AI meeting title for default-named recordings.
           // Non-blocking: the default title is kept on any failure.
-          const aiTitleSource = savedMeetingName || meetingTitle || '';
-          if (aiTitleSource && isDefaultRecordingTitle(aiTitleSource)) {
-            void requestAiMeetingTitle(meetingId, aiTitleSource, {
+          const savedTitle = savedMeetingName || meetingTitle || 'New Meeting';
+          if (isDefaultRecordingTitle(savedTitle)) {
+            void requestAiMeetingTitle(meetingId, savedTitle, {
               onRetitled: () => refetchMeetings(),
             });
           }

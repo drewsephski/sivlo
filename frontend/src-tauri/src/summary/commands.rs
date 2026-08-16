@@ -448,6 +448,7 @@ pub async fn api_cancel_summary<R: Runtime>(
 const MIN_TRANSCRIPT_CHARS: usize = 40;
 const MAX_TRANSCRIPT_CHARS: usize = 8000;
 const MAX_TITLE_WORDS: usize = 8;
+const MAX_TITLE_CHARS: usize = 80;
 
 /// Result of an AI meeting-title generation attempt.
 ///
@@ -505,7 +506,7 @@ pub async fn api_generate_meeting_title<R: Runtime>(
         }
     };
 
-    if meeting.title.trim() != expected_title.trim() {
+    if !title_still_expected(&meeting.title, &expected_title) {
         log_warn!(
             "Meeting title changed since save, skipping AI title for {} (expected {:?}, got {:?})",
             meeting_id,
@@ -721,7 +722,7 @@ pub async fn api_generate_meeting_title<R: Runtime>(
         }
     };
 
-    if current.title.trim() != expected_title.trim() {
+    if !title_still_expected(&current.title, &expected_title) {
         log_warn!(
             "Meeting title changed while generating AI title, skipping for {}",
             meeting_id
@@ -765,9 +766,10 @@ pub async fn api_generate_meeting_title<R: Runtime>(
     }
 }
 
-/// Cleans an LLM title response: first non-empty line, surrounding quotes
-/// stripped, whitespace collapsed, capped at `MAX_TITLE_WORDS` words, and a
-/// single trailing period removed.
+/// Cleans an LLM title response: first non-empty line, leading markdown
+/// heading markers stripped, surrounding quotes removed, whitespace collapsed,
+/// capped at `MAX_TITLE_WORDS` words and `MAX_TITLE_CHARS` characters (never
+/// splitting a word), and a single trailing period removed.
 fn sanitize_generated_title(raw: &str) -> String {
     let first_line = raw
         .lines()
@@ -776,7 +778,8 @@ fn sanitize_generated_title(raw: &str) -> String {
         .unwrap_or("");
 
     let trimmed = first_line
-        .trim()
+        .trim_start_matches('#')
+        .trim_start()
         .trim_matches(|c| c == '"' || c == '\'' || c == '\u{201c}' || c == '\u{201d}');
 
     let mut collapsed = String::new();
@@ -796,7 +799,21 @@ fn sanitize_generated_title(raw: &str) -> String {
     let words: Vec<&str> = collapsed.split(' ').filter(|w| !w.is_empty()).collect();
     let mut words = words;
     words.truncate(MAX_TITLE_WORDS);
-    let mut title = words.join(" ");
+
+    let mut title = String::new();
+    for word in words {
+        if title.is_empty() {
+            // Always accept the first word so output is never empty and words
+            // are never split mid-word by the character cap.
+            title = word.to_string();
+            continue;
+        }
+        let candidate = format!("{} {}", title, word);
+        if candidate.chars().count() > MAX_TITLE_CHARS {
+            break;
+        }
+        title = candidate;
+    }
 
     if title.ends_with('.') {
         title.pop();
@@ -805,9 +822,16 @@ fn sanitize_generated_title(raw: &str) -> String {
     title
 }
 
+/// True when the stored title still equals the title the meeting was saved
+/// with (whitespace-insensitive). Guards the race-safe AI retitle path so
+/// user-renamed or user-entered titles are never overwritten.
+fn title_still_expected(current_title: &str, expected_title: &str) -> bool {
+    current_title.trim() == expected_title.trim()
+}
+
 #[cfg(test)]
 mod tests {
-    use super::sanitize_generated_title;
+    use super::{sanitize_generated_title, title_still_expected, MAX_TITLE_CHARS};
 
     #[test]
     fn sanitize_returns_first_non_empty_line() {
@@ -834,10 +858,38 @@ mod tests {
     }
 
     #[test]
+    fn sanitize_strips_markdown_heading_markers() {
+        assert_eq!(sanitize_generated_title("# Sivlo UI Redesign"), "Sivlo UI Redesign");
+        assert_eq!(sanitize_generated_title("## Q3 Planning"), "Q3 Planning");
+        assert_eq!(
+            sanitize_generated_title("###  Launch   Readiness   Check  "),
+            "Launch Readiness Check"
+        );
+    }
+
+    #[test]
+    fn sanitize_caps_title_length_without_splitting_words() {
+        let long = "This is an extremely long generated meeting title that definitely exceeds the maximum character budget";
+        let out = sanitize_generated_title(long);
+        assert!(out.chars().count() <= MAX_TITLE_CHARS);
+        assert!(!out.is_empty());
+        assert!(!out.contains("  "));
+    }
+
+    #[test]
     fn sanitize_empty_input_returns_empty() {
         assert_eq!(sanitize_generated_title(""), "");
         assert_eq!(sanitize_generated_title("   \n\t "), "");
         assert_eq!(sanitize_generated_title("\"\"\""), "");
+        assert_eq!(sanitize_generated_title("#"), "");
+    }
+
+    #[test]
+    fn title_still_expected_compares_trimmed_titles() {
+        assert!(title_still_expected("New Meeting", "New Meeting"));
+        assert!(title_still_expected("  Q3 Sync  ", "Q3 Sync"));
+        assert!(!title_still_expected("User Title", "Meeting 15_08_26_10_37_29"));
+        assert!(!title_still_expected("", "Meeting 15_08_26_10_37_29"));
     }
 }
 
