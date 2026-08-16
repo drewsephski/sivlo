@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sivlo — Private meeting intelligence for macOS</title>
+  <meta name="description" content="Sivlo records, transcribes, and summarizes your meetings in real time — entirely on your device. No account, no upload, no cloud." />
+  <meta name="color-scheme" content="light" />
+  <meta property="og:title" content="Sivlo — Private meeting intelligence for macOS" />
+  <meta property="og:description" content="Turn conversations into working memory. Every meeting, transcribed and summarized on your own Mac." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/webp" href="assets/brand-icon.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400..500&family=Schibsted+Grotesk:wght@400..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<!--
+THESIS: Sivlo's landing page is a type specimen of the product name on paper — the word and its claims set at awe scale in ink, measured by hairline rules and mono coordinates. It refuses the hero-card-and-screenshot SaaS template: no cards, no kickers, no stat tiles; proof is set as specimen figures and a ruled ledger.
+OWN-WORLD: warm paper ground, deep ink, one cobalt accent reserved for the live action and the "your device" boundary; hairlines as the only ornament; editorial display grotesque (Schibsted Grotesk, variable 400–900) at display scale, IBM Plex Mono for coordinates and data.
+STORY: the visitor reads the name large, understands that every meeting's words stay on their Mac, sees the local mechanism proven, and downloads the macOS beta.
+FIRST VIEWPORT: topbar (wordmark, mono nav to the sections, release line, bordered Download button), a giant "sivlo" specimen on a ruled baseline with a type coordinate annotation, the tagline as the headline, a ~70ch lede, a mono proof row, and one cobalt "Download the macOS beta" action with release facts beside it.
+FORM: interactive type specimen — the page as an index of figures; #1 of 7 grounded candidates; seed 491bbe18.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+-->
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar" aria-label="Site">
+  <div class="wrap">
+    <a class="topbar__brand" href="#top" aria-label="Sivlo home"><span class="topbar__word">sivlo</span></a>
+    <nav class="topbar__nav" aria-label="Primary">
+      <a href="#mechanism">Mechanism</a>
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+    <div class="topbar__right">
+      <p class="topbar__meta" aria-hidden="true">v0.1.0 public beta · macOS 13+</p>
+      <a class="topbar__action" href="https://github.com/drewsephski/sivlo-releases/releases/latest" target="_blank" rel="noopener">Download</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top" aria-labelledby="headline">
+    <div class="wrap">
+      <div class="specimen">
+        <p class="specimen__word" aria-hidden="true">sivlo</p>
+        <div class="specimen__rule" aria-hidden="true"><span class="specimen__tick"></span></div>
+        <p class="specimen__coordinate">Schibsted Grotesk · variable 400–800 · 6rem · −0.03em · tight</p>
+      </div>
+
+      <div class="hero__text">
+        <h1 class="hero__headline" id="headline">Turn conversations<br />into working memory.</h1>
+        <p class="hero__lede">Sivlo records, transcribes, and summarizes your meetings in real time, entirely on your device. No account, no upload, no cloud.</p>
+      </div>
+
+      <dl class="proof" aria-label="Capability and privacy facts">
+        <div class="proof__item">
+          <dt class="proof__k">REC</dt>
+          <dd class="proof__v">48 kHz · mic + system audio</dd>
+        </div>
+        <div class="proof__item">
+          <dt class="proof__k">STT</dt>
+          <dd class="proof__v">on-device whisper</dd>
+        </div>
+        <div class="proof__item">
+          <dt class="proof__k">SUM</dt>
+          <dd class="proof__v">actions &amp; decisions</dd>
+        </div>
+        <div class="proof__item">
+          <dt class="proof__k">MEM</dt>
+          <dd class="proof__v">notes · full-text search</dd>
+        </div>
+        <div class="proof__item proof__item--net">
+          <dt class="proof__k">NET</dt>
+          <dd class="proof__v"><span class="counter" data-count="0">0</span> uploads · ever</dd>
+        </div>
+      </dl>
+
+      <div class="cta">
+        <a class="cta__primary" href="https://github.com/drewsephski/sivlo-releases/releases/latest" target="_blank" rel="noopener">Download the macOS beta</a>
+        <p class="cta__note">Apple Silicon &amp; Intel · notarized DMG · direct download</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="mechanism" aria-labelledby="mechanism-title">
+    <div class="wrap">
+      <div class="section__head">
+        <h2 class="section__title" id="mechanism-title">Proven on your machine, not in someone else’s.</h2>
+        <p class="section__lede">Audiophile-grade capture meets local speech recognition. Everything below runs on your Mac; none of it is a server.</p>
+      </div>
+
+      <figure class="figure figure--diagram" id="fig-local">
+        <img class="diagram" src="assets/shot-pipeline@1580.webp" width="1580" height="630" alt="Diagram of the local pipeline on your Mac: steps 01 capture (Mic, System audio) and 02 mix (48 kHz) feed two parallel lanes — 04 record, saved locally, and 03 transcribe (VAD, speech only, then Whisper, on-device) — which both drop into 05 remember, the working memory bar (transcript, summary, actions, notes). A dashed red arrow toward the cloud is marked blocked and crosses out of the device boundary; the seal reads 0 uploads, no account, no telemetry, offline by design." loading="lazy" decoding="async" />
+        <figcaption class="figure__cap"><span class="figure__no">fig. 00</span> — where every word goes</figcaption>
+      </figure>
+
+      <div class="plates">
+        <figure class="figure plate" id="fig-home">
+          <figcaption class="figure__cap"><span class="figure__no">fig. 01</span> — the meeting home</figcaption>
+          <div class="plate__frame">
+            <img class="plate__img" src="assets/shot-home@1600.webp" alt="Sivlo meeting home workspace" loading="lazy" width="1600" height="1072" />
+          </div>
+        </figure>
+        <div class="plates__pair">
+          <figure class="figure plate" id="fig-transcription">
+            <figcaption class="figure__cap"><span class="figure__no">fig. 02</span> — live transcription</figcaption>
+            <div class="plate__frame">
+              <img class="plate__img" src="assets/shot-transcription@1200.webp" alt="Sivlo live transcript view" loading="lazy" width="1200" height="840" />
+            </div>
+          </figure>
+          <figure class="figure plate" id="fig-summary">
+            <figcaption class="figure__cap"><span class="figure__no">fig. 03</span> — summary &amp; notes</figcaption>
+            <div class="plate__frame">
+              <img class="plate__img" src="assets/shot-summary@1200.webp" alt="Sivlo meeting summary and notes" loading="lazy" width="1200" height="825" />
+            </div>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ledger" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section__head">
+        <h2 class="section__title" id="features-title">One notebook, kept for you.</h2>
+        <p class="section__lede">Every meeting becomes a dated entry: the recording, the transcript, the summary, and the notes, bound together, searchable, yours.</p>
+      </div>
+
+      <ol class="ledger">
+        <li class="ledger__row">
+          <p class="ledger__data">48 kHz</p>
+          <div class="ledger__body">
+            <h3 class="ledger__name">Capture that hears your meeting, not your room.</h3>
+            <p class="ledger__desc">Mic and system audio are mixed professionally at 48 kHz, with ducking applied so a presenter is never drowned out by shared audio.</p>
+            <p class="ledger__ref"><a href="#fig-local">fig. 00 · where every word goes</a></p>
+          </div>
+        </li>
+        <li class="ledger__row">
+          <p class="ledger__data">whisper</p>
+          <div class="ledger__body">
+            <h3 class="ledger__name">Real-time transcription on your own chip.</h3>
+            <p class="ledger__desc">Speech is filtered for voice activity, then transcribed on-device, accelerated by Metal on your Mac. Speaking becomes text as it happens.</p>
+            <p class="ledger__ref"><a href="#fig-transcription">fig. 02 · live transcription</a></p>
+          </div>
+        </li>
+        <li class="ledger__row">
+          <p class="ledger__data">summ.</p>
+          <div class="ledger__body">
+            <h3 class="ledger__name">The summary is the meeting, curated.</h3>
+            <p class="ledger__desc">When you stop, Sivlo drafts a title, a summary, and the actions and decisions you actually need to carry forward.</p>
+            <p class="ledger__ref"><a href="#fig-summary">fig. 03 · summary &amp; notes</a></p>
+          </div>
+        </li>
+        <li class="ledger__row">
+          <p class="ledger__data">mem.</p>
+          <div class="ledger__body">
+            <h3 class="ledger__name">Working memory that you can search.</h3>
+            <p class="ledger__desc">Notes persist beside every meeting, and full-text search finds a decision made months ago, instantly, offline, in your vault.</p>
+            <p class="ledger__ref"><a href="#fig-home">fig. 01 · the meeting home</a></p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--privacy" id="privacy" aria-labelledby="privacy-title">
+    <div class="wrap">
+      <div class="privacy__head">
+        <h2 class="privacy__title" id="privacy-title">Your meetings are your property.</h2>
+      </div>
+      <div class="privacy__grid">
+        <p class="privacy__lead">Sivlo never sees your meetings, because Sivlo never leaves your computer. Recordings, transcripts, summaries, and notes all live in Sivlo’s local storage.</p>
+        <ul class="privacy__list">
+          <li>No account to create, no folder to trust. The data resides on your machine.</li>
+          <li>Analytics are explicit opt-in and off by default; meeting content is never an analytics payload.</li>
+          <li>Transcription uses local models on local hardware. Offline is not a mode; it is the design.</li>
+        </ul>
+      </div>
+      <p class="privacy__proof"><span class="privacy__proof-mark" aria-hidden="true"></span>0 bytes have ever left your device.</p>
+    </div>
+  </section>
+
+  <section class="section section--download" id="download" aria-labelledby="download-title">
+    <div class="wrap">
+      <div class="download__inner">
+        <h2 class="download__title" id="download-title">Take your meetings<br />home with you.</h2>
+        <p class="download__sub">Sivlo for macOS is in public beta. Record, transcribe, and remember, with nothing leaving your Mac.</p>
+        <div class="cta cta--dl">
+          <a class="cta__primary cta__primary--large" href="https://github.com/drewsephski/sivlo-releases/releases/latest" target="_blank" rel="noopener">Download the macOS beta</a>
+          <p class="cta__note">v0.1.0 public beta · Apple Silicon &amp; Intel · notarized DMG · macOS 13+</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__inner">
+      <p class="footer__word">sivlo</p>
+      <nav class="footer__nav" aria-label="Footer">
+        <a href="https://github.com/drewsephski/sivlo-releases/releases/latest" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/drewsephski/sivlo-releases" target="_blank" rel="noopener">Update feed</a>
+        <a href="#top">Back to top</a>
+      </nav>
+      <p class="footer__legal">© 2026 Sivlo · private meeting intelligence</p>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-16T00:00:00Z",
+  "title": "Design System: Sivlo Marketing Landing",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Cobalt Note", "canonical": "oklch(48% 0.16 255)", "purpose": "Primary action, live proof, device boundary. The only chroma on the page.", "tonalRamp": ["oklch(78% 0.10 255)", "oklch(71% 0.12 255)", "oklch(65% 0.14 255)", "oklch(58% 0.16 255)", "oklch(52% 0.16 255)", "oklch(46% 0.16 255)", "oklch(39% 0.14 255)", "oklch(33% 0.12 255)"] },
+      "cobalt-deep": { "role": "primary", "displayName": "Cobalt Note (deep)", "canonical": "oklch(42% 0.15 255)", "purpose": "Primary button hover state.", "tonalRamp": ["oklch(78% 0.10 255)", "oklch(70% 0.12 255)", "oklch(62% 0.13 255)", "oklch(54% 0.15 255)", "oklch(46% 0.14 255)", "oklch(39% 0.13 255)", "oklch(32% 0.11 255)", "oklch(26% 0.10 255)"] },
+      "paper": { "role": "neutral", "displayName": "Warm Paper", "canonical": "oklch(95% 0.012 80)", "purpose": "Page ground.", "tonalRamp": ["oklch(99% 0.008 80)", "oklch(98% 0.009 80)", "oklch(97% 0.010 80)", "oklch(96% 0.011 80)", "oklch(94% 0.012 80)", "oklch(91% 0.013 80)", "oklch(87% 0.015 80)", "oklch(82% 0.018 80)"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(18% 0.012 80)", "purpose": "Text, baseline rules, strong ledger rules.", "tonalRamp": ["oklch(80% 0.006 80)", "oklch(68% 0.008 80)", "oklch(55% 0.010 80)", "oklch(43% 0.012 80)", "oklch(33% 0.013 80)", "oklch(26% 0.013 80)", "oklch(20% 0.012 80)", "oklch(14% 0.010 80)"] },
+      "ink-faint": { "role": "neutral", "displayName": "Faint Ink", "canonical": "oklch(48% 0.010 80)", "purpose": "Mono coordinates and captions.", "tonalRamp": ["oklch(80% 0.006 80)", "oklch(70% 0.008 80)", "oklch(60% 0.009 80)", "oklch(52% 0.010 80)", "oklch(44% 0.011 80)", "oklch(36% 0.011 80)", "oklch(28% 0.011 80)", "oklch(20% 0.010 80)"] },
+      "rule": { "role": "neutral", "displayName": "Hairline", "canonical": "oklch(88% 0.008 80)", "purpose": "Internal ruled lines and frames.", "tonalRamp": ["oklch(95% 0.006 80)", "oklch(92% 0.007 80)", "oklch(89% 0.008 80)", "oklch(86% 0.009 80)", "oklch(82% 0.009 80)", "oklch(77% 0.010 80)", "oklch(71% 0.011 80)", "oklch(64% 0.012 80)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Specimen Display", "purpose": "The brand word at awe scale, weight driven 450-800 by scroll." },
+      "headline": { "displayName": "Headline", "purpose": "Tagline hero and section titles; never beneath an eyebrow." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "rule-draw", "value": "specimen__rule scaleX 0→1, transform-origin left, 1.2s cubic-bezier(0.2,0.7,0.2,1), 0.1s delay", "purpose": "The single entrance moment: the baseline rule draws beneath the brand word." },
+      { "name": "opacity-reveal", "value": "opacity 0→1, 0.9s cubic-bezier(0.2,0.7,0.2,1), IntersectionObserver", "purpose": "The only scroll reveal; pure opacity, settles once." },
+      { "name": "variable-weight", "value": "fontWeight 450→800 mapped to scrollY / (0.55 * viewportHeight), rAF-throttled", "purpose": "The signature interaction: the brand word gains reading weight as it scrolls past." },
+      { "name": "live-pulse", "value": "privacy mark opacity 1→0.25→1, 3s", "purpose": "Quiet proof that the privacy certificate is live." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "900px" },
+      { "name": "sm", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single cobalt action on the page; sentence case, 6px radius.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Download the macOS beta <span>→</span></a>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:10px;background:#1d5fd0;color:#fff;text-decoration:none;font-family:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;font-weight:500;font-size:15px;letter-spacing:-0.01em;padding:16px 24px;border-radius:6px;transition:background .2s cubic-bezier(.2,.7,.2,1),transform .2s cubic-bezier(.2,.7,.2,1)}.ds-btn-primary:hover{background:#1749a6;transform:translateY(-1px)}.ds-btn-primary:focus-visible{outline:2px solid #1d5fd0;outline-offset:3px}.ds-btn-primary span{font-family:'IBM Plex Mono',monospace}"
+    },
+    {
+      "name": "Proof Ledger",
+      "kind": "custom",
+      "refersTo": "proof-data",
+      "description": "A ruled five-cell data row; the live cell (0 uploads) is cobalt.",
+      "html": "<dl class=\"ds-proof\"><div><dt>REC</dt><dd>48 kHz · mic + system</dd></div><div><dt class=\"live\">NET</dt><dd class=\"live\">0 uploads · ever</dd></div></dl>",
+      "css": ".ds-proof{margin:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #1b1915;border-bottom:1px solid #ddd7c9}.ds-proof>div{padding:20px 20px 20px 0;border-right:1px solid #ddd7c9}.ds-proof>div:last-child{border-right:0}.ds-proof dt{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;color:#6e6659}.ds-proof dd{margin:8px 0 0;font-family:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:500;line-height:1.4}.ds-proof .live{color:#1d5fd0}"
+    },
+    {
+      "name": "Figure Plate",
+      "kind": "card",
+      "refersTo": "figure-plate",
+      "description": "Raised-paper sheet inside a 1px hairline frame with a mono coordinate caption.",
+      "html": "<figure class=\"ds-plate\"><figcaption>fig. 02 — live transcription</figcaption><div class=\"ds-plate__frame\"><img src=\"shot-transcription@1200.webp\" alt=\"\"></div></figure>",
+      "css": ".ds-plate{margin:0}.ds-plate figcaption{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#6e6659;margin-bottom:20px}.ds-plate__frame{border:1px solid #ddd7c9;background:#fbfaf6;overflow:hidden}.ds-plate__frame img{display:block;width:100%;height:auto}.ds-plate__frame:hover{border-color:#c9c3b2}"
+    },
+    {
+      "name": "Feature Ledger Row",
+      "kind": "custom",
+      "refersTo": "ledger-row",
+      "description": "Ruled row, two balanced tracks on desktop: measured mono datum rail plus body (name, description, mono cross-reference to its evidence figure); hover tints datum and reference cobalt.",
+      "html": "<ol class=\"ds-ledger\"><li><p class=\"d\">48 kHz</p><div><h3>Capture that hears your meeting.</h3><p class=\"t\">Mic and system audio, ducked and mixed locally.</p><a href=\"#fig-local\">fig. 00 · mechanism</a></div></li></ol>",
+      "css": ".ds-ledger{list-style:none;margin:0;padding:0;border-top:1px solid #1b1915}.ds-ledger li{display:grid;grid-template-columns:minmax(136px,176px) 1fr;column-gap:clamp(36px,5vw,68px);padding:clamp(44px,6vh,64px) 0;border-bottom:1px solid #ddd7c9}.ds-ledger .d{margin:8px 0 0;font-family:'IBM Plex Mono',monospace;font-size:clamp(16px,1.3vw,20px);font-weight:500;color:#1b1915}.ds-ledger div{min-width:0}.ds-ledger h3{margin:0;max-width:26ch;font-family:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:clamp(22px,2.6vw,28px);line-height:1.15;letter-spacing:-0.015em}.ds-ledger .t{margin:14px 0 0;max-width:62ch;color:#55514a;font-size:clamp(15px,1.1vw,16px);line-height:1.65}.ds-ledger a{display:inline-block;margin-top:26px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#6e6659;text-decoration:none;border-bottom:1px solid #ddd7c9;padding-bottom:2px;transition:color .2s cubic-bezier(.2,.7,.2,1),border-color .2s cubic-bezier(.2,.7,.2,1)}.ds-ledger li:hover .d{color:#1d5fd0}.ds-ledger a:hover{color:#1d5fd0;border-color:#1d5fd0}"
+    },
+    {
+      "name": "Topbar Action",
+      "kind": "nav",
+      "refersTo": "topbar-action",
+      "description": "Bordered ink button in the sticky paper bar; hover lifts border, color, and a 5% cobalt tint.",
+      "html": "<a class=\"ds-btn\" href=\"#\">Download</a>",
+      "css": ".ds-btn{display:inline-block;font-family:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;font-weight:500;font-size:13px;line-height:1;color:#1b1915;text-decoration:none;border:1px solid #1b1915;padding:8px 14px;transition:border-color .2s cubic-bezier(.2,.7,.2,1),color .2s cubic-bezier(.2,.7,.2,1),background-color .2s cubic-bezier(.2,.7,.2,1)}.ds-btn:hover{border-color:#1d5fd0;color:#1d5fd0;background-color:rgba(29,95,208,.05)}.ds-btn:focus-visible{outline:2px solid #1d5fd0;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Measured Specimen",
+    "overview": "The landing page is a type specimen of the product name set on paper. The word sivlo is the subject of the page, rendered at awe scale in a variable editorial grotesque, measured the way a foundry measures type: hairlines, baseline rules, and mono coordinates. The world is quiet, warm, and precise — premium by restraint. Warm paper is the ground, deep ink is the only voice, and a single cobalt note is reserved for the live action and the boundary of the user's own device. Nothing floats, nothing glows; structure comes from ruled lines, not panels.",
+    "keyCharacteristics": [
+      "Paper as ground; ink as voice; hairlines as the only ornament.",
+      "One cobalt note (primary action, 'your device' boundary, live proof) per screen, never more.",
+      "All data spoken in IBM Plex Mono coordinates at 11px uppercase.",
+      "Awe-scale display type capped at 6rem; tight tracking; never gradient or outlined.",
+      "Flat by default; depth is suggested by ruled plates, never shadows."
+    ],
+    "rules": [
+      { "name": "The One Note Rule", "body": "Cobalt appears on ≤15% of any given screen, and only where the product acts or proves itself. Rarity is the point.", "section": "colors" },
+      { "name": "The Measured Label Rule", "body": "Mono is never costume: every mono line names a real measurement or datum. If it is not data, it does not wear mono.", "section": "typography" },
+      { "name": "The No-Kicker Rule", "body": "Nothing sits above a heading. A heading carries its own weight.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. No shadow, no glow, no blur washes on content; hover moves the button one pixel and deepens the cobalt.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do build every structure from hairlines — strong rules only where a ledger begins or ends.",
+      "Do set every measurement in IBM Plex Mono uppercase at 11px with +.05em tracking.",
+      "Do keep the cobalt to one note per screen: the action or the proof.",
+      "Do use the variable weight of Schibsted Grotesk for the brand word (live 450-800) and never read below 450 while visible.",
+      "Do fade sections with opacity alone, settle, then ship.",
+      "Do prefer commas and periods; the copy voice is measured, not hyphenated."
+    ],
+    "donts": [
+      "Don't use cards, soft-shadow panels, or rounded containers — the ledger and the plate are the only two shapes.",
+      "Don't place an eyebrow, kicker, or section number above a heading.",
+      "Don't use gradient text, emoji, glyph icons, or a system display face; the word is set in Schibsted Grotesk only.",
+      "Don't let the accent exceed one cobalt decision per screen.",
+      "Don't ship stat-tile metrics; a single quiet '0 uploads' certificate carries the proof."
+    ]
+  }
+}
