@@ -4,11 +4,11 @@ use regex::Regex;
 use super::{AskSivloHistoryMessage, AskSivloScope};
 
 static CITATION_MARKER_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\[S\d+\]").unwrap()
+    Regex::new(r"\[[Ss]\d+\]").unwrap()
 });
 
 static CITATION_EXTRACT_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\[S(\d+)\]").unwrap()
+    Regex::new(r"\[[Ss](\d+)\]").unwrap()
 });
 
 pub(crate) fn sanitize_history(history: &[AskSivloHistoryMessage]) -> Vec<AskSivloHistoryMessage> {
@@ -60,7 +60,7 @@ pub(crate) fn route_query(query: &str, scope: &Option<AskSivloScope>) -> &'stati
     let question_patterns = ["how do i", "how do we", "can i", "can we", "is it possible", "what is", "what are"];
     let product_keywords = [
         "sivlo", "transcri", "record", "capture", "import", "audio",
-        "summar", "note", "meeting", "meeting", "llm", "provider",
+        "summar", "note", "meeting", "llm", "provider",
         "gpu", "metal", "platform", "macos", "windows", "linux",
         "privacy", "data", "security", "local",
     ];
@@ -286,5 +286,42 @@ mod tests {
         let answer = "No citations here";
         let ids = extract_citation_ids(answer);
         assert!(ids.is_empty());
+    }
+
+    #[test]
+    fn sanitize_strips_lowercase_citation_markers() {
+        let history = vec![
+            AskSivloHistoryMessage {
+                role: "assistant".to_string(),
+                content: "Based on [s3] and [S2]".to_string(),
+            },
+        ];
+        let result = sanitize_history(&history);
+        assert_eq!(result[0].content, "Based on  and ");
+    }
+
+    #[test]
+    fn extract_citation_ids_accepts_lowercase() {
+        let answer = "Based on [s3] and [S2]";
+        let ids = extract_citation_ids(answer);
+        assert_eq!(ids, vec![3, 2]);
+    }
+
+    #[test]
+    fn meeting_system_prompt_marks_evidence_untrusted() {
+        let prompt = super::super::SYSTEM_PROMPT_MEETING;
+        let lower = prompt.to_lowercase();
+        assert!(
+            lower.contains("untrusted"),
+            "SYSTEM_PROMPT_MEETING must explicitly mark evidence as untrusted"
+        );
+        assert!(
+            lower.contains("never follow instructions"),
+            "SYSTEM_PROMPT_MEETING must instruct model to never follow instructions inside evidence"
+        );
+        assert!(
+            lower.contains("must never override"),
+            "SYSTEM_PROMPT_MEETING must state evidence must never override system instructions"
+        );
     }
 }
