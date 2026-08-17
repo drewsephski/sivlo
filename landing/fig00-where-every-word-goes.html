@@ -8,16 +8,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* Hallmark · component: pipeline-diagram · genre: editorial · theme: existing locked system (paper/ink/accent-blue)
+     * states: default · hover · focus · active · loading · error · success
+     * contrast: pass */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow-x: clip; }
     :root {
       --color-paper: #f5f2ec;
       --color-raised: #fbfaf6;
+      --color-node: #f4f1e9;
       --color-ink: #1b1915;
       --color-ink-soft: #55514a;
       --color-ink-faint: #6e6659;
       --color-rule: #ddd7c9;
+      --color-rule-soft: #e7e2d5;
       --color-accent: #1d5fd0;
       --color-accent-deep: #1749a6;
+      --color-accent-glow: rgba(29, 95, 208, 0.18);
+      --color-shadow: rgba(27, 25, 21, 0.10);
+      --color-shadow-strong: rgba(27, 25, 21, 0.18);
       --font-sans: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
       --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
     }
@@ -31,7 +40,8 @@
       justify-content: center;
       padding: clamp(2rem, 5vw, 4rem) 1.5rem;
     }
-    .frame { max-width: 1180px; width: 100%; }
+    ::selection { background: var(--color-accent); color: var(--color-raised); }
+    .frame { max-width: 1240px; width: 100%; }
     .eyebrow {
       font-family: var(--font-mono);
       font-size: 0.75rem;
@@ -56,12 +66,276 @@
       line-height: 1.6;
       margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
     }
+
+    /* ── figure frame ─────────────────────────────────────────────── */
     .diagram-wrap {
+      position: relative;
       border: 1px solid var(--color-rule);
-      border-radius: 2px;
+      border-radius: 14px;
       background: var(--color-paper);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 1px 2px -1px rgba(27, 25, 21, 0.12),
+        0 24px 48px -32px rgba(27, 25, 21, 0.35);
+      overflow: hidden;
     }
-    svg { width: 100%; min-width: 900px; display: block; }
+    .diagram-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.5;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.05'/></svg>");
+    }
+    .fig-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--color-rule);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-ink-faint);
+    }
+    .fig-status { display: flex; align-items: center; gap: 7px; color: var(--color-ink-soft); }
+    .fig-status .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--color-accent);
+      animation: statusPulse 2.6s ease-out infinite;
+    }
+    @keyframes statusPulse {
+      0% { box-shadow: 0 0 0 0 rgba(29, 95, 208, 0.35); }
+      70% { box-shadow: 0 0 0 7px rgba(29, 95, 208, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(29, 95, 208, 0); }
+    }
+    .fig-scroll { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .fig-scroll svg {
+      display: block;
+      width: 100%;
+      min-width: 1120px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .fig-scroll::-webkit-scrollbar { height: 8px; }
+    .fig-scroll::-webkit-scrollbar-track { background: transparent; }
+    .fig-scroll::-webkit-scrollbar-thumb { background: var(--color-rule); border-radius: 4px; }
+    .fig-scroll::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
+    .fig-scroll-hint {
+      position: absolute;
+      top: 10px; right: 10px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--color-rule);
+      background: var(--color-raised);
+      box-shadow: 0 4px 12px -6px rgba(27, 25, 21, 0.25);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      color: var(--color-ink-soft);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .fig-bottombar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px 16px;
+      flex-wrap: wrap;
+      padding: 10px 18px;
+      border-top: 1px solid var(--color-rule);
+      background: linear-gradient(var(--color-raised), var(--color-paper));
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--color-ink-faint);
+    }
+    .fig-hint {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border: 1px solid var(--color-rule);
+      border-radius: 999px;
+      color: var(--color-ink-soft);
+      background: var(--color-raised);
+    }
+    .fig-tooltip {
+      position: absolute;
+      z-index: 6;
+      pointer-events: none;
+      max-width: 264px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--color-rule);
+      background: var(--color-raised);
+      box-shadow:
+        0 12px 28px -14px rgba(27, 25, 21, 0.4),
+        0 2px 6px -2px rgba(27, 25, 21, 0.14);
+      opacity: 0;
+      transform: translateY(5px);
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+    .fig-tooltip.show { opacity: 1; transform: translateY(0); }
+    .fig-tooltip .tt-title {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent-deep);
+      margin-bottom: 3px;
+    }
+    .fig-tooltip .tt-sub {
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      color: var(--color-ink-soft);
+      line-height: 1.45;
+    }
+
+    @media (max-width: 900px) { .fig-scroll-hint { display: flex; } }
+
+    /* ── SVG ──────────────────────────────────────────────────────── */
+    svg text { font-family: var(--font-sans); }
+    .bg { fill: var(--color-paper); }
+    .boundary {
+      fill: none;
+      stroke: rgba(27, 25, 21, 0.35);
+      stroke-width: 1;
+      stroke-dasharray: 6 5;
+    }
+    .hatch-rect { fill: url(#hatch); }
+    .hatch-line { stroke: var(--color-ink); stroke-opacity: 0.04; stroke-width: 1; }
+
+    .marker-sq { fill: var(--color-accent); }
+    .boundary-label { font: 600 23px var(--font-sans); letter-spacing: 0.1em; fill: var(--color-ink); }
+    .boundary-sub { font: 500 15px var(--font-mono); fill: var(--color-ink-faint); }
+
+    .readout { font: 500 18px var(--font-mono); fill: var(--color-ink-faint); letter-spacing: 0.02em; }
+    .flow-arrow { font: 400 18px var(--font-mono); fill: var(--color-ink-faint); opacity: 0.7; }
+    .flow-word { transition: fill 0.18s ease; }
+    .flow-word.is-active { fill: var(--color-accent); }
+    .flow-underline { fill: var(--color-accent); opacity: 0; transition: opacity 0.18s ease; }
+    .flow-word.is-active + .flow-underline { opacity: 1; }
+    .ping { fill: var(--color-accent); }
+    .ping-halo {
+      fill: none;
+      stroke: var(--color-accent);
+      stroke-width: 1.5;
+      opacity: 0.5;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: ping 2.6s ease-out infinite;
+    }
+    @keyframes ping {
+      0% { transform: scale(0.6); opacity: 0.6; }
+      75% { transform: scale(2.3); opacity: 0; }
+      100% { transform: scale(2.3); opacity: 0; }
+    }
+
+    .tag { font: 500 16px var(--font-mono); letter-spacing: 0.14em; fill: var(--color-ink-faint); }
+
+    .flow-line {
+      fill: none;
+      stroke: var(--color-ink-soft);
+      stroke-width: 1.4;
+      stroke-linecap: round;
+      stroke-dasharray: 4 8;
+      animation: dashflow 1.4s linear infinite;
+      transition: stroke-opacity 0.2s ease;
+    }
+    .flow-line--accent { stroke: var(--color-accent); }
+    @keyframes dashflow { to { stroke-dashoffset: -12; } }
+    .connector-drop {
+      fill: none;
+      stroke: var(--color-ink-faint);
+      stroke-width: 1;
+      stroke-dasharray: 4 6;
+    }
+    svg.has-hover .flow-line { stroke-opacity: 0.45; }
+
+    #arrow polygon { fill: var(--color-ink-soft); }
+    #arrow-accent polygon { fill: var(--color-accent); }
+
+    .node {
+      cursor: default;
+      transition: transform 0.22s ease, opacity 0.22s ease;
+      will-change: transform;
+    }
+    .node:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+    svg.has-hover .node { opacity: 0.32; }
+    svg.has-hover .node.is-hovered { opacity: 1; transform: translateY(-3px); }
+    .node-rect {
+      filter: drop-shadow(0 2px 3px var(--color-shadow));
+      transition: filter 0.22s ease;
+    }
+    .node.is-hovered .node-rect { filter: drop-shadow(0 8px 14px -4px var(--color-shadow-strong)); }
+    .node-rect--node { fill: var(--color-node); stroke: var(--color-rule); stroke-width: 1; }
+    .node-rect--ink { fill: var(--color-ink); stroke: var(--color-ink); stroke-width: 1; }
+    .node-rect--accent { fill: var(--color-accent); stroke: var(--color-accent-deep); stroke-width: 1.2; }
+    .node-rect--raised { fill: var(--color-raised); stroke: var(--color-ink); stroke-width: 1.2; }
+    .node-rect--memory { fill: var(--color-node); stroke: var(--color-rule); stroke-width: 1; }
+    .node-rect--pill {
+      fill: var(--color-accent);
+      stroke: var(--color-accent-deep);
+      stroke-width: 1.2;
+      filter: drop-shadow(0 4px 10px var(--color-accent-glow));
+      animation: sealPulse 3.2s ease-in-out infinite;
+    }
+    @keyframes sealPulse {
+      0%, 100% { filter: drop-shadow(0 4px 8px var(--color-shadow)); }
+      50% { filter: drop-shadow(0 4px 18px var(--color-accent-glow)); }
+    }
+    .node-label { font: 600 22px var(--font-sans); }
+    .node-label--light { fill: #ffffff; }
+    .node-label--dark { fill: var(--color-ink); }
+    .node-sub { font: 400 16px var(--font-mono); }
+    .node-sub--light { fill: rgba(255, 255, 255, 0.78); }
+    .node-sub--dark { fill: var(--color-ink-faint); }
+
+    .memory-bar { fill: var(--color-accent); }
+    .memory-item { font: 400 16px var(--font-mono); fill: var(--color-ink-soft); }
+
+    .lock-body { fill: #ffffff; opacity: 0.95; }
+    .lock-shackle { fill: none; stroke: #ffffff; stroke-width: 1.6; stroke-linecap: round; }
+    .seal-caption { font: 400 16px var(--font-mono); fill: var(--color-ink-faint); }
+
+    .xline { stroke: var(--color-ink); stroke-width: 2; stroke-linecap: round; }
+    .caption-zone { font: 500 15px var(--font-mono); fill: var(--color-ink-soft); }
+
+    .cloud-capsule { fill: var(--color-raised); stroke: var(--color-ink-faint); stroke-dasharray: 5 5; stroke-width: 1; }
+    .cloud-glyph { fill: var(--color-ink); opacity: 0.22; }
+    .cloud-text { font: 500 15px var(--font-mono); fill: var(--color-ink-soft); }
+    .cloud-text--faint { font: 500 14px var(--font-mono); fill: var(--color-ink-faint); }
+
+    .flow-dot { fill: var(--color-accent); }
+    .flow-dot-glow { fill: var(--color-accent); opacity: 0.3; }
+
+    /* ── entrance ─────────────────────────────────────────────────── */
+    .anim-boundary { animation: rise 0.6s ease-out 0.05s backwards; }
+    .anim-readout { animation: rise 0.5s ease-out 0.12s backwards; }
+    .anim-tag { animation: rise 0.45s ease-out backwards; }
+    .anim-node { animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) backwards; }
+    .anim-line { animation: rise 0.4s ease-out backwards; }
+    .anim-cloud { animation: rise 0.5s ease-out 0.9s backwards; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .flow-line { stroke-dasharray: 4 8; animation: none; }
+      .node-rect--pill { filter: drop-shadow(0 4px 8px var(--color-shadow)); }
+    }
   </style>
 </head>
 <body>
@@ -73,81 +347,241 @@
       transcribe on-device, with nothing ever leaving the boundary.
     </p>
 
-    <figure class="diagram-wrap">
-      <svg viewBox="0 0 1560 740" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sivlo-pipeline-title sivlo-pipeline-desc">
-        <title id="sivlo-pipeline-title">Where every word goes — the Sivlo local pipeline</title>
-        <desc id="sivlo-pipeline-desc">A left-to-right pipeline inside a dashed YOUR MAC boundary. 01 capture — Mic and System audio — feeds 02 mix (Mixer · 48 kHz), which forks into 03 transcribe (Whisper · on-device, cobalt) and 04 record (Recording · saved locally); both lanes drop into 05 remember, the working memory holding transcript, summary, actions and notes. Below the memory, a dotted connector drops to a cobalt 0 uploads seal with the lines no account · no telemetry and offline by design. An X on the boundary edge reads nothing crosses this line, and the cloud sits outside the frame labeled never involved.</desc>
-        <defs>
-          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#55514a"/></marker>
-          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1d5fd0"/></marker>
-        </defs>
+    <figure class="diagram-wrap" id="figWrap">
+      <div class="fig-topbar">
+        <span>the local pipeline</span>
+        <span class="fig-status"><span class="dot" aria-hidden="true"></span>local only &middot; nothing leaves</span>
+      </div>
 
-        <rect width="100%" height="100%" fill="#f5f2ec"/>
+      <div class="fig-scroll">
+        <span class="fig-scroll-hint">scroll &rarr;</span>
 
-        <!-- top mono caption -->
-        <text x="728" y="76" text-anchor="middle" fill="#6e6659" font-size="20" font-family="'IBM Plex Mono', monospace" letter-spacing="0.06em">capture &nbsp;→&nbsp; mix &nbsp;→&nbsp; transcribe &nbsp;→&nbsp; remember</text>
+        <svg id="sivlo-pipeline" viewBox="0 0 1720 780" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sivlo-pipeline-title sivlo-pipeline-desc">
+          <title id="sivlo-pipeline-title">Where every word goes — the Sivlo local pipeline</title>
+          <desc id="sivlo-pipeline-desc">A left-to-right pipeline inside a dashed YOUR MAC boundary. 01 capture — Mic and System audio — feeds 02 mix (Mixer · 48 kHz), which forks into 03 transcribe (Whisper · on-device) and 04 record (Recording · saved locally); both lanes drop into 05 remember, the working memory holding transcript, summary, actions and notes. Below the memory, a dotted connector drops to a cobalt 0 uploads seal with the lines no account · no telemetry and offline by design. An X on the boundary edge reads nothing crosses this line, and the cloud sits outside the frame labeled never involved.</desc>
 
-        <!-- trust boundary -->
-        <rect x="56" y="100" width="1344" height="600" rx="8" fill="none" stroke="rgba(27,25,21,0.40)" stroke-width="1" stroke-dasharray="5 4"/>
-        <text x="84" y="140" fill="#1b1915" font-size="24" font-weight="600" font-family="'Schibsted Grotesk', sans-serif" letter-spacing="0.08em">YOUR MAC</text>
-        <text x="84" y="172" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">everything below happens on this device</text>
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6"/></marker>
+            <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6"/></marker>
+            <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="10" height="10" fill="none"/>
+              <line class="hatch-line" x1="0" y1="0" x2="0" y2="10"/>
+            </pattern>
+          </defs>
 
-        <!-- arrows -->
-        <line x1="264" y1="344" x2="352" y2="344" stroke="#55514a" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <line x1="264" y1="488" x2="352" y2="488" stroke="#55514a" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <path d="M576,360 H644 Q652,360 652,352 V272 Q652,264 660,264 H728" fill="none" stroke="#1d5fd0" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
-        <path d="M576,504 H644 Q652,504 652,512 V560 Q652,568 660,568 H728" fill="none" stroke="#55514a" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <path d="M960,264 H1020 Q1028,264 1028,272 V344 Q1028,352 1036,352 H1096" fill="none" stroke="#55514a" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <path d="M960,584 H1020 Q1028,584 1028,576 V496 Q1028,488 1036,488 H1096" fill="none" stroke="#55514a" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <line x1="1220" y1="528" x2="1220" y2="568" stroke="#6e6659" stroke-width="1" stroke-dasharray="4 4"/>
+          <rect class="bg" width="100%" height="100%"/>
 
-        <!-- stage tags -->
-        <text x="92" y="288" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace" letter-spacing="0.08em">01&nbsp;·&nbsp;capture</text>
-        <text x="356" y="312" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace" letter-spacing="0.08em">02&nbsp;·&nbsp;mix</text>
-        <text x="732" y="208" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace" letter-spacing="0.08em">03&nbsp;·&nbsp;transcribe</text>
-        <text x="732" y="512" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace" letter-spacing="0.08em">04&nbsp;·&nbsp;record</text>
-        <text x="1120" y="356" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace" letter-spacing="0.08em">05&nbsp;·&nbsp;remember</text>
+          <!-- the restricted zone -->
+          <rect class="hatch-rect" x="1240" y="118" width="296" height="244"/>
 
-        <!-- nodes -->
-        <rect x="88" y="296" width="176" height="96" rx="6" fill="#ece8de" stroke="#6e6659" stroke-width="1"/>
-        <text x="176" y="352" text-anchor="middle" fill="#1b1915" font-size="20" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">Mic</text>
+          <!-- trust boundary -->
+          <rect class="boundary anim-boundary" x="64" y="118" width="1472" height="560" rx="12"/>
+          <rect class="marker-sq anim-boundary" x="88" y="142" width="10" height="10"/>
+          <text class="boundary-label anim-boundary" x="110" y="152">YOUR MAC</text>
+          <text class="boundary-sub anim-boundary" x="110" y="178">everything below happens on this device</text>
 
-        <rect x="88" y="440" width="176" height="96" rx="6" fill="#ece8de" stroke="#6e6659" stroke-width="1"/>
-        <text x="176" y="496" text-anchor="middle" fill="#1b1915" font-size="20" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">System audio</text>
+          <!-- top flow readout -->
+          <g class="anim-readout">
+            <circle class="ping" cx="572" cy="163" r="4"/>
+            <circle class="ping-halo" cx="572" cy="163" r="4"/>
+            <text class="readout" x="632" y="166">capture</text>
+            <rect class="flow-underline" x="596.5" y="180" width="71" height="2" rx="1"/>
+            <text class="flow-arrow" x="706" y="166" text-anchor="middle">&rarr;</text>
+            <text class="readout" x="772" y="166">mix</text>
+            <rect class="flow-underline" x="756.5" y="180" width="31" height="2" rx="1"/>
+            <text class="flow-arrow" x="842" y="166" text-anchor="middle">&rarr;</text>
+            <text class="readout" x="918" y="166">transcribe</text>
+            <rect class="flow-underline" x="867" y="180" width="102" height="2" rx="1"/>
+            <text class="flow-arrow" x="1032" y="166" text-anchor="middle">&rarr;</text>
+            <text class="readout" x="1108" y="166">remember</text>
+            <rect class="flow-underline" x="1067" y="180" width="82" height="2" rx="1"/>
+          </g>
 
-        <rect x="352" y="320" width="224" height="192" rx="6" fill="#1b1915" stroke="#1b1915" stroke-width="1"/>
-        <text x="464" y="424" text-anchor="middle" fill="#fbfaf6" font-size="20" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">Mixer</text>
-        <text x="464" y="452" text-anchor="middle" fill="rgba(251,250,246,0.72)" font-size="16" font-family="'IBM Plex Mono', monospace">48 kHz</text>
+          <!-- connectors -->
+          <line class="flow-line anim-line" x1="288" y1="342" x2="336" y2="342" marker-end="url(#arrow)" style="animation-delay: .5s"/>
+          <line class="flow-line anim-line" x1="288" y1="466" x2="336" y2="466" marker-end="url(#arrow)" style="animation-delay: .56s"/>
+          <path class="flow-line flow-line--accent anim-line" d="M568,360 H604 Q612,360 612,352 V320 Q612,312 620,312 H640" marker-end="url(#arrow-accent)" style="animation-delay: .62s"/>
+          <path class="flow-line anim-line" d="M568,452 H604 Q612,452 612,444 V464 Q612,472 620,472 H640" marker-end="url(#arrow)" style="animation-delay: .68s"/>
+          <line class="flow-line anim-line" x1="880" y1="320" x2="968" y2="320" marker-end="url(#arrow)" style="animation-delay: .74s"/>
+          <line class="flow-line anim-line" x1="880" y1="464" x2="968" y2="464" marker-end="url(#arrow)" style="animation-delay: .8s"/>
+          <line class="connector-drop anim-line" x1="1100" y1="480" x2="1100" y2="528" style="animation-delay: .86s"/>
 
-        <rect x="728" y="216" width="232" height="96" rx="6" fill="#1d5fd0" stroke="#1749a6" stroke-width="1.2"/>
-        <text x="844" y="272" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">Whisper</text>
-        <text x="844" y="300" text-anchor="middle" fill="rgba(255,255,255,0.78)" font-size="16" font-family="'IBM Plex Mono', monospace">on-device</text>
+          <!-- travelling flow light -->
+          <g class="anim-line" style="animation-delay: .9s">
+            <circle class="flow-dot-glow" r="8">
+              <animateMotion dur="4.5s" repeatCount="indefinite" begin="1.4s" rotate="0" media="(prefers-reduced-motion: no-preference)" path="M288,342 H336 V406 H568 V360 H604 Q612,360 612,352 V320 Q612,312 620,312 H640 V320 H880 H968 V388 H1100"/>
+            </circle>
+            <circle class="flow-dot" r="3.5">
+              <animateMotion dur="4.5s" repeatCount="indefinite" begin="1.4s" rotate="0" media="(prefers-reduced-motion: no-preference)" path="M288,342 H336 V406 H568 V360 H604 Q612,360 612,352 V320 Q612,312 620,312 H640 V320 H880 H968 V388 H1100"/>
+            </circle>
+          </g>
 
-        <rect x="728" y="520" width="232" height="96" rx="6" fill="#fbfaf6" stroke="#1b1915" stroke-width="1"/>
-        <text x="844" y="576" text-anchor="middle" fill="#1b1915" font-size="20" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">Recording</text>
-        <text x="844" y="604" text-anchor="middle" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">saved locally</text>
+          <!-- nothing crosses this line -->
+          <line class="xline anim-line" x1="1528" y1="300" x2="1544" y2="320" style="animation-delay: .7s"/>
+          <line class="xline anim-line" x1="1544" y1="300" x2="1528" y2="320" style="animation-delay: .7s"/>
+          <text class="caption-zone anim-line" x="1512" y="288" text-anchor="end" style="animation-delay: .7s">nothing crosses this line</text>
 
-        <rect x="1096" y="328" width="248" height="200" rx="6" fill="#eae7e1" stroke="#6e6659" stroke-width="1"/>
-        <text x="1220" y="392" text-anchor="middle" fill="#1b1915" font-size="20" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">Working memory</text>
-        <text x="1220" y="452" text-anchor="middle" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">transcript&nbsp;·&nbsp;summary</text>
-        <text x="1220" y="484" text-anchor="middle" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">actions&nbsp;·&nbsp;notes</text>
+          <!-- stage tags -->
+          <text class="tag anim-tag" x="188" y="268" text-anchor="middle" style="animation-delay: .18s">01 &middot; capture</text>
+          <text class="tag anim-tag" x="452" y="304" text-anchor="middle" style="animation-delay: .26s">02 &middot; mix</text>
+          <text class="tag anim-tag" x="760" y="250" text-anchor="middle" style="animation-delay: .34s">03 &middot; transcribe</text>
+          <text class="tag anim-tag" x="760" y="392" text-anchor="middle" style="animation-delay: .42s">04 &middot; record</text>
+          <text class="tag anim-tag" x="1100" y="270" text-anchor="middle" style="animation-delay: .5s">05 &middot; remember</text>
 
-        <rect x="1132" y="568" width="176" height="56" rx="28" fill="#1d5fd0" stroke="#1749a6" stroke-width="1.2"/>
-        <text x="1220" y="604" text-anchor="middle" fill="#ffffff" font-size="24" font-weight="600" font-family="'Schibsted Grotesk', sans-serif">0 uploads</text>
-        <text x="1220" y="648" text-anchor="middle" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">no account&nbsp;·&nbsp;no telemetry</text>
-        <text x="1220" y="680" text-anchor="middle" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">offline by design</text>
+          <!-- 01 capture -->
+          <g class="node anim-node" data-flow="capture" data-title="Mic" data-sub="captures your voice" tabindex="0" role="group" aria-label="Mic: captures your voice" style="animation-delay: .24s">
+            <rect class="node-rect node-rect--node" x="88" y="292" width="200" height="100" rx="8"/>
+            <text class="node-label node-label--dark" x="188" y="338" text-anchor="middle">Mic</text>
+            <text class="node-sub node-sub--dark" x="188" y="364" text-anchor="middle">your voice</text>
+          </g>
+          <g class="node anim-node" data-flow="capture" data-title="System audio" data-sub="captures the meeting audio" tabindex="0" role="group" aria-label="System audio: captures the meeting audio" style="animation-delay: .31s">
+            <rect class="node-rect node-rect--node" x="88" y="416" width="200" height="100" rx="8"/>
+            <text class="node-label node-label--dark" x="188" y="462" text-anchor="middle">System audio</text>
+            <text class="node-sub node-sub--dark" x="188" y="488" text-anchor="middle">meeting audio</text>
+          </g>
 
-        <!-- nothing crosses this line -->
-        <line x1="1392" y1="296" x2="1408" y2="320" stroke="#1b1915" stroke-width="2"/>
-        <line x1="1408" y1="296" x2="1392" y2="320" stroke="#1b1915" stroke-width="2"/>
-        <text x="1200" y="304" text-anchor="middle" fill="#55514a" font-size="16" font-family="'IBM Plex Mono', monospace">nothing crosses this line</text>
+          <!-- 02 mix -->
+          <g class="node anim-node" data-flow="mix" data-title="Mixer" data-sub="48 kHz &middot; RMS ducking keeps your voice clear" tabindex="0" role="group" aria-label="Mixer: 48 kHz, RMS ducking keeps your voice clear" style="animation-delay: .38s">
+            <rect class="node-rect node-rect--ink" x="336" y="330" width="232" height="152" rx="8"/>
+            <text class="node-label node-label--light" x="452" y="402" text-anchor="middle">Mixer</text>
+            <text class="node-sub node-sub--light" x="452" y="428" text-anchor="middle">48 kHz</text>
+          </g>
 
-        <!-- the cloud -->
-        <rect x="1436" y="320" width="116" height="88" rx="8" fill="#f3efe6" stroke="#c9c2b1" stroke-width="1"/>
-        <text x="1494" y="352" text-anchor="middle" fill="#55514a" font-size="16" font-family="'IBM Plex Mono', monospace">the cloud</text>
-        <text x="1494" y="388" text-anchor="middle" fill="#6e6659" font-size="16" font-family="'IBM Plex Mono', monospace">never involved</text>
-      </svg>
+          <!-- 03 transcribe -->
+          <g class="node anim-node" data-flow="transcribe" data-title="Whisper" data-sub="on-device transcription, GPU-accelerated" tabindex="0" role="group" aria-label="Whisper: on-device transcription, GPU-accelerated" style="animation-delay: .45s">
+            <rect class="node-rect node-rect--accent" x="640" y="276" width="240" height="88" rx="8"/>
+            <text class="node-label node-label--light" x="760" y="318" text-anchor="middle">Whisper</text>
+            <text class="node-sub node-sub--light" x="760" y="344" text-anchor="middle">on-device</text>
+          </g>
+
+          <!-- 04 record -->
+          <g class="node anim-node" data-flow="record" data-title="Recording" data-sub="saved locally to your Mac" tabindex="0" role="group" aria-label="Recording: saved locally to your Mac" style="animation-delay: .52s">
+            <rect class="node-rect node-rect--raised" x="640" y="420" width="240" height="88" rx="8"/>
+            <text class="node-label node-label--dark" x="760" y="460" text-anchor="middle">Recording</text>
+            <text class="node-sub node-sub--dark" x="760" y="486" text-anchor="middle">saved locally</text>
+          </g>
+
+          <!-- 05 remember -->
+          <g class="node anim-node" data-flow="remember" data-title="Working memory" data-sub="transcript &middot; summary &middot; actions &middot; notes" tabindex="0" role="group" aria-label="Working memory: transcript, summary, actions, notes" style="animation-delay: .59s">
+            <rect class="node-rect node-rect--memory" x="968" y="296" width="264" height="184" rx="8"/>
+            <rect class="memory-bar" x="980" y="296" width="4" height="184"/>
+            <text class="node-label node-label--dark" x="1002" y="340">Working memory</text>
+            <text class="memory-item" x="1002" y="416">transcript &middot; summary</text>
+            <text class="memory-item" x="1002" y="440">actions &middot; notes</text>
+          </g>
+
+          <!-- 0 uploads seal -->
+          <g class="node anim-node" data-title="0 uploads" data-sub="no account &middot; no telemetry &middot; offline by design" tabindex="0" role="group" aria-label="0 uploads: no account, no telemetry, offline by design" style="animation-delay: .78s">
+            <rect class="node-rect node-rect--pill" x="1016" y="528" width="168" height="56" rx="28"/>
+            <g aria-hidden="true">
+              <rect class="lock-body" x="1048" y="556" width="12" height="9" rx="1.5"/>
+              <path class="lock-shackle" d="M1050,556 V552 a4,4 0 0 1 8,0 V556"/>
+            </g>
+            <text class="node-label node-label--light" x="1108" y="568" text-anchor="middle" style="font-size: 26px">0 uploads</text>
+          </g>
+          <text class="seal-caption anim-node" x="1100" y="616" text-anchor="middle" style="animation-delay: .84s">no account &middot; no telemetry</text>
+          <text class="seal-caption anim-node" x="1100" y="646" text-anchor="middle" style="animation-delay: .9s">offline by design</text>
+
+          <!-- the cloud, outside -->
+          <g class="anim-cloud">
+            <rect class="cloud-capsule" x="1568" y="320" width="128" height="112" rx="14"/>
+            <g class="cloud-glyph">
+              <circle cx="1622" cy="352" r="8"/>
+              <circle cx="1631" cy="348" r="10"/>
+              <circle cx="1641" cy="353" r="8"/>
+              <rect x="1620" y="352" width="26" height="11" rx="5.5"/>
+            </g>
+          </g>
+          <g class="node anim-cloud" data-title="the cloud" data-sub="never involved &mdash; nothing crosses this line" tabindex="0" role="group" aria-label="The cloud: never involved, nothing crosses this line">
+            <text class="cloud-text" x="1632" y="400" text-anchor="middle">the cloud</text>
+            <text class="cloud-text--faint" x="1632" y="424" text-anchor="middle">never involved</text>
+          </g>
+        </svg>
+
+        <div class="fig-tooltip" id="figTooltip" role="status" aria-hidden="true">
+          <p class="tt-title"></p>
+          <p class="tt-sub"></p>
+        </div>
+      </div>
+
+      <figcaption class="fig-bottombar">
+        <span>all processing stays on this device</span>
+        <span class="fig-hint">hover / tap a stage to inspect</span>
+      </figcaption>
     </figure>
   </div>
+
+  <script>
+    (function () {
+      var svg = document.getElementById('sivlo-pipeline');
+      var wrap = document.getElementById('figWrap');
+      var scroll = wrap.querySelector('.fig-scroll');
+      var tooltip = document.getElementById('figTooltip');
+      var ttTitle = tooltip.querySelector('.tt-title');
+      var ttSub = tooltip.querySelector('.tt-sub');
+      var nodes = Array.prototype.slice.call(svg.querySelectorAll('.node'));
+      var words = Array.prototype.slice.call(svg.querySelectorAll('.flow-word'));
+      var activeEl = null;
+
+      function positionTip(el) {
+        var wrapRect = wrap.getBoundingClientRect();
+        var r = el.getBoundingClientRect();
+        tooltip.style.transform = 'none';
+        var tw = tooltip.offsetWidth;
+        var th = tooltip.offsetHeight;
+        var x = r.left - wrapRect.left + r.width / 2 - tw / 2;
+        x = Math.max(12, Math.min(x, wrapRect.width - tw - 12));
+        var y;
+        if (r.top - wrapRect.top - th - 14 < 0) {
+          y = r.bottom - wrapRect.top + 14;
+        } else {
+          y = r.top - wrapRect.top - th - 14;
+        }
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+      }
+
+      function showTip(el) {
+        activeEl = el;
+        ttTitle.textContent = el.getAttribute('data-title');
+        ttSub.innerHTML = el.getAttribute('data-sub');
+        tooltip.classList.add('show');
+        tooltip.setAttribute('aria-hidden', 'false');
+        positionTip(el);
+      }
+
+      function hideTip() {
+        activeEl = null;
+        tooltip.classList.remove('show');
+        tooltip.setAttribute('aria-hidden', 'true');
+      }
+
+      function setDim(el) {
+        svg.classList.add('has-hover');
+        nodes.forEach(function (n) { n.classList.toggle('is-hovered', n === el); });
+        words.forEach(function (w) { w.classList.toggle('is-active', w.getAttribute('data-flow') === el.getAttribute('data-flow')); });
+      }
+
+      function clearDim() {
+        svg.classList.remove('has-hover');
+        nodes.forEach(function (n) { n.classList.remove('is-hovered'); });
+        words.forEach(function (w) { w.classList.remove('is-active'); });
+      }
+
+      nodes.forEach(function (n) {
+        n.addEventListener('pointerenter', function () { showTip(n); setDim(n); });
+        n.addEventListener('pointerleave', function () { hideTip(); clearDim(); });
+        n.addEventListener('focus', function () { showTip(n); setDim(n); });
+        n.addEventListener('blur', function () { hideTip(); clearDim(); });
+        n.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') { hideTip(); clearDim(); n.blur(); }
+        });
+      });
+
+      svg.addEventListener('pointerleave', function () { hideTip(); clearDim(); });
+      scroll.addEventListener('scroll', function () { if (activeEl) positionTip(activeEl); });
+      window.addEventListener('resize', function () { if (activeEl) positionTip(activeEl); });
+    })();
+  </script>
 </body>
 </html>
