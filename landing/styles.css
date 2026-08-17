@@ -670,12 +670,15 @@ a {
 }
 #fig-local svg.has-hover .node.is-hovered {
     opacity: 1;
-    transform: translateY(-3px) scale(1.02);
+    transform: translateY(-1px);
+}
+#fig-local .anim-cloud.is-hovered {
+    transform: none;
 }
 #fig-local .node.is-hovered .node-rect {
     stroke: var(--color-accent);
     stroke-width: 1.6;
-    filter: drop-shadow(0 8px 14px -4px var(--color-shadow-strong));
+    filter: drop-shadow(0 4px 10px -6px var(--color-shadow-strong));
 }
 #fig-local .node.is-hovered .node-rect--accent,
 #fig-local .node.is-hovered .node-rect--pill {
@@ -770,6 +773,11 @@ a {
     stroke: var(--color-ink-faint);
     stroke-dasharray: 5 5;
     stroke-width: 1;
+}
+#fig-local .anim-cloud.is-hovered .cloud-capsule {
+    stroke: var(--color-accent);
+    stroke-width: 1.4;
+    filter: drop-shadow(0 4px 10px -6px var(--color-shadow-strong));
 }
 #fig-local .cloud-glyph {
     fill: var(--color-ink);

@@ -163,26 +163,8 @@ FORM: interactive type specimen — the page as an index of figures.
                                 viewBox="0 0 1720 780"
                                 xmlns="http://www.w3.org/2000/svg"
                                 role="img"
-                                aria-labelledby="sivlo-pipeline-title sivlo-pipeline-desc"
+                                aria-label="Where every word goes — the Sivlo local pipeline. A left-to-right pipeline inside a dashed YOUR MAC boundary. 01 capture — Mic and System audio — feeds 02 mix (Mixer · 48 kHz), which forks into 03 transcribe (Whisper · on-device) and 04 record (Recording · saved locally); both lanes drop into 05 remember, the working memory holding transcript, summary, actions and notes. Below the memory, a dotted connector drops to a cobalt 0 uploads seal with the lines no account · no telemetry and offline by design. An X on the boundary edge reads nothing crosses this line, and the cloud sits outside the frame labeled never involved."
                             >
-                                <title id="sivlo-pipeline-title"
-                                    >Where every word goes — the Sivlo local
-                                    pipeline</title
-                                >
-                                <desc id="sivlo-pipeline-desc"
-                                    >A left-to-right pipeline inside a dashed YOUR
-                                    MAC boundary. 01 capture — Mic and System audio —
-                                    feeds 02 mix (Mixer · 48 kHz), which forks into
-                                    03 transcribe (Whisper · on-device) and 04 record
-                                    (Recording · saved locally); both lanes drop into
-                                    05 remember, the working memory holding transcript,
-                                    summary, actions and notes. Below the memory, a
-                                    dotted connector drops to a cobalt 0 uploads seal
-                                    with the lines no account · no telemetry and
-                                    offline by design. An X on the boundary edge reads
-                                    nothing crosses this line, and the cloud sits
-                                    outside the frame labeled never involved.</desc
-                                >
 
                                 <defs>
                                     <marker
@@ -261,16 +243,16 @@ FORM: interactive type specimen — the page as an index of figures.
                                 <g class="anim-readout">
                                     <circle class="ping" cx="572" cy="163" r="4"/>
                                     <circle class="ping-halo" cx="572" cy="163" r="4"/>
-                                    <text class="readout flow-word" data-flow="capture" x="632" y="166">capture</text>
+                                    <text class="readout flow-word" data-flow="capture" x="632" y="166" text-anchor="middle">capture</text>
                                     <rect class="flow-underline" x="596.5" y="180" width="71" height="2" rx="1"/>
-                                    <text class="flow-arrow" x="706" y="166" text-anchor="middle">&rarr;</text>
-                                    <text class="readout flow-word" data-flow="mix" x="772" y="166">mix</text>
+                                    <text class="flow-arrow" x="713" y="166" text-anchor="middle">&rarr;</text>
+                                    <text class="readout flow-word" data-flow="mix" x="772" y="166" text-anchor="middle">mix</text>
                                     <rect class="flow-underline" x="756.5" y="180" width="31" height="2" rx="1"/>
-                                    <text class="flow-arrow" x="842" y="166" text-anchor="middle">&rarr;</text>
-                                    <text class="readout flow-word" data-flow="transcribe" x="918" y="166">transcribe</text>
+                                    <text class="flow-arrow" x="825" y="166" text-anchor="middle">&rarr;</text>
+                                    <text class="readout flow-word" data-flow="transcribe" x="918" y="166" text-anchor="middle">transcribe</text>
                                     <rect class="flow-underline" x="867" y="180" width="102" height="2" rx="1"/>
-                                    <text class="flow-arrow" x="1032" y="166" text-anchor="middle">&rarr;</text>
-                                    <text class="readout flow-word" data-flow="remember" x="1108" y="166">remember</text>
+                                    <text class="flow-arrow" x="1019" y="166" text-anchor="middle">&rarr;</text>
+                                    <text class="readout flow-word" data-flow="remember" x="1108" y="166" text-anchor="middle">remember</text>
                                     <rect class="flow-underline" x="1067" y="180" width="82" height="2" rx="1"/>
                                 </g>
 
@@ -425,24 +407,15 @@ FORM: interactive type specimen — the page as an index of figures.
                                 >
                                     <rect class="node-rect node-rect--pill" x="1016" y="528" width="168" height="56" rx="28"/>
                                     <g aria-hidden="true">
-                                        <rect class="lock-body" x="1048" y="556" width="12" height="9" rx="1.5"/>
-                                        <path class="lock-shackle" d="M1050,556 V552 a4,4 0 0 1 8,0 V556"/>
+                                        <rect class="lock-body" x="1031" y="556" width="12" height="9" rx="1.5"/>
+                                        <path class="lock-shackle" d="M1033,556 V552 a4,4 0 0 1 8,0 V556"/>
                                     </g>
-                                    <text class="node-label node-label--light" x="1108" y="568" text-anchor="middle" style="font-size: 26px">0 uploads</text>
+                                    <text class="node-label node-label--light" x="1051" y="568" style="font-size: 26px">0 uploads</text>
                                 </g>
                                 <text class="seal-caption anim-node" x="1100" y="616" text-anchor="middle" style="animation-delay: 0.84s">no account &middot; no telemetry</text>
                                 <text class="seal-caption anim-node" x="1100" y="646" text-anchor="middle" style="animation-delay: 0.9s">offline by design</text>
 
                                 <!-- the cloud, outside -->
-                                <g class="anim-cloud">
-                                    <rect class="cloud-capsule" x="1568" y="320" width="128" height="112" rx="14"/>
-                                    <g class="cloud-glyph">
-                                        <circle cx="1622" cy="352" r="8"/>
-                                        <circle cx="1631" cy="348" r="10"/>
-                                        <circle cx="1641" cy="353" r="8"/>
-                                        <rect x="1620" y="352" width="26" height="11" rx="5.5"/>
-                                    </g>
-                                </g>
                                 <g
                                     class="node anim-cloud"
                                     data-title="the cloud"
@@ -451,6 +424,13 @@ FORM: interactive type specimen — the page as an index of figures.
                                     role="group"
                                     aria-label="The cloud: never involved, nothing crosses this line"
                                 >
+                                    <rect class="cloud-capsule" x="1568" y="320" width="128" height="112" rx="14"/>
+                                    <g class="cloud-glyph" aria-hidden="true">
+                                        <circle cx="1622" cy="352" r="8"/>
+                                        <circle cx="1631" cy="348" r="10"/>
+                                        <circle cx="1641" cy="353" r="8"/>
+                                        <rect x="1620" y="352" width="26" height="11" rx="5.5"/>
+                                    </g>
                                     <text class="cloud-text" x="1632" y="400" text-anchor="middle">the cloud</text>
                                     <text class="cloud-text--faint" x="1632" y="424" text-anchor="middle">never involved</text>
                                 </g>
