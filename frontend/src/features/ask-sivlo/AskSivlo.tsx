@@ -16,7 +16,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import type { AskSivloMessage, AskSivloCitation } from "./types";
+import type { AskSivloMessage } from "./types";
+import { shouldSubmitAskSivloKey } from "./composer";
 
 function isConfigError(error: string | null): boolean {
   if (!error) return false;
@@ -87,11 +88,6 @@ function UserMessage({ message }: { message: AskSivloMessage }) {
   );
 }
 
-interface ScopeOption {
-  value: string;
-  label: string;
-}
-
 export function AskSivlo() {
   const {
     messages,
@@ -113,11 +109,6 @@ export function AskSivlo() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scopeOptions: ScopeOption[] = [
-    { value: "all", label: "All meetings" },
-    ...meetings.map((m) => ({ value: m.id, label: m.title })),
-  ];
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -133,7 +124,7 @@ export function AskSivlo() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (shouldSubmitAskSivloKey(e.key, e.shiftKey, e.nativeEvent.isComposing)) {
         e.preventDefault();
         handleSend();
       }
