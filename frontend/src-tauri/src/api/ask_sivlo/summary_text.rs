@@ -336,4 +336,94 @@ mod tests {
         let result = extract_section_by_headings(md, &["action items"]);
         assert_eq!(result, "");
     }
+
+    // ── Regression: numbered lists ──
+
+    #[test]
+    fn summary_blocknote_numbered_list() {
+        let input = json!({
+            "summary_json": [
+                {"id": "1", "type": "numberedListItem", "content": [{"type": "text", "text": "First action"}]},
+                {"id": "2", "type": "numberedListItem", "content": [{"type": "text", "text": "Second action"}]}
+            ]
+        });
+        let result = summary_to_canonical_markdown(&input.to_string());
+        assert_eq!(result, "1. First action\n1. Second action");
+    }
+
+    // ── Regression: nested BlockNote children ──
+
+    #[test]
+    fn summary_blocknote_nested_children() {
+        let input = json!({
+            "summary_json": [
+                {
+                    "id": "1", "type": "heading", "props": {"level": 2},
+                    "content": [{"type": "text", "text": "Decisions"}],
+                    "children": [
+                        {"id": "1a", "type": "bulletListItem", "content": [{"type": "text", "text": "Use Rust"}]},
+                        {"id": "1b", "type": "bulletListItem", "content": [{"type": "text", "text": "Ship v1"}]}
+                    ]
+                }
+            ]
+        });
+        let result = summary_to_canonical_markdown(&input.to_string());
+        assert_eq!(result, "## Decisions\n- Use Rust\n- Ship v1");
+    }
+
+    // ── Regression: legacy respects _section_order and excludes metadata ──
+
+    #[test]
+    fn summary_legacy_respects_section_order_and_excludes_metadata() {
+        let input = json!({
+            "MeetingName": "Design Review",
+            "MeetingDate": "2026-08-15",
+            "Decisions": {
+                "title": "Decisions",
+                "blocks": [
+                    {"id": "1", "type": "list", "content": "Use Tailwind"}
+                ]
+            },
+            "Action_Items": {
+                "title": "Action Items",
+                "blocks": [
+                    {"id": "2", "type": "list", "content": "Review CSS"}
+                ]
+            },
+            "Next_Steps": {
+                "title": "Next Steps",
+                "blocks": [
+                    {"id": "3", "type": "list", "content": "Ship by Friday"}
+                ]
+            },
+            "_section_order": ["Action_Items", "Decisions", "Next_Steps"]
+        });
+        let result = summary_to_canonical_markdown(&input.to_string());
+        assert_eq!(
+            result,
+            "## Action Items\n\n- Review CSS\n\n## Decisions\n\n- Use Tailwind\n\n## Next Steps\n\n- Ship by Friday"
+        );
+        assert!(!result.contains("Design Review"));
+        assert!(!result.contains("2026-08-15"));
+        assert!(!result.contains("_section_order"));
+    }
+
+    // ── Regression: "next steps" alias recognised by extract_section_by_headings ──
+
+    #[test]
+    fn extract_next_steps_alias() {
+        let md = "## Summary\nOverview\n\n## Next Steps\n\n- Follow up\n\n## Decisions\n\n- Ship";
+        let result = extract_section_by_headings(md, &["next steps", "next step"]);
+        assert!(result.contains("- Follow up"));
+        assert!(!result.contains("- Ship"));
+    }
+
+    // ── Regression: malformed JSON returns empty, no panic ──
+
+    #[test]
+    fn summary_malformed_json_returns_empty() {
+        let input = r#"{"summary_json": [invalid"#;
+        let result = summary_to_canonical_markdown(input);
+        assert_eq!(result, "");
+    }
 }

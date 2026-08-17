@@ -837,11 +837,12 @@ pub async fn api_ask_sivlo<R: Runtime>(
 ```
 
 **RED**
-- Write 4 focused tests for query validation and scope validation (testable without DB):
+- Write 5 focused tests for query validation, scope validation, and product-fallback hardening (testable without DB):
   1. `validate_query_too_short` — "ab" → error
   2. `validate_query_too_long` — 4001 chars → error
   3. `validate_explicit_meeting_scope_missing_id` — scope `{ kind: "meeting" }` without meetingId → `Err("Meeting scope requires a meetingId")`, no LLM call
   4. `validate_explicit_meeting_scope_nonexistent` — scope `{ kind: "meeting", meetingId: "nonexistent-123" }` → `Err("Meeting not found")`, no LLM call
+  5. `post_retrieval_common_word_match_does_not_route_product` — query asks about meeting data / finding something in meetings, meeting retrieval returns no evidence, a common ProductFact substring (e.g. "find", "data") matches, expected route remains meeting no-evidence fallback rather than product help
 - Run: `cd frontend/src-tauri && cargo test --lib ask_sivlo`
 - Expected: these 4 tests FAIL
 
@@ -855,6 +856,7 @@ pub async fn api_ask_sivlo<R: Runtime>(
   4. If product → `handle_product_route`
   5. If meeting → classify → retrieve evidence → if empty AND scope is "all" (not explicit meeting) AND product facts match → `handle_product_route` (post-retrieval fallback) → otherwise meeting fallback → sanitize history → build context → resolve provider → call LLM → extract citations → fail-closed if zero valid citations → return
 - Post-retrieval product fallback is NEVER permitted for explicit meeting scope
+- **Post-retrieval product fallback must NOT trigger merely because `find_matching_product_facts()` returns a match from a common substring.** For the all-meetings/no-evidence fallback path, require a strong product-intent match using whole-token or explicit phrase/capability matching. Queries such as meeting questions containing common words like "data", "find", "local", or "meeting" must not become product-help answers just because a ProductFact keyword matched as a substring. Direct deterministic product routing (explicit Sivlo question) remains unchanged. Explicit meeting scope NEVER falls back to product. Task 5 `find_matching_product_facts` implementation is unchanged in this step.
 - Register in `lib.rs` invoke_handler: `api::ask_sivlo::api_ask_sivlo`
 - Run: `cd frontend/src-tauri && cargo test --lib ask_sivlo`
 - Expected: all tests PASS
