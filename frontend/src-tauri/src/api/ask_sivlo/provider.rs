@@ -120,9 +120,12 @@ mod tests {
     #[tokio::test]
     async fn missing_model_configuration_returns_configure_model_error() {
         let pool = test_db_pool().await;
-        let result = resolve_stored_provider_config(&pool).await;
+        let err = match resolve_stored_provider_config(&pool).await {
+            Ok(_) => panic!("expected missing model configuration to fail"),
+            Err(err) => err,
+        };
         assert_eq!(
-            result.unwrap_err(),
+            err,
             "No AI model configured. Please configure a model in Settings."
         );
     }

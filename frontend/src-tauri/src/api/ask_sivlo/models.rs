@@ -50,7 +50,6 @@ pub(crate) struct RawEvidence {
     pub audio_end_time: Option<f64>,
 }
 
-#[derive(Debug)]
 pub(crate) struct ProviderConfig {
     pub provider: crate::summary::llm_client::LLMProvider,
     pub model_name: String,
