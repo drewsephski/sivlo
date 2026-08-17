@@ -6,7 +6,7 @@ use regex::Regex;
 use super::models::{
     AskSivloCitation, AskSivloHistoryMessage, AskSivloScope, RawEvidence, MAX_EVIDENCE_CONTEXT_CHARS,
     MAX_EVIDENCE_ITEMS, MAX_EXCERPT_CHARS, MAX_HISTORY_CHARS, MAX_HISTORY_MESSAGES,
-    MAX_USER_PROMPT_CHARS, SYSTEM_PROMPT_MEETING,
+    MAX_SYSTEM_PROMPT_CHARS, MAX_USER_PROMPT_CHARS, SYSTEM_PROMPT_MEETING,
 };
 
 static CITATION_MARKER_RE: Lazy<Regex> = Lazy::new(|| {
@@ -225,6 +225,10 @@ pub(crate) fn build_meeting_context(
 
     // 10. Render final prompt
     let system_prompt = SYSTEM_PROMPT_MEETING.to_string();
+    debug_assert!(
+        SYSTEM_PROMPT_MEETING.chars().count() <= MAX_SYSTEM_PROMPT_CHARS,
+        "SYSTEM_PROMPT_MEETING exceeds MAX_SYSTEM_PROMPT_CHARS"
+    );
 
     let mut user_parts: Vec<String> = Vec::new();
 

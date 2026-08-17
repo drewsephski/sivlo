@@ -7,10 +7,6 @@ pub mod summary_text;
 pub use models::*;
 
 use grounding::{build_bounded_history, sanitize_history};
-use models::{
-    AskSivloHistoryMessage, AskSivloResponse, MAX_HISTORY_CHARS, MAX_HISTORY_MESSAGES,
-    MAX_USER_PROMPT_CHARS, SYSTEM_PROMPT_PRODUCT,
-};
 use product_knowledge::{find_matching_product_facts, ProductFact};
 
 use std::collections::HashMap;
@@ -411,10 +407,17 @@ mod tests {
 
     #[test]
     fn validate_query_too_long() {
-        let query = "x".repeat(4001);
+        let query = "é".repeat(4001);
         let result = super::validate_ask_sivlo_query(&query);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Query must be at most 4000 characters");
+    }
+
+    #[test]
+    fn validate_query_unicode_at_exact_limit_accepted() {
+        let query = "é".repeat(4000);
+        let result = super::validate_ask_sivlo_query(&query);
+        assert!(result.is_ok());
     }
 
     // ── Task 12 — Meeting scope validation ──
@@ -429,6 +432,21 @@ mod tests {
         );
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Meeting scope requires a meetingId");
+    }
+
+    #[tokio::test]
+    async fn validate_explicit_meeting_scope_existing_meeting_succeeds() {
+        let pool = test_db_pool().await;
+        seed_meeting(&pool, "m1", "Sprint Planning").await;
+        let result = super::validate_meeting_scope_with_db(
+            &Some(super::models::AskSivloScope {
+                kind: "meeting".into(),
+                meeting_id: Some("m1".into()),
+            }),
+            &pool,
+        )
+        .await;
+        assert!(result.is_ok());
     }
 
     #[tokio::test]
@@ -599,6 +617,18 @@ mod tests {
             "Product prompt chars {} exceeds MAX_USER_PROMPT_CHARS {}",
             chars,
             MAX_USER_PROMPT_CHARS
+        );
+    }
+
+    // ── Task 12 — System prompt budget ──
+
+    #[test]
+    fn meeting_system_prompt_within_budget() {
+        assert!(
+            super::SYSTEM_PROMPT_MEETING.chars().count() <= super::MAX_SYSTEM_PROMPT_CHARS,
+            "SYSTEM_PROMPT_MEETING is {} chars, exceeds MAX_SYSTEM_PROMPT_CHARS ({})",
+            super::SYSTEM_PROMPT_MEETING.chars().count(),
+            super::MAX_SYSTEM_PROMPT_CHARS,
         );
     }
 }
