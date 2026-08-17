@@ -2,6 +2,7 @@ import { describe, expect, test, beforeEach } from "bun:test";
 import {
   addMessage,
   clearChat,
+  clearMessages,
   clearRetryRequest,
   getMessages,
   getRequestGeneration,
@@ -154,7 +155,7 @@ describe("sendAskSivloMessage", () => {
     });
   });
 
-  test("clears error before sending and does not overwrite retryRequest on success", async () => {
+  test("clears error before sending and successful send clears previous retryRequest", async () => {
     // Set initial error state and a retry from a prior failure
     setError("old error");
     setRetryRequest({ query: "old failed query", scope: { kind: "all" } });
@@ -165,11 +166,8 @@ describe("sendAskSivloMessage", () => {
 
     // Error should be cleared
     expect(getSnapshot().error).toBeNull();
-    // Successful send should NOT overwrite the prior retryRequest
-    expect(getSnapshot().retryRequest).toEqual({
-      query: "old failed query",
-      scope: { kind: "all" },
-    });
+    // Successful current request MUST clear the prior retryRequest
+    expect(getSnapshot().retryRequest).toBeNull();
   });
 });
 
@@ -227,6 +225,38 @@ describe("deferred stale response protection", () => {
     // Must NOT install retryRequest from stale failure
     expect(getSnapshot().retryRequest).toBeNull();
   });
+
+  test("stale success does not clear existing retryRequest", async () => {
+    // Pre-set a retryRequest representing a prior failure
+    setRetryRequest({ query: "prior failed query", scope: { kind: "all" } });
+
+    let resolveBackend: (v: AskSivloResponse) => void;
+    const backendCall: AskSivloBackendCall = async () =>
+      new Promise((resolve) => {
+        resolveBackend = resolve;
+      });
+
+    const sendPromise = sendAskSivloMessage(
+      "new query",
+      { kind: "all" },
+      backendCall,
+    );
+
+    // Advance generation without clearing retryRequest — makes the response stale
+    clearMessages();
+
+    // Stale success resolves
+    resolveBackend!(makeResponse({ answer: "stale success" }));
+    await sendPromise;
+
+    // Stale assistant response must NOT be added
+    expect(getMessages()).toHaveLength(0);
+    // Existing retryRequest must remain untouched
+    expect(getSnapshot().retryRequest).toEqual({
+      query: "prior failed query",
+      scope: { kind: "all" },
+    });
+  });
 });
 
 describe("retryAskSivlo", () => {
@@ -270,37 +300,34 @@ describe("retryAskSivlo", () => {
 
   test("uses current messages for history, not stale state", async () => {
     const calls: AskSivloRequest[] = [];
+    let callCount = 0;
 
-    const failCall: AskSivloBackendCall = async (req) => {
+    const backendCall: AskSivloBackendCall = async (req) => {
       calls.push({ ...req, history: [...req.history] });
+      callCount++;
+      // Both sends fail — retryRequest persists from the latest failure
       throw new Error("fail");
     };
 
-    const successCall: AskSivloBackendCall = async (req) => {
-      calls.push({ ...req, history: [...req.history] });
-      return makeResponse({ answer: "ok" });
-    };
-
     // First message fails
-    await sendAskSivloMessage("first message", { kind: "all" }, failCall);
+    await sendAskSivloMessage("first message", { kind: "all" }, backendCall);
 
-    // Second message succeeds (adds to conversation)
-    await sendAskSivloMessage("second message", { kind: "all" }, successCall);
+    // Second message also fails — overwrites retryRequest with latest failure
+    await sendAskSivloMessage("second message", { kind: "all" }, backendCall);
 
-    // Retry the first failed query — should see full current conversation
-    await retryAskSivlo(successCall);
+    // Retry the second failed query — history should include first + second messages
+    await retryAskSivlo(backendCall);
 
     expect(calls).toHaveLength(3);
     // Third call (retry) history should include all current store messages:
-    // user "first message" + user "second message" + assistant "ok"
+    // user "first message" + user "second message"
     const retryCall = calls[2];
-    expect(retryCall.history).toHaveLength(3);
+    expect(retryCall.history).toHaveLength(2);
     expect(retryCall.history[0].role).toBe("user");
     expect(retryCall.history[0].content).toBe("first message");
     expect(retryCall.history[1].role).toBe("user");
     expect(retryCall.history[1].content).toBe("second message");
-    expect(retryCall.history[2].role).toBe("assistant");
-    expect(retryCall.history[2].content).toBe("ok");
+    expect(retryCall.query).toBe("second message");
   });
 
   test("does not append duplicate user message", async () => {

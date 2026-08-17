@@ -126,6 +126,7 @@ export async function sendAskSivloMessage(
     if (getRequestGeneration() !== generationBefore) return;
 
     addMessage(makeAssistantMessage(response));
+    clearRetryRequest();
     setLoading(false);
   } catch (error) {
     // Generation guard: do not install retry from stale failure
@@ -173,5 +174,3 @@ export async function retryAskSivlo(
     setLoading(false);
   }
 }
-
-
