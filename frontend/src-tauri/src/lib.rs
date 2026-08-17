@@ -659,6 +659,8 @@ pub fn run() {
             api::api_save_custom_openai_config,
             api::api_get_custom_openai_config,
             api::api_test_custom_openai_connection,
+            // Ask Sivlo command
+            api::ask_sivlo::api_ask_sivlo,
             // Summary commands
             summary::commands::api_process_transcript,
             summary::commands::api_get_summary,
