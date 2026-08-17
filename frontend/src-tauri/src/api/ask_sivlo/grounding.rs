@@ -1,3 +1,57 @@
+use super::AskSivloScope;
+
+pub(crate) fn route_query(query: &str, scope: &Option<AskSivloScope>) -> &'static str {
+    // 1. Explicit meeting scope -> meeting
+    if let Some(s) = scope {
+        if s.kind == "meeting" {
+            return "meeting";
+        }
+    }
+
+    let lower = query.to_lowercase();
+
+    // 2. Meeting evidence / temporal intent -> meeting
+    let meeting_evidence = [
+        "what did", "who said", "who mentioned", "who spoke",
+        "what was discussed", "mentioned", "discussed",
+        "decisions were made", "decision", "agreed on", "agree on",
+        "conclusion", "what was decided",
+    ];
+    let temporal = [
+        "last week", "yesterday", "today", "this morning",
+        "this afternoon", "this week", "last month", "last monday",
+        "last tuesday", "last wednesday", "last thursday", "last friday",
+    ];
+    if meeting_evidence.iter().any(|kw| lower.contains(kw))
+        || temporal.iter().any(|kw| lower.contains(kw))
+    {
+        return "meeting";
+    }
+
+    // 3. Product question pattern + product capability keyword -> product
+    let question_patterns = ["how do i", "how do we", "can i", "can we", "is it possible", "what is", "what are"];
+    let product_keywords = [
+        "sivlo", "transcri", "record", "capture", "import", "audio",
+        "summar", "note", "meeting", "meeting", "llm", "provider",
+        "gpu", "metal", "platform", "macos", "windows", "linux",
+        "privacy", "data", "security", "local",
+    ];
+    let has_question = question_patterns.iter().any(|p| lower.contains(p));
+    let has_product = product_keywords.iter().any(|k| lower.contains(k));
+    if has_question && has_product {
+        return "product";
+    }
+
+    // 4. Explicit Sivlo/app reference + product capability keyword -> product
+    let sivlo_refs = ["sivlo", "the app", "the application", "the software", "the tool"];
+    if sivlo_refs.iter().any(|r| lower.contains(r)) && has_product {
+        return "product";
+    }
+
+    // 5. Otherwise -> meeting
+    "meeting"
+}
+
 pub(crate) fn classify_query(query: &str) -> &'static str {
     let lower = query.to_lowercase();
 
@@ -101,5 +155,64 @@ mod tests {
         let q2 = "how is everything going";
         assert_eq!(classify_query(q1), "general");
         assert_eq!(classify_query(q2), "general");
+    }
+
+    #[test]
+    fn route_meeting_explicit_scope() {
+        let scope = Some(AskSivloScope {
+            kind: "meeting".to_string(),
+            meeting_id: Some("abc-123".to_string()),
+        });
+        assert_eq!(route_query("anything", &scope), "meeting");
+    }
+
+    #[test]
+    fn route_product_question_patterns() {
+        let q1 = "how do I import audio";
+        let q2 = "what is Sivlo's transcription";
+        assert_eq!(route_query(q1, &None), "product");
+        assert_eq!(route_query(q2, &None), "product");
+    }
+
+    #[test]
+    fn route_product_sivlo_reference() {
+        let q1 = "can Sivlo do transcription";
+        let q2 = "does the app support recording";
+        assert_eq!(route_query(q1, &None), "product");
+        assert_eq!(route_query(q2, &None), "product");
+    }
+
+    #[test]
+    fn route_meeting_evidence_keywords() {
+        let q1 = "what did Sarah say";
+        let q2 = "what decisions were made";
+        assert_eq!(route_query(q1, &None), "meeting");
+        assert_eq!(route_query(q2, &None), "meeting");
+    }
+
+    #[test]
+    fn route_meeting_temporal_references() {
+        let q1 = "what happened last week";
+        let q2 = "yesterday's standup";
+        assert_eq!(route_query(q1, &None), "meeting");
+        assert_eq!(route_query(q2, &None), "meeting");
+    }
+
+    #[test]
+    fn route_ambiguous_meeting_wins() {
+        let q = "What is the pricing decision from yesterday's meeting?";
+        assert_eq!(route_query(q, &None), "meeting");
+    }
+
+    #[test]
+    fn route_meeting_default() {
+        let q = "tell me about the project";
+        assert_eq!(route_query(q, &None), "meeting");
+    }
+
+    #[test]
+    fn route_product_only_pattern_no_match() {
+        let q = "how do i cook pasta";
+        assert_eq!(route_query(q, &None), "meeting");
     }
 }
