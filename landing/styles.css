@@ -451,57 +451,55 @@ a {
     margin-top: var(--space-md);
 }
 
-.fig-scroll {
-    position: relative;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+.fig-frame {
+    border: 1px solid var(--color-rule);
     border-radius: var(--radius-frame);
     background: var(--color-paper);
+    overflow: hidden;
+    box-shadow:
+        0 24px 48px -32px var(--color-shadow-strong),
+        0 2px 6px -2px var(--color-shadow);
+}
+.fig-frame__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    column-gap: var(--space-md);
+    row-gap: 0.25rem;
+    flex-wrap: wrap;
+    padding: 0.625rem clamp(0.875rem, 2vw, 1.5rem);
+    border-bottom: 1px solid var(--color-rule);
+    background: var(--color-paper-raised);
+}
+.fig-frame__meta {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+    font-variant-numeric: tabular-nums;
+}
+.fig-frame__meta--accent {
+    color: var(--color-accent);
+}
+
+.fig-scroll {
+    position: relative;
     display: block;
+    overflow: visible;
 }
 .fig-scroll svg {
     display: block;
     width: 100%;
-    min-width: 1040px;
-    height: 40vh;
+    height: auto;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-}
-.fig-scroll::-webkit-scrollbar {
-    height: 8px;
-}
-.fig-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-.fig-scroll::-webkit-scrollbar-thumb {
-    background: var(--color-rule);
-    border-radius: 4px;
-}
-.fig-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--color-ink-faint);
-}
-.fig-scroll-hint {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: none;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--color-rule);
-    background: var(--color-paper-raised);
-    box-shadow: 0 4px 12px -6px var(--color-shadow-strong);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    color: var(--color-ink-soft);
-    pointer-events: none;
-    z-index: 3;
 }
 .fig-tooltip {
     position: absolute;
     z-index: 6;
+    top: -9999px;
+    left: -9999px;
     pointer-events: none;
     max-width: 264px;
     padding: 10px 12px;
@@ -663,19 +661,25 @@ a {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
 }
+#fig-local .node-rect {
+    filter: drop-shadow(0 1px 2px var(--color-shadow));
+    transition: filter var(--dur-short) var(--ease-out);
+}
 #fig-local svg.has-hover .node {
     opacity: 0.32;
 }
 #fig-local svg.has-hover .node.is-hovered {
     opacity: 1;
-    transform: translateY(-3px);
-}
-#fig-local .node-rect {
-    filter: drop-shadow(0 1px 2px var(--color-shadow));
-    transition: filter var(--dur-short) var(--ease-out);
+    transform: translateY(-3px) scale(1.02);
 }
 #fig-local .node.is-hovered .node-rect {
+    stroke: var(--color-accent);
+    stroke-width: 1.6;
     filter: drop-shadow(0 8px 14px -4px var(--color-shadow-strong));
+}
+#fig-local .node.is-hovered .node-rect--accent,
+#fig-local .node.is-hovered .node-rect--pill {
+    stroke: var(--color-ink-invert);
 }
 #fig-local .node-rect--node {
     fill: var(--color-paper-deep);
@@ -816,6 +820,19 @@ a {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* the trust boundary's dashes march slowly — proof the figure is alive,
+   not a static printout. Loop period matches the 6+5 dash pattern. */
+#fig-local .boundary.anim-boundary {
+    animation:
+        pipeline-rise 0.6s ease-out 0.05s backwards,
+        boundary-march 22s linear 0.7s infinite;
+}
+@keyframes boundary-march {
+    to {
+        stroke-dashoffset: -11;
     }
 }
 
@@ -1094,9 +1111,6 @@ a {
     }
     .proof__item:nth-child(n + 4) {
         border-top: 1px solid var(--color-rule);
-    }
-    .fig-scroll-hint {
-        display: flex;
     }
 }
 @media (max-width: 720px) {
