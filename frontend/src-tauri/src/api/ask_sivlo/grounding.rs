@@ -1,4 +1,32 @@
-use super::AskSivloScope;
+use once_cell::sync::Lazy;
+use regex::Regex;
+
+use super::{AskSivloHistoryMessage, AskSivloScope};
+
+static CITATION_MARKER_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"\[S\d+\]").unwrap()
+});
+
+static CITATION_EXTRACT_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"\[S(\d+)\]").unwrap()
+});
+
+pub(crate) fn sanitize_history(history: &[AskSivloHistoryMessage]) -> Vec<AskSivloHistoryMessage> {
+    history
+        .iter()
+        .map(|msg| AskSivloHistoryMessage {
+            role: msg.role.clone(),
+            content: CITATION_MARKER_RE.replace_all(&msg.content, "").to_string(),
+        })
+        .collect()
+}
+
+pub(crate) fn extract_citation_ids(answer: &str) -> Vec<usize> {
+    CITATION_EXTRACT_RE
+        .captures_iter(answer)
+        .filter_map(|cap| cap.get(1)?.as_str().parse::<usize>().ok())
+        .collect()
+}
 
 pub(crate) fn route_query(query: &str, scope: &Option<AskSivloScope>) -> &'static str {
     // 1. Explicit meeting scope -> meeting
@@ -214,5 +242,49 @@ mod tests {
     fn route_product_only_pattern_no_match() {
         let q = "how do i cook pasta";
         assert_eq!(route_query(q, &None), "meeting");
+    }
+
+    #[test]
+    fn sanitize_strips_citation_markers() {
+        let history = vec![
+            AskSivloHistoryMessage {
+                role: "assistant".to_string(),
+                content: "The answer is [S1] correct and [S23] verified".to_string(),
+            },
+        ];
+        let result = sanitize_history(&history);
+        assert_eq!(result[0].content, "The answer is  correct and  verified");
+    }
+
+    #[test]
+    fn sanitize_preserves_role() {
+        let history = vec![
+            AskSivloHistoryMessage {
+                role: "user".to_string(),
+                content: "hello [S1]".to_string(),
+            },
+        ];
+        let result = sanitize_history(&history);
+        assert_eq!(result[0].role, "user");
+    }
+
+    #[test]
+    fn sanitize_empty_history() {
+        let result = sanitize_history(&[]);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn extract_citation_ids_valid() {
+        let answer = "Hello [S1] world [S2] and [S10]";
+        let ids = extract_citation_ids(answer);
+        assert_eq!(ids, vec![1, 2, 10]);
+    }
+
+    #[test]
+    fn extract_citation_ids_none() {
+        let answer = "No citations here";
+        let ids = extract_citation_ids(answer);
+        assert!(ids.is_empty());
     }
 }
