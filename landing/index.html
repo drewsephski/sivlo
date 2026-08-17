@@ -146,474 +146,312 @@ FORM: interactive type specimen — the page as an index of figures.
                     </div>
 
                     <figure class="figure figure--diagram" id="fig-local">
-                        <svg
-                            class="diagram"
-                            viewBox="0 0 1560 740"
-                            xmlns="http://www.w3.org/2000/svg"
-                            role="img"
-                            aria-labelledby="sivlo-pipeline-title sivlo-pipeline-desc"
-                        >
-                            <title id="sivlo-pipeline-title"
-                                >Where every word goes — the Sivlo local
-                                pipeline</title
+                        <div class="fig-scroll">
+                            <span class="fig-scroll-hint">scroll &rarr;</span>
+
+                            <svg
+                                id="sivlo-pipeline"
+                                viewBox="0 0 1720 780"
+                                xmlns="http://www.w3.org/2000/svg"
+                                role="img"
+                                aria-labelledby="sivlo-pipeline-title sivlo-pipeline-desc"
                             >
-                            <desc id="sivlo-pipeline-desc"
-                                >The local pipeline on your Mac, read left to
-                                right. 01 capture — Mic and System audio — feeds
-                                02 mix (Mixer · 48 kHz), which forks into 03
-                                transcribe (Whisper · on-device) and 04 record
-                                (Recording · saved locally); both drop into 05
-                                remember, the working memory. Below, the cobalt
-                                seal reads 0 uploads with no account · no
-                                telemetry, offline by design; an X on the
-                                boundary edge reads nothing crosses this line,
-                                and the cloud sits far outside the frame labeled
-                                never involved.</desc
-                            >
-                            <defs>
-                                <marker
-                                    id="arrow"
-                                    markerWidth="8"
-                                    markerHeight="6"
-                                    refX="7"
-                                    refY="3"
-                                    orient="auto"
-                                    ><polygon
-                                        points="0,0 8,3 0,6"
-                                        fill="#55514a"
-                                    /></marker
+                                <title id="sivlo-pipeline-title"
+                                    >Where every word goes — the Sivlo local
+                                    pipeline</title
                                 >
-                                <marker
-                                    id="arrow-accent"
-                                    markerWidth="8"
-                                    markerHeight="6"
-                                    refX="7"
-                                    refY="3"
-                                    orient="auto"
-                                    ><polygon
-                                        points="0,0 8,3 0,6"
-                                        fill="#1d5fd0"
-                                    /></marker
+                                <desc id="sivlo-pipeline-desc"
+                                    >A left-to-right pipeline inside a dashed YOUR
+                                    MAC boundary. 01 capture — Mic and System audio —
+                                    feeds 02 mix (Mixer · 48 kHz), which forks into
+                                    03 transcribe (Whisper · on-device) and 04 record
+                                    (Recording · saved locally); both lanes drop into
+                                    05 remember, the working memory holding transcript,
+                                    summary, actions and notes. Below the memory, a
+                                    dotted connector drops to a cobalt 0 uploads seal
+                                    with the lines no account · no telemetry and
+                                    offline by design. An X on the boundary edge reads
+                                    nothing crosses this line, and the cloud sits
+                                    outside the frame labeled never involved.</desc
                                 >
-                            </defs>
 
-                            <rect width="100%" height="100%" fill="#f5f2ec" />
+                                <defs>
+                                    <marker
+                                        id="arrow"
+                                        markerWidth="8"
+                                        markerHeight="6"
+                                        refX="7"
+                                        refY="3"
+                                        orient="auto"
+                                        ><polygon
+                                            points="0 0, 8 3, 0 6"
+                                            fill="#55514a"
+                                        /></marker
+                                    >
+                                    <marker
+                                        id="arrow-accent"
+                                        markerWidth="8"
+                                        markerHeight="6"
+                                        refX="7"
+                                        refY="3"
+                                        orient="auto"
+                                        ><polygon
+                                            points="0 0, 8 3, 0 6"
+                                            fill="#1d5fd0"
+                                        /></marker
+                                    >
+                                    <pattern
+                                        id="hatch"
+                                        width="10"
+                                        height="10"
+                                        patternUnits="userSpaceOnUse"
+                                        patternTransform="rotate(45)"
+                                    >
+                                        <rect width="10" height="10" fill="none"/>
+                                        <line
+                                            class="hatch-line"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="10"
+                                        />
+                                    </pattern>
+                                </defs>
 
-                            <!-- top mono caption -->
-                            <text
-                                x="728"
-                                y="76"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="20"
-                                font-family="'IBM Plex Mono', monospace"
-                                letter-spacing="0.06em"
-                                >capture → mix → transcribe → remember</text
-                            >
+                                <rect class="bg" width="100%" height="100%"/>
 
-                            <!-- trust boundary -->
-                            <rect
-                                x="56"
-                                y="100"
-                                width="1344"
-                                height="600"
-                                rx="8"
-                                fill="none"
-                                stroke="rgba(27,25,21,0.4)"
-                                stroke-width="1"
-                                stroke-dasharray="5 4"
-                            />
-                            <text
-                                x="84"
-                                y="140"
-                                fill="#1b1915"
-                                font-size="24"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                letter-spacing="0.08em"
-                                >YOUR MAC</text
-                            >
-                            <text
-                                x="84"
-                                y="172"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >everything below happens on this device</text
-                            >
+                                <!-- the restricted zone -->
+                                <rect
+                                    class="hatch-rect"
+                                    x="1240"
+                                    y="118"
+                                    width="296"
+                                    height="244"
+                                />
 
-                            <!-- arrows -->
-                            <line
-                                x1="264"
-                                y1="344"
-                                x2="352"
-                                y2="344"
-                                stroke="#55514a"
-                                stroke-width="1.2"
-                                marker-end="url(#arrow)"
-                            />
-                            <line
-                                x1="264"
-                                y1="488"
-                                x2="352"
-                                y2="488"
-                                stroke="#55514a"
-                                stroke-width="1.2"
-                                marker-end="url(#arrow)"
-                            />
-                            <path
-                                d="M576,360 H644 Q652,360 652,352 V272 Q652,264 660,264 H728"
-                                fill="none"
-                                stroke="#1d5fd0"
-                                stroke-width="1.2"
-                                marker-end="url(#arrow-accent)"
-                            />
-                            <path
-                                d="M576,504 H644 Q652,504 652,512 V560 Q652,568 660,568 H728"
-                                fill="none"
-                                stroke="#55514a"
-                                stroke-width="1.2"
-                                marker-end="url(#arrow)"
-                            />
-                            <path
-                                d="M960,264 H1020 Q1028,264 1028,272 V344 Q1028,352 1036,352 H1096"
-                                fill="none"
-                                stroke="#55514a"
-                                stroke-width="1.2"
-                                marker-end="url(#arrow)"
-                            />
-                            <path
-                                d="M960,584 H1020 Q1028,584 1028,576 V496 Q1028,488 1036,488 H1096"
-                                fill="none"
-                                stroke="#55514a"
-                                stroke-width="1.2"
-                                marker-end="url(#arrow)"
-                            />
-                            <line
-                                x1="1220"
-                                y1="528"
-                                x2="1220"
-                                y2="568"
-                                stroke="#6e6659"
-                                stroke-width="1"
-                                stroke-dasharray="4 4"
-                            />
+                                <!-- trust boundary -->
+                                <rect
+                                    class="boundary anim-boundary"
+                                    x="64"
+                                    y="118"
+                                    width="1472"
+                                    height="560"
+                                    rx="12"
+                                />
+                                <rect
+                                    class="marker-sq anim-boundary"
+                                    x="88"
+                                    y="142"
+                                    width="10"
+                                    height="10"
+                                />
+                                <text class="boundary-label anim-boundary" x="110" y="152">YOUR MAC</text>
+                                <text class="boundary-sub anim-boundary" x="110" y="178">everything below happens on this device</text>
 
-                            <!-- stage tags -->
-                            <text
-                                x="92"
-                                y="288"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                letter-spacing="0.08em"
-                                >01 · capture</text
-                            >
-                            <text
-                                x="356"
-                                y="312"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                letter-spacing="0.08em"
-                                >02 · mix</text
-                            >
-                            <text
-                                x="732"
-                                y="208"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                letter-spacing="0.08em"
-                                >03 · transcribe</text
-                            >
-                            <text
-                                x="732"
-                                y="512"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                letter-spacing="0.08em"
-                                >04 · record</text
-                            >
-                            <text
-                                x="1120"
-                                y="356"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                letter-spacing="0.08em"
-                                >05 · remember</text
-                            >
+                                <!-- top flow readout -->
+                                <g class="anim-readout">
+                                    <circle class="ping" cx="572" cy="163" r="4"/>
+                                    <circle class="ping-halo" cx="572" cy="163" r="4"/>
+                                    <text class="readout flow-word" data-flow="capture" x="632" y="166">capture</text>
+                                    <rect class="flow-underline" x="596.5" y="180" width="71" height="2" rx="1"/>
+                                    <text class="flow-arrow" x="706" y="166" text-anchor="middle">&rarr;</text>
+                                    <text class="readout flow-word" data-flow="mix" x="772" y="166">mix</text>
+                                    <rect class="flow-underline" x="756.5" y="180" width="31" height="2" rx="1"/>
+                                    <text class="flow-arrow" x="842" y="166" text-anchor="middle">&rarr;</text>
+                                    <text class="readout flow-word" data-flow="transcribe" x="918" y="166">transcribe</text>
+                                    <rect class="flow-underline" x="867" y="180" width="102" height="2" rx="1"/>
+                                    <text class="flow-arrow" x="1032" y="166" text-anchor="middle">&rarr;</text>
+                                    <text class="readout flow-word" data-flow="remember" x="1108" y="166">remember</text>
+                                    <rect class="flow-underline" x="1067" y="180" width="82" height="2" rx="1"/>
+                                </g>
 
-                            <!-- nodes -->
-                            <rect
-                                x="88"
-                                y="296"
-                                width="176"
-                                height="96"
-                                rx="6"
-                                fill="#ece8de"
-                                stroke="#6e6659"
-                                stroke-width="1"
-                            />
-                            <text
-                                x="176"
-                                y="352"
-                                text-anchor="middle"
-                                fill="#1b1915"
-                                font-size="20"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >Mic</text
-                            >
+                                <!-- connectors -->
+                                <line class="flow-line anim-line" x1="288" y1="342" x2="336" y2="342" marker-end="url(#arrow)" style="animation-delay: 0.5s"/>
+                                <line class="flow-line anim-line" x1="288" y1="466" x2="336" y2="466" marker-end="url(#arrow)" style="animation-delay: 0.56s"/>
+                                <path class="flow-line flow-line--accent anim-line" d="M568,360 H604 Q612,360 612,352 V320 Q612,312 620,312 H640" marker-end="url(#arrow-accent)" style="animation-delay: 0.62s"/>
+                                <path class="flow-line anim-line" d="M568,452 H604 Q612,452 612,444 V464 Q612,472 620,472 H640" marker-end="url(#arrow)" style="animation-delay: 0.68s"/>
+                                <line class="flow-line anim-line" x1="880" y1="320" x2="968" y2="320" marker-end="url(#arrow)" style="animation-delay: 0.74s"/>
+                                <line class="flow-line anim-line" x1="880" y1="464" x2="968" y2="464" marker-end="url(#arrow)" style="animation-delay: 0.8s"/>
+                                <line class="connector-drop anim-line" x1="1100" y1="480" x2="1100" y2="528" style="animation-delay: 0.86s"/>
 
-                            <rect
-                                x="88"
-                                y="440"
-                                width="176"
-                                height="96"
-                                rx="6"
-                                fill="#ece8de"
-                                stroke="#6e6659"
-                                stroke-width="1"
-                            />
-                            <text
-                                x="176"
-                                y="496"
-                                text-anchor="middle"
-                                fill="#1b1915"
-                                font-size="20"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >System audio</text
-                            >
+                                <!-- travelling flow light -->
+                                <g class="anim-line" style="animation-delay: 0.9s">
+                                    <circle class="flow-dot-glow" r="8">
+                                        <animateMotion
+                                            dur="4.5s"
+                                            repeatCount="indefinite"
+                                            begin="1.4s"
+                                            rotate="0"
+                                            path="M288,342 H336 V406 H568 V360 H604 Q612,360 612,352 V320 Q612,312 620,312 H640 V320 H880 H968 V388 H1100"
+                                        />
+                                    </circle>
+                                    <circle class="flow-dot" r="3.5">
+                                        <animateMotion
+                                            dur="4.5s"
+                                            repeatCount="indefinite"
+                                            begin="1.4s"
+                                            rotate="0"
+                                            path="M288,342 H336 V406 H568 V360 H604 Q612,360 612,352 V320 Q612,312 620,312 H640 V320 H880 H968 V388 H1100"
+                                        />
+                                    </circle>
+                                </g>
 
-                            <rect
-                                x="352"
-                                y="320"
-                                width="224"
-                                height="192"
-                                rx="6"
-                                fill="#1b1915"
-                                stroke="#1b1915"
-                                stroke-width="1"
-                            />
-                            <text
-                                x="464"
-                                y="424"
-                                text-anchor="middle"
-                                fill="#fbfaf6"
-                                font-size="20"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >Mixer</text
-                            >
-                            <text
-                                x="464"
-                                y="452"
-                                text-anchor="middle"
-                                fill="rgba(251,250,246,0.72)"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >48 kHz</text
-                            >
+                                <!-- nothing crosses this line -->
+                                <line class="xline anim-line" x1="1528" y1="300" x2="1544" y2="320" style="animation-delay: 0.7s"/>
+                                <line class="xline anim-line" x1="1544" y1="300" x2="1528" y2="320" style="animation-delay: 0.7s"/>
+                                <text class="caption-zone anim-line" x="1512" y="288" text-anchor="end" style="animation-delay: 0.7s">nothing crosses this line</text>
 
-                            <rect
-                                x="728"
-                                y="216"
-                                width="232"
-                                height="96"
-                                rx="6"
-                                fill="#1d5fd0"
-                                stroke="#1749a6"
-                                stroke-width="1.2"
-                            />
-                            <text
-                                x="844"
-                                y="272"
-                                text-anchor="middle"
-                                fill="#ffffff"
-                                font-size="20"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >Whisper</text
-                            >
-                            <text
-                                x="844"
-                                y="300"
-                                text-anchor="middle"
-                                fill="rgba(255,255,255,0.78)"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >on-device</text
-                            >
+                                <!-- stage tags -->
+                                <text class="tag anim-tag" x="188" y="268" text-anchor="middle" style="animation-delay: 0.18s">01 &middot; capture</text>
+                                <text class="tag anim-tag" x="452" y="304" text-anchor="middle" style="animation-delay: 0.26s">02 &middot; mix</text>
+                                <text class="tag anim-tag" x="760" y="250" text-anchor="middle" style="animation-delay: 0.34s">03 &middot; transcribe</text>
+                                <text class="tag anim-tag" x="760" y="392" text-anchor="middle" style="animation-delay: 0.42s">04 &middot; record</text>
+                                <text class="tag anim-tag" x="1100" y="270" text-anchor="middle" style="animation-delay: 0.5s">05 &middot; remember</text>
 
-                            <rect
-                                x="728"
-                                y="520"
-                                width="232"
-                                height="96"
-                                rx="6"
-                                fill="#fbfaf6"
-                                stroke="#1b1915"
-                                stroke-width="1"
-                            />
-                            <text
-                                x="844"
-                                y="576"
-                                text-anchor="middle"
-                                fill="#1b1915"
-                                font-size="20"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >Recording</text
-                            >
-                            <text
-                                x="844"
-                                y="604"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >saved locally</text
-                            >
+                                <!-- 01 capture -->
+                                <g
+                                    class="node anim-node"
+                                    data-flow="capture"
+                                    data-title="Mic"
+                                    data-sub="captures your voice"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="Mic: captures your voice"
+                                    style="animation-delay: 0.24s"
+                                >
+                                    <rect class="node-rect node-rect--node" x="88" y="292" width="200" height="100" rx="8"/>
+                                    <text class="node-label node-label--dark" x="188" y="338" text-anchor="middle">Mic</text>
+                                    <text class="node-sub node-sub--dark" x="188" y="364" text-anchor="middle">your voice</text>
+                                </g>
+                                <g
+                                    class="node anim-node"
+                                    data-flow="capture"
+                                    data-title="System audio"
+                                    data-sub="captures the meeting audio"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="System audio: captures the meeting audio"
+                                    style="animation-delay: 0.31s"
+                                >
+                                    <rect class="node-rect node-rect--node" x="88" y="416" width="200" height="100" rx="8"/>
+                                    <text class="node-label node-label--dark" x="188" y="462" text-anchor="middle">System audio</text>
+                                    <text class="node-sub node-sub--dark" x="188" y="488" text-anchor="middle">meeting audio</text>
+                                </g>
 
-                            <rect
-                                x="1096"
-                                y="328"
-                                width="248"
-                                height="200"
-                                rx="6"
-                                fill="#eae7e1"
-                                stroke="#6e6659"
-                                stroke-width="1"
-                            />
-                            <text
-                                x="1220"
-                                y="392"
-                                text-anchor="middle"
-                                fill="#1b1915"
-                                font-size="20"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >Working memory</text
-                            >
-                            <text
-                                x="1220"
-                                y="452"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >transcript · summary</text
-                            >
-                            <text
-                                x="1220"
-                                y="484"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >actions · notes</text
-                            >
+                                <!-- 02 mix -->
+                                <g
+                                    class="node anim-node"
+                                    data-flow="mix"
+                                    data-title="Mixer"
+                                    data-sub="48 kHz &middot; RMS ducking keeps your voice clear"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="Mixer: 48 kHz, RMS ducking keeps your voice clear"
+                                    style="animation-delay: 0.38s"
+                                >
+                                    <rect class="node-rect node-rect--ink" x="336" y="330" width="232" height="152" rx="8"/>
+                                    <text class="node-label node-label--light" x="452" y="402" text-anchor="middle">Mixer</text>
+                                    <text class="node-sub node-sub--light" x="452" y="428" text-anchor="middle">48 kHz</text>
+                                </g>
 
-                            <rect
-                                x="1132"
-                                y="568"
-                                width="176"
-                                height="56"
-                                rx="28"
-                                fill="#1d5fd0"
-                                stroke="#1749a6"
-                                stroke-width="1.2"
-                            />
-                            <text
-                                x="1220"
-                                y="604"
-                                text-anchor="middle"
-                                fill="#ffffff"
-                                font-size="24"
-                                font-weight="600"
-                                font-family="'Schibsted Grotesk', sans-serif"
-                                >0 uploads</text
-                            >
-                            <text
-                                x="1220"
-                                y="648"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >no account · no telemetry</text
-                            >
-                            <text
-                                x="1220"
-                                y="680"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >offline by design</text
-                            >
+                                <!-- 03 transcribe -->
+                                <g
+                                    class="node anim-node"
+                                    data-flow="transcribe"
+                                    data-title="Whisper"
+                                    data-sub="on-device transcription, GPU-accelerated"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="Whisper: on-device transcription, GPU-accelerated"
+                                    style="animation-delay: 0.45s"
+                                >
+                                    <rect class="node-rect node-rect--accent" x="640" y="276" width="240" height="88" rx="8"/>
+                                    <text class="node-label node-label--light" x="760" y="318" text-anchor="middle">Whisper</text>
+                                    <text class="node-sub node-sub--light" x="760" y="344" text-anchor="middle">on-device</text>
+                                </g>
 
-                            <!-- nothing crosses this line -->
-                            <line
-                                x1="1392"
-                                y1="296"
-                                x2="1408"
-                                y2="320"
-                                stroke="#1b1915"
-                                stroke-width="2"
-                            />
-                            <line
-                                x1="1408"
-                                y1="296"
-                                x2="1392"
-                                y2="320"
-                                stroke="#1b1915"
-                                stroke-width="2"
-                            />
-                            <text
-                                x="1200"
-                                y="304"
-                                text-anchor="middle"
-                                fill="#55514a"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >nothing crosses this line</text
-                            >
+                                <!-- 04 record -->
+                                <g
+                                    class="node anim-node"
+                                    data-flow="record"
+                                    data-title="Recording"
+                                    data-sub="saved locally to your Mac"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="Recording: saved locally to your Mac"
+                                    style="animation-delay: 0.52s"
+                                >
+                                    <rect class="node-rect node-rect--raised" x="640" y="420" width="240" height="88" rx="8"/>
+                                    <text class="node-label node-label--dark" x="760" y="460" text-anchor="middle">Recording</text>
+                                    <text class="node-sub node-sub--dark" x="760" y="486" text-anchor="middle">saved locally</text>
+                                </g>
 
-                            <!-- the cloud -->
-                            <rect
-                                x="1436"
-                                y="320"
-                                width="116"
-                                height="88"
-                                rx="8"
-                                fill="#f3efe6"
-                                stroke="#c9c2b1"
-                                stroke-width="1"
-                            />
-                            <text
-                                x="1494"
-                                y="352"
-                                text-anchor="middle"
-                                fill="#55514a"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >the cloud</text
-                            >
-                            <text
-                                x="1494"
-                                y="388"
-                                text-anchor="middle"
-                                fill="#6e6659"
-                                font-size="16"
-                                font-family="'IBM Plex Mono', monospace"
-                                >never involved</text
-                            >
-                        </svg>
+                                <!-- 05 remember -->
+                                <g
+                                    class="node anim-node"
+                                    data-flow="remember"
+                                    data-title="Working memory"
+                                    data-sub="transcript &middot; summary &middot; actions &middot; notes"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="Working memory: transcript, summary, actions, notes"
+                                    style="animation-delay: 0.59s"
+                                >
+                                    <rect class="node-rect node-rect--memory" x="968" y="296" width="264" height="184" rx="8"/>
+                                    <rect class="memory-bar" x="980" y="296" width="4" height="184"/>
+                                    <text class="node-label node-label--dark" x="1002" y="340">Working memory</text>
+                                    <text class="memory-item" x="1002" y="416">transcript &middot; summary</text>
+                                    <text class="memory-item" x="1002" y="440">actions &middot; notes</text>
+                                </g>
+
+                                <!-- 0 uploads seal -->
+                                <g
+                                    class="node anim-node"
+                                    data-title="0 uploads"
+                                    data-sub="no account &middot; no telemetry &middot; offline by design"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="0 uploads: no account, no telemetry, offline by design"
+                                    style="animation-delay: 0.78s"
+                                >
+                                    <rect class="node-rect node-rect--pill" x="1016" y="528" width="168" height="56" rx="28"/>
+                                    <g aria-hidden="true">
+                                        <rect class="lock-body" x="1048" y="556" width="12" height="9" rx="1.5"/>
+                                        <path class="lock-shackle" d="M1050,556 V552 a4,4 0 0 1 8,0 V556"/>
+                                    </g>
+                                    <text class="node-label node-label--light" x="1108" y="568" text-anchor="middle" style="font-size: 26px">0 uploads</text>
+                                </g>
+                                <text class="seal-caption anim-node" x="1100" y="616" text-anchor="middle" style="animation-delay: 0.84s">no account &middot; no telemetry</text>
+                                <text class="seal-caption anim-node" x="1100" y="646" text-anchor="middle" style="animation-delay: 0.9s">offline by design</text>
+
+                                <!-- the cloud, outside -->
+                                <g class="anim-cloud">
+                                    <rect class="cloud-capsule" x="1568" y="320" width="128" height="112" rx="14"/>
+                                    <g class="cloud-glyph">
+                                        <circle cx="1622" cy="352" r="8"/>
+                                        <circle cx="1631" cy="348" r="10"/>
+                                        <circle cx="1641" cy="353" r="8"/>
+                                        <rect x="1620" y="352" width="26" height="11" rx="5.5"/>
+                                    </g>
+                                </g>
+                                <g
+                                    class="node anim-cloud"
+                                    data-title="the cloud"
+                                    data-sub="never involved &mdash; nothing crosses this line"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="The cloud: never involved, nothing crosses this line"
+                                >
+                                    <text class="cloud-text" x="1632" y="400" text-anchor="middle">the cloud</text>
+                                    <text class="cloud-text--faint" x="1632" y="424" text-anchor="middle">never involved</text>
+                                </g>
+                            </svg>
+
+                            <div class="fig-tooltip" id="figTooltip" role="status" aria-hidden="true">
+                                <p class="tt-title"></p>
+                                <p class="tt-sub"></p>
+                            </div>
+                        </div>
                         <figcaption class="figure__cap">
                             <span class="figure__no">fig. 00</span> — where
                             every word goes

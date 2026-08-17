@@ -4,13 +4,19 @@
 :root {
     --color-paper: oklch(96.3% 0.012 85);
     --color-paper-raised: oklch(98.4% 0.007 88);
+    --color-paper-deep: oklch(94.7% 0.014 84);
     --color-ink: oklch(20% 0.008 60);
     --color-ink-soft: oklch(40% 0.018 70);
     --color-ink-faint: oklch(46% 0.022 68);
+    --color-ink-invert: oklch(98.2% 0.006 88);
     --color-rule: oklch(87% 0.018 80);
+    --color-rule-soft: oklch(90.5% 0.016 80);
     --color-rule-strong: oklch(20% 0.008 60);
     --color-accent: oklch(49% 0.185 262);
     --color-accent-deep: oklch(39% 0.165 263);
+    --color-accent-glow: oklch(49% 0.185 262 / 0.18);
+    --color-shadow: oklch(20% 0.008 60 / 0.1);
+    --color-shadow-strong: oklch(20% 0.008 60 / 0.18);
     --color-focus: oklch(49% 0.185 262);
 
     --font-display:
@@ -425,6 +431,7 @@ a {
 
 .figure {
     margin: 0;
+    height: auto;
 }
 .figure__cap {
     font-family: var(--font-mono);
@@ -444,12 +451,372 @@ a {
     margin-top: var(--space-md);
 }
 
-.diagram {
+.fig-scroll {
+    position: relative;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-frame);
+    background: var(--color-paper);
+    display: block;
+}
+.fig-scroll svg {
     display: block;
     width: 100%;
-    height: auto;
+    min-width: 1040px;
+    height: 40vh;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.fig-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+.fig-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.fig-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-rule);
+    border-radius: 4px;
+}
+.fig-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-faint);
+}
+.fig-scroll-hint {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
     border: 1px solid var(--color-rule);
-    border-radius: var(--radius-frame);
+    background: var(--color-paper-raised);
+    box-shadow: 0 4px 12px -6px var(--color-shadow-strong);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-soft);
+    pointer-events: none;
+    z-index: 3;
+}
+.fig-tooltip {
+    position: absolute;
+    z-index: 6;
+    pointer-events: none;
+    max-width: 264px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--color-rule);
+    background: var(--color-paper-raised);
+    box-shadow:
+        0 12px 28px -14px var(--color-shadow-strong),
+        0 2px 6px -2px var(--color-shadow);
+    opacity: 0;
+    transform: translateY(5px);
+    transition:
+        opacity var(--dur-short) var(--ease-out),
+        transform var(--dur-short) var(--ease-out);
+}
+.fig-tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.fig-tooltip .tt-title {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent-deep);
+    margin-bottom: 3px;
+}
+.fig-tooltip .tt-sub {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+    line-height: 1.45;
+}
+
+/* ── pipeline figure (fig. 00) ─────────────────────────────────────── */
+
+#fig-local svg text {
+    font-family: var(--font-body);
+}
+#fig-local .bg {
+    fill: var(--color-paper);
+}
+#fig-local .boundary {
+    fill: none;
+    stroke: var(--color-ink);
+    stroke-opacity: 0.35;
+    stroke-width: 1;
+    stroke-dasharray: 6 5;
+}
+#fig-local .hatch-rect {
+    fill: url(#hatch);
+}
+#fig-local .hatch-line {
+    stroke: var(--color-ink);
+    stroke-opacity: 0.04;
+    stroke-width: 1;
+}
+#fig-local .marker-sq {
+    fill: var(--color-accent);
+}
+#fig-local .boundary-label {
+    font: 600 23px var(--font-body);
+    letter-spacing: 0.1em;
+    fill: var(--color-ink);
+}
+#fig-local .boundary-sub {
+    font: 500 15px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-faint);
+}
+#fig-local .readout {
+    font: 500 18px var(--font-mono);
+    fill: var(--color-ink-faint);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+#fig-local .flow-arrow {
+    font: 400 18px var(--font-mono);
+    fill: var(--color-ink-faint);
+    opacity: 0.7;
+}
+#fig-local .flow-word {
+    transition: fill var(--dur-short) var(--ease-out);
+}
+#fig-local .flow-word.is-active {
+    fill: var(--color-accent);
+}
+#fig-local .flow-underline {
+    fill: var(--color-accent);
+    opacity: 0;
+    transition: opacity var(--dur-short) var(--ease-out);
+}
+#fig-local .flow-word.is-active + .flow-underline {
+    opacity: 1;
+}
+#fig-local .ping {
+    fill: var(--color-accent);
+}
+#fig-local .ping-halo {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+    opacity: 0.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pipeline-ping 1.2s ease-out 0.5s 1 both;
+}
+@keyframes pipeline-ping {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2.3);
+        opacity: 0;
+    }
+}
+#fig-local .tag {
+    font: 500 16px var(--font-mono);
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-faint);
+}
+#fig-local .flow-line {
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-dasharray: 4 8;
+    transition: stroke-opacity var(--dur-short) var(--ease-out);
+}
+#fig-local .flow-line--accent {
+    stroke: var(--color-accent);
+}
+#fig-local .connector-drop {
+    fill: none;
+    stroke: var(--color-ink-faint);
+    stroke-width: 1;
+    stroke-dasharray: 4 6;
+}
+#fig-local svg.has-hover .flow-line {
+    stroke-opacity: 0.45;
+}
+#fig-local #arrow polygon {
+    fill: var(--color-ink-soft);
+}
+#fig-local #arrow-accent polygon {
+    fill: var(--color-accent);
+}
+#fig-local .node {
+    cursor: default;
+    transition:
+        transform var(--dur-short) var(--ease-out),
+        opacity var(--dur-short) var(--ease-out);
+}
+#fig-local .node:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+#fig-local svg.has-hover .node {
+    opacity: 0.32;
+}
+#fig-local svg.has-hover .node.is-hovered {
+    opacity: 1;
+    transform: translateY(-3px);
+}
+#fig-local .node-rect {
+    filter: drop-shadow(0 1px 2px var(--color-shadow));
+    transition: filter var(--dur-short) var(--ease-out);
+}
+#fig-local .node.is-hovered .node-rect {
+    filter: drop-shadow(0 8px 14px -4px var(--color-shadow-strong));
+}
+#fig-local .node-rect--node {
+    fill: var(--color-paper-deep);
+    stroke: var(--color-rule);
+    stroke-width: 1;
+}
+#fig-local .node-rect--ink {
+    fill: var(--color-ink);
+    stroke: var(--color-ink);
+    stroke-width: 1;
+}
+#fig-local .node-rect--accent {
+    fill: var(--color-accent);
+    stroke: var(--color-accent-deep);
+    stroke-width: 1.2;
+}
+#fig-local .node-rect--raised {
+    fill: var(--color-paper-raised);
+    stroke: var(--color-ink);
+    stroke-width: 1.2;
+}
+#fig-local .node-rect--memory {
+    fill: var(--color-paper-deep);
+    stroke: var(--color-rule);
+    stroke-width: 1;
+}
+#fig-local .node-rect--pill {
+    fill: var(--color-accent);
+    stroke: var(--color-accent-deep);
+    stroke-width: 1.2;
+    filter: drop-shadow(0 2px 6px var(--color-accent-glow));
+}
+#fig-local .node-label {
+    font: 600 22px var(--font-body);
+    letter-spacing: -0.015em;
+}
+#fig-local .node-label--light {
+    fill: var(--color-ink-invert);
+}
+#fig-local .node-label--dark {
+    fill: var(--color-ink);
+}
+#fig-local .node-sub {
+    font: 400 16px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+#fig-local .node-sub--light {
+    fill: color-mix(in oklch, var(--color-ink-invert) 78%, transparent);
+}
+#fig-local .node-sub--dark {
+    fill: var(--color-ink-faint);
+}
+#fig-local .memory-bar {
+    fill: var(--color-accent);
+}
+#fig-local .memory-item {
+    font: 400 16px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-soft);
+}
+#fig-local .lock-body {
+    fill: var(--color-ink-invert);
+    opacity: 0.95;
+}
+#fig-local .lock-shackle {
+    fill: none;
+    stroke: var(--color-ink-invert);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+}
+#fig-local .seal-caption {
+    font: 400 16px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-faint);
+}
+#fig-local .xline {
+    stroke: var(--color-ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+#fig-local .caption-zone {
+    font: 500 15px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-soft);
+}
+#fig-local .cloud-capsule {
+    fill: var(--color-paper-raised);
+    stroke: var(--color-ink-faint);
+    stroke-dasharray: 5 5;
+    stroke-width: 1;
+}
+#fig-local .cloud-glyph {
+    fill: var(--color-ink);
+    opacity: 0.22;
+}
+#fig-local .cloud-text {
+    font: 500 15px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-soft);
+}
+#fig-local .cloud-text--faint {
+    font: 500 14px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--color-ink-faint);
+}
+#fig-local .flow-dot {
+    fill: var(--color-accent);
+}
+#fig-local .flow-dot-glow {
+    fill: var(--color-accent);
+    opacity: 0.3;
+}
+
+/* entrance */
+#fig-local .anim-boundary {
+    animation: pipeline-rise 0.6s ease-out 0.05s backwards;
+}
+#fig-local .anim-readout {
+    animation: pipeline-rise 0.5s ease-out 0.12s backwards;
+}
+#fig-local .anim-tag {
+    animation: pipeline-rise 0.45s ease-out backwards;
+}
+#fig-local .anim-node {
+    animation: pipeline-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+#fig-local .anim-line {
+    animation: pipeline-rise 0.4s ease-out backwards;
+}
+#fig-local .anim-cloud {
+    animation: pipeline-rise 0.5s ease-out 0.9s backwards;
+}
+@keyframes pipeline-rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .plates {
@@ -728,6 +1095,9 @@ a {
     .proof__item:nth-child(n + 4) {
         border-top: 1px solid var(--color-rule);
     }
+    .fig-scroll-hint {
+        display: flex;
+    }
 }
 @media (max-width: 720px) {
     .topbar__nav,
@@ -811,5 +1181,21 @@ a {
     .ledger__ref,
     .footer__nav a {
         transition: none;
+    }
+    #fig-local *,
+    #fig-local *::before,
+    #fig-local *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+    #fig-local .flow-line {
+        stroke-dasharray: 4 8;
+        animation: none;
+    }
+    #fig-local .node-rect--pill {
+        filter: drop-shadow(0 2px 6px var(--color-shadow));
+    }
+    #fig-local .anim-* {
+        animation: none;
     }
 }

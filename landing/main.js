@@ -181,3 +181,122 @@
     })
     .catch(function () {});
 })();
+
+// Pipeline figure (fig. 00) interactivity -------------------------------
+// Hover / tap a stage to inspect it: the node is named, its lane in the
+// readout is lit, everything else dims, and a tooltip explains the step.
+(function () {
+  var svg = document.getElementById('sivlo-pipeline');
+  if (!svg || !svg.getBoundingClientRect) return;
+  var wrap = document.getElementById('fig-local');
+  var scroll = wrap.querySelector('.fig-scroll');
+  var tooltip = wrap.querySelector('.fig-tooltip');
+  var ttTitle = tooltip.querySelector('.tt-title');
+  var ttSub = tooltip.querySelector('.tt-sub');
+  var nodes = Array.prototype.slice.call(svg.querySelectorAll('.node'));
+  var words = Array.prototype.slice.call(svg.querySelectorAll('.flow-word'));
+  var activeEl = null;
+
+  // The travelling flow light is SMIL, which CSS cannot pause. Cut it
+  // under prefers-reduced-motion so the figure settles to its static form.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    Array.prototype.slice
+      .call(svg.querySelectorAll('animateMotion'))
+      .forEach(function (m) {
+        m.remove();
+      });
+  }
+
+  function positionTip(el) {
+    var scrollRect = scroll.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    tooltip.style.transform = 'none';
+    var tw = tooltip.offsetWidth;
+    var th = tooltip.offsetHeight;
+    var x = r.left - scrollRect.left + r.width / 2 - tw / 2;
+    x = Math.max(12, Math.min(x, scrollRect.width - tw - 12));
+    var y;
+    if (r.top - scrollRect.top - th - 14 < 0) {
+      y = r.bottom - scrollRect.top + 14;
+    } else {
+      y = r.top - scrollRect.top - th - 14;
+    }
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+
+  function showTip(el) {
+    activeEl = el;
+    ttTitle.textContent = el.getAttribute('data-title');
+    ttSub.innerHTML = el.getAttribute('data-sub');
+    tooltip.classList.add('show');
+    tooltip.setAttribute('aria-hidden', 'false');
+    positionTip(el);
+  }
+
+  function hideTip() {
+    activeEl = null;
+    tooltip.classList.remove('show');
+    tooltip.setAttribute('aria-hidden', 'true');
+  }
+
+  function setDim(el) {
+    svg.classList.add('has-hover');
+    nodes.forEach(function (n) {
+      n.classList.toggle('is-hovered', n === el);
+    });
+    words.forEach(function (w) {
+      w.classList.toggle(
+        'is-active',
+        w.getAttribute('data-flow') === el.getAttribute('data-flow')
+      );
+    });
+  }
+
+  function clearDim() {
+    svg.classList.remove('has-hover');
+    nodes.forEach(function (n) {
+      n.classList.remove('is-hovered');
+    });
+    words.forEach(function (w) {
+      w.classList.remove('is-active');
+    });
+  }
+
+  nodes.forEach(function (n) {
+    n.addEventListener('pointerenter', function () {
+      showTip(n);
+      setDim(n);
+    });
+    n.addEventListener('pointerleave', function () {
+      hideTip();
+      clearDim();
+    });
+    n.addEventListener('focus', function () {
+      showTip(n);
+      setDim(n);
+    });
+    n.addEventListener('blur', function () {
+      hideTip();
+      clearDim();
+    });
+    n.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        hideTip();
+        clearDim();
+        n.blur();
+      }
+    });
+  });
+
+  svg.addEventListener('pointerleave', function () {
+    hideTip();
+    clearDim();
+  });
+  scroll.addEventListener('scroll', function () {
+    if (activeEl) positionTip(activeEl);
+  });
+  window.addEventListener('resize', function () {
+    if (activeEl) positionTip(activeEl);
+  });
+})();
