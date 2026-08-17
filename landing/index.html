@@ -9,6 +9,7 @@
             content="Sivlo records, transcribes, and summarizes your meetings in real time — entirely on your device. No account, no upload, no cloud."
         />
         <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content="#f5f2ec" />
         <meta
             property="og:title"
             content="Sivlo — Private meeting intelligence for macOS"
@@ -38,6 +39,7 @@ FORM: interactive type specimen — the page as an index of figures.
         <a class="skip-link" href="#main">Skip to content</a>
 
         <header class="topbar" aria-label="Site">
+            <div class="topbar__progress" aria-hidden="true"></div>
             <div class="wrap">
                 <a class="topbar__brand" href="#top" aria-label="Sivlo home"
                     ><span class="topbar__word">sivlo</span></a
@@ -49,11 +51,11 @@ FORM: interactive type specimen — the page as an index of figures.
                 </nav>
                 <div class="topbar__right">
                     <p class="topbar__meta" aria-hidden="true">
-                        v0.1.0 public beta · macOS 13+
+                        v0.4.0 public beta · macOS 13+
                     </p>
                     <a
                         class="topbar__action"
-                        href="https://github.com/drewsephski/sivlo-releases/releases/latest"
+                        href="https://github.com/drewsephski/sivlo/releases/latest"
                         target="_blank"
                         rel="noopener"
                         >Download</a
@@ -67,6 +69,11 @@ FORM: interactive type specimen — the page as an index of figures.
                 <div class="wrap">
                     <div class="specimen">
                         <p class="specimen__word" aria-hidden="true">sivlo</p>
+                        <div class="specimen__rule" aria-hidden="true"></div>
+                        <p class="specimen__coord">
+                            schibsted grotesk · wght 450–800 · 6rem / 0.9 /
+                            −0.035em
+                        </p>
                     </div>
 
                     <div class="hero__text">
@@ -108,7 +115,7 @@ FORM: interactive type specimen — the page as an index of figures.
                     <div class="cta">
                         <a
                             class="cta__primary"
-                            href="https://github.com/drewsephski/sivlo-releases/releases/latest"
+                            href="https://github.com/drewsephski/sivlo/releases/latest"
                             target="_blank"
                             rel="noopener"
                             >Download for macOS</a
@@ -687,72 +694,83 @@ FORM: interactive type specimen — the page as an index of figures.
 
                     <ol class="ledger">
                         <li class="ledger__row">
-                            <h3 class="ledger__name">
-                                Capture that hears your meeting, not your
-                                room.
-                            </h3>
-                            <p class="ledger__desc">
-                                Mic and system audio are mixed
-                                professionally at 48 kHz, with ducking
-                                applied so a presenter is never drowned out
-                                by shared audio.
-                            </p>
-                            <p class="ledger__meta">
-                                <span class="ledger__chip">48 kHz</span>
-                                <a class="ledger__ref" href="#fig-local"
-                                    >fig. 00 · where every word goes</a
-                                >
-                            </p>
+                            <p class="ledger__datum">48 kHz</p>
+                            <div class="ledger__body">
+                                <h3 class="ledger__name">
+                                    Capture that hears your meeting, not
+                                    your room.
+                                </h3>
+                                <p class="ledger__desc">
+                                    Mic and system audio are mixed
+                                    professionally at 48 kHz, with ducking
+                                    applied so a presenter is never drowned
+                                    out by shared audio.
+                                </p>
+                                <p class="ledger__meta">
+                                    <a class="ledger__ref" href="#fig-local"
+                                        >fig. 00 · where every word goes</a
+                                    >
+                                </p>
+                            </div>
                         </li>
                         <li class="ledger__row">
-                            <h3 class="ledger__name">
-                                Real-time transcription on your own chip.
-                            </h3>
-                            <p class="ledger__desc">
-                                Speech is filtered for voice activity, then
-                                transcribed on-device, accelerated by Metal
-                                on your Mac. Speaking becomes text as it
-                                happens.
-                            </p>
-                            <p class="ledger__meta">
-                                <span class="ledger__chip">whisper</span>
-                                <a class="ledger__ref" href="#fig-transcription"
-                                    >fig. 02 · live transcription</a
-                                >
-                            </p>
+                            <p class="ledger__datum">whisper</p>
+                            <div class="ledger__body">
+                                <h3 class="ledger__name">
+                                    Real-time transcription on your own
+                                    chip.
+                                </h3>
+                                <p class="ledger__desc">
+                                    Speech is filtered for voice activity,
+                                    then transcribed on-device, accelerated
+                                    by Metal on your Mac. Speaking becomes
+                                    text as it happens.
+                                </p>
+                                <p class="ledger__meta">
+                                    <a
+                                        class="ledger__ref"
+                                        href="#fig-transcription"
+                                        >fig. 02 · live transcription</a
+                                    >
+                                </p>
+                            </div>
                         </li>
                         <li class="ledger__row">
-                            <h3 class="ledger__name">
-                                The summary is the meeting, curated.
-                            </h3>
-                            <p class="ledger__desc">
-                                When you stop, Sivlo drafts a title, a
-                                summary, and the actions and decisions you
-                                actually need to carry forward.
-                            </p>
-                            <p class="ledger__meta">
-                                <span class="ledger__chip">summary</span>
-                                <a class="ledger__ref" href="#fig-summary"
-                                    >fig. 03 · summary &amp; notes</a
-                                >
-                            </p>
+                            <p class="ledger__datum">summary</p>
+                            <div class="ledger__body">
+                                <h3 class="ledger__name">
+                                    The summary is the meeting, curated.
+                                </h3>
+                                <p class="ledger__desc">
+                                    When you stop, Sivlo drafts a title, a
+                                    summary, and the actions and decisions
+                                    you actually need to carry forward.
+                                </p>
+                                <p class="ledger__meta">
+                                    <a class="ledger__ref" href="#fig-summary"
+                                        >fig. 03 · summary &amp; notes</a
+                                    >
+                                </p>
+                            </div>
                         </li>
                         <li class="ledger__row">
-                            <h3 class="ledger__name">
-                                Working memory that you can search.
-                            </h3>
-                            <p class="ledger__desc">
-                                Notes persist beside every meeting, and
-                                full-text search finds a decision made
-                                months ago, instantly, offline, in your
-                                vault.
-                            </p>
-                            <p class="ledger__meta">
-                                <span class="ledger__chip">memory</span>
-                                <a class="ledger__ref" href="#fig-home"
-                                    >fig. 01 · the meeting home</a
-                                >
-                            </p>
+                            <p class="ledger__datum">search</p>
+                            <div class="ledger__body">
+                                <h3 class="ledger__name">
+                                    Working memory that you can search.
+                                </h3>
+                                <p class="ledger__desc">
+                                    Notes persist beside every meeting, and
+                                    full-text search finds a decision made
+                                    months ago, instantly, offline, in your
+                                    vault.
+                                </p>
+                                <p class="ledger__meta">
+                                    <a class="ledger__ref" href="#fig-home"
+                                        >fig. 01 · the meeting home</a
+                                    >
+                                </p>
+                            </div>
                         </li>
                     </ol>
                 </div>
@@ -821,13 +839,13 @@ FORM: interactive type specimen — the page as an index of figures.
                         <div class="cta cta--dl">
                             <a
                                 class="cta__primary cta__primary--large"
-                                href="https://github.com/drewsephski/sivlo-releases/releases/latest"
+                                href="https://github.com/drewsephski/sivlo/releases/latest"
                                 target="_blank"
                                 rel="noopener"
                                 >Download for macOS</a
                             >
                             <p class="cta__note">
-                                v0.1.0 public beta · Apple Silicon &amp; Intel ·
+                                v0.4.0 public beta · Apple Silicon &amp; Intel ·
                                 notarized DMG · macOS 13+
                             </p>
                         </div>
@@ -842,13 +860,13 @@ FORM: interactive type specimen — the page as an index of figures.
                     <p class="footer__word">sivlo</p>
                     <nav class="footer__nav" aria-label="Footer">
                         <a
-                            href="https://github.com/drewsephski/sivlo-releases/releases/latest"
+                            href="https://github.com/drewsephski/sivlo/releases"
                             target="_blank"
                             rel="noopener"
                             >Releases</a
                         >
                         <a
-                            href="https://github.com/drewsephski/sivlo-releases"
+                            href="https://github.com/drewsephski/sivlo/releases/latest"
                             target="_blank"
                             rel="noopener"
                             >Update feed</a
