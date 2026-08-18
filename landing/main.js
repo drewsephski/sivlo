@@ -151,12 +151,14 @@
       return /\.dmg$/i.test(a.name);
     });
     if (dmgs.length === 1) return dmgs[0];
-    if (arm === null || arm === undefined) return dmgs[0];
-    var want = arm ? /aarch64|arm64/ : /x86_64/i;
+    if (arm === null || arm === undefined) return null;
+    var want = arm
+      ? /aarch64|arm64|apple[-_ ]?silicon/i
+      : /x86_64|x64|intel/i;
     var match = dmgs.filter(function (a) {
       return want.test(a.name);
     });
-    return match.length ? match[0] : dmgs[0];
+    return match.length ? match[0] : null;
   };
 
   // Windows installers: prefer the NSIS setup .exe, fall back to the MSI.
@@ -186,7 +188,7 @@
   // the download links. Version is read live so the page stays truthful
   // without a rebuild.
   var apply = function (release, os, arm) {
-    var version = '0.4.0';
+    var version = '0.1.0';
     var m = (release.name || release.tag_name || '').match(/\d+\.\d+\.\d+/);
     if (m) version = m[0];
 

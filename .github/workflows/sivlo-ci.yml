@@ -53,11 +53,27 @@ jobs:
         run: |
           TAG_VERSION="${GITHUB_REF#refs/tags/v}"
           MANIFEST_VERSION="${{ steps.get-version.outputs.version }}"
+
           if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) does not match manifest version ($MANIFEST_VERSION)"
+            echo "::error::Tag version ($TAG_VERSION) does not match tauri.conf.json ($MANIFEST_VERSION)"
             exit 1
           fi
-          echo "Tag version matches manifest: $MANIFEST_VERSION"
+
+          # Also validate package.json and Cargo.toml are aligned
+          PKG_VERSION=$(grep -o '"version": "[^"]*"' frontend/package.json | head -1 | cut -d'"' -f4)
+          CARGO_VERSION=$(grep '^version' frontend/src-tauri/Cargo.toml | head -1 | awk -F'"' '{print $2}')
+
+          FAIL=0
+          if [ "$PKG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match tauri.conf.json ($MANIFEST_VERSION)"
+            FAIL=1
+          fi
+          if [ "$CARGO_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "::error::Cargo.toml version ($CARGO_VERSION) does not match tauri.conf.json ($MANIFEST_VERSION)"
+            FAIL=1
+          fi
+          if [ "$FAIL" -ne 0 ]; then exit 1; fi
+          echo "All manifests aligned at version $MANIFEST_VERSION"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -333,6 +349,49 @@ jobs:
           echo "Updater archive: $APP_TAR_GZ ($(stat -f%z "$APP_TAR_GZ") bytes)"
           echo "Updater signature: $APP_TAR_GZ_SIG ($(stat -f%z "$APP_TAR_GZ_SIG") bytes)"
 
+      - name: Rename release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ steps.get-version.outputs.version }}"
+          ARCH="${{ matrix.arch }}"
+          BUNDLE_DMG="target/${{ matrix.rust_target }}/release/bundle/dmg"
+          BUNDLE_MACOS="target/${{ matrix.rust_target }}/release/bundle/macos"
+
+          # Human-readable DMG label
+          case "$ARCH" in
+            aarch64) DMG_LABEL="Apple-Silicon" ;;
+            x86_64)  DMG_LABEL="Intel" ;;
+            *)       echo "::error::Unknown arch: $ARCH"; exit 1 ;;
+          esac
+
+          # Rename DMG
+          ORIG_DMG=$(find "$BUNDLE_DMG" -name "*.dmg" | head -1)
+          FINAL_DMG="dist/Sivlo-${VERSION}-${DMG_LABEL}.dmg"
+          mv "$ORIG_DMG" "$FINAL_DMG"
+          echo "DMG -> $FINAL_DMG"
+
+          # Rename updater archive + signature to deterministic names
+          ORIG_TAR=$(find "$BUNDLE_MACOS" -name "*.app.tar.gz" | head -1)
+          ORIG_SIG=$(find "$BUNDLE_MACOS" -name "*.app.tar.gz.sig" | head -1)
+          FINAL_TAR="dist/Sivlo-${VERSION}-${ARCH}-apple-darwin.app.tar.gz"
+          FINAL_SIG="dist/Sivlo-${VERSION}-${ARCH}-apple-darwin.app.tar.gz.sig"
+          mv "$ORIG_TAR" "$FINAL_TAR"
+          mv "$ORIG_SIG" "$FINAL_SIG"
+          echo "Updater -> $FINAL_TAR"
+          echo "Signature -> $FINAL_SIG"
+
+          # Verify non-empty
+          for F in "$FINAL_DMG" "$FINAL_TAR" "$FINAL_SIG"; do
+            SIZE=$(stat -f%z "$F")
+            if [ "$SIZE" -eq 0 ]; then
+              echo "::error::File is empty: $F"
+              exit 1
+            fi
+            echo "  $F ($SIZE bytes)"
+          done
+
       - name: Check for secret files in build output
         shell: bash
         run: |
@@ -349,9 +408,9 @@ jobs:
         with:
           name: sivlo-macos-${{ matrix.arch }}-${{ steps.get-version.outputs.version }}
           path: |
-            target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
-            target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz
-            target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz.sig
+            dist/*.dmg
+            dist/*.app.tar.gz
+            dist/*.app.tar.gz.sig
           retention-days: 30
 
       - name: Cleanup credentials
@@ -386,35 +445,66 @@ jobs:
           VERSION=$(grep -o '"version": "[^"]*"' frontend/src-tauri/tauri.conf.json | cut -d'"' -f4)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Prepare release assets
-        id: prepare-assets
+      - name: Assert all release assets exist and are non-empty
         shell: bash
         run: |
           set -euo pipefail
 
           VERSION="${{ steps.get-version.outputs.version }}"
 
-          # Rename DMGs to include architecture for clarity
-          for DMG in dist/*.dmg; do
-            BASENAME=$(basename "$DMG")
-            if echo "$BASENAME" | grep -q "aarch64"; then
-              mv "$DMG" "dist/Sivlo-${VERSION}-Apple-Silicon.dmg"
-            elif echo "$BASENAME" | grep -q "x86_64"; then
-              mv "$DMG" "dist/Sivlo-${VERSION}-Intel.dmg"
+          EXPECTED=(
+            "Sivlo-${VERSION}-Apple-Silicon.dmg"
+            "Sivlo-${VERSION}-Intel.dmg"
+            "Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz"
+            "Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz.sig"
+            "Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz"
+            "Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz.sig"
+          )
+
+          FAIL=0
+          for NAME in "${EXPECTED[@]}"; do
+            FILE="dist/$NAME"
+            if [ ! -f "$FILE" ]; then
+              echo "::error::Missing release asset: $NAME"
+              FAIL=1
+              continue
+            fi
+            SIZE=$(stat -c%s "$FILE")
+            if [ "$SIZE" -eq 0 ]; then
+              echo "::error::Empty release asset: $NAME"
+              FAIL=1
+            else
+              echo "  $NAME ($SIZE bytes)"
             fi
           done
 
-          # Generate latest.json for the Tauri updater
-          ARM_SIG=$(cat dist/Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz.sig 2>/dev/null || true)
-          INTEL_SIG=$(cat dist/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz.sig 2>/dev/null || true)
+          if [ "$FAIL" -ne 0 ]; then exit 1; fi
+          echo "All expected release assets present"
+
+      - name: Generate latest.json and create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ steps.get-version.outputs.version }}"
+          REPO="${{ github.repository }}"
+
+          ARM_SIG=$(cat "dist/Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz.sig")
+          INTEL_SIG=$(cat "dist/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz.sig")
+
+          # Assert signatures are non-empty
+          jq -e --arg sig "$ARM_SIG"   '. | length > 0' <<< "\"$ARM_SIG\"" > /dev/null
+          jq -e --arg sig "$INTEL_SIG" '. | length > 0' <<< "\"$INTEL_SIG\"" > /dev/null
 
           jq -n \
             --arg version "$VERSION" \
             --arg notes "Sivlo ${VERSION}" \
             --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg arm_url "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz" \
+            --arg arm_url "https://github.com/${REPO}/releases/download/v${VERSION}/Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz" \
             --arg arm_sig "$ARM_SIG" \
-            --arg intel_url "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz" \
+            --arg intel_url "https://github.com/${REPO}/releases/download/v${VERSION}/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz" \
             --arg intel_sig "$INTEL_SIG" \
             '{
               version: $version,
@@ -426,17 +516,8 @@ jobs:
               }
             }' > dist/latest.json
 
-          echo "Release assets:"
-          ls -la dist/
-
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          VERSION="${{ steps.get-version.outputs.version }}"
+          echo "latest.json:"
+          jq . dist/latest.json
 
           gh release create "v${VERSION}" \
             --title "Sivlo ${VERSION} Public Beta" \
@@ -447,4 +528,4 @@ jobs:
             dist/*.app.tar.gz.sig \
             dist/latest.json
 
-          echo "Release published: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}"
+          echo "Release published: https://github.com/${REPO}/releases/tag/v${VERSION}"
