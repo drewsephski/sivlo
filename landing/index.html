@@ -66,14 +66,18 @@ FORM: interactive type specimen — the page as an index of figures.
 
         <main id="main">
             <section class="hero" id="top" aria-labelledby="headline">
+                <div class="hero__marks" aria-hidden="true">
+                    <span class="hero__mark hero__mark--tl"></span>
+                    <span class="hero__mark hero__mark--tr"></span>
+                    <span class="hero__mark hero__mark--bl"></span>
+                    <span class="hero__mark hero__mark--br"></span>
+                </div>
                 <div class="wrap">
                     <div class="specimen">
+                        <div class="specimen__grid" aria-hidden="true"></div>
                         <p class="specimen__word" aria-hidden="true">sivlo</p>
                         <div class="specimen__rule" aria-hidden="true"></div>
-                        <p class="specimen__coord">
-                            schibsted grotesk · wght 450–800 · 6rem / 0.9 /
-                            −0.035em
-                        </p>
+
                     </div>
 
                     <div class="hero__text">
@@ -522,7 +526,12 @@ FORM: interactive type specimen — the page as an index of figures.
 
                     <ol class="ledger">
                         <li class="ledger__row">
-                            <p class="ledger__datum">48 kHz</p>
+                            <div class="ledger__rail">
+                                <p class="ledger__datum">48 kHz</p>
+                                <p class="ledger__measure">
+                                    48,000 samples · per second
+                                </p>
+                            </div>
                             <div class="ledger__body">
                                 <h3 class="ledger__name">
                                     Capture that hears your meeting, not
@@ -540,9 +549,145 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
+                            <figure class="ledger__plate" aria-hidden="true">
+                                <div class="ledger__plate-frame">
+                                    <svg
+                                        class="ledger__plate-svg"
+                                        viewBox="0 0 320 232"
+                                        role="img"
+                                        aria-label="Mic and system audio feed a 48 kHz mixer."
+                                    >
+                                        <defs>
+                                            <marker
+                                                id="mb-arrow"
+                                                markerWidth="7"
+                                                markerHeight="5"
+                                                refX="6"
+                                                refY="2.5"
+                                                orient="auto"
+                                                ><polygon
+                                                    points="0 0, 7 2.5, 0 5"
+                                                /></marker
+                                            >
+                                        </defs>
+                                        <rect
+                                            class="mb-bd"
+                                            x="16"
+                                            y="16"
+                                            width="288"
+                                            height="200"
+                                            rx="6"
+                                        />
+                                        <rect
+                                            class="mb-in"
+                                            x="28"
+                                            y="44"
+                                            width="104"
+                                            height="52"
+                                            rx="6"
+                                        />
+                                        <text
+                                            class="mb-lbl"
+                                            x="80"
+                                            y="70"
+                                            text-anchor="middle"
+                                        >
+                                            Mic
+                                        </text>
+                                        <text
+                                            class="mb-sub"
+                                            x="80"
+                                            y="86"
+                                            text-anchor="middle"
+                                        >
+                                            your voice
+                                        </text>
+                                        <rect
+                                            class="mb-in"
+                                            x="28"
+                                            y="120"
+                                            width="104"
+                                            height="52"
+                                            rx="6"
+                                        />
+                                        <text
+                                            class="mb-lbl"
+                                            x="80"
+                                            y="146"
+                                            text-anchor="middle"
+                                        >
+                                            System audio
+                                        </text>
+                                        <text
+                                            class="mb-sub"
+                                            x="80"
+                                            y="162"
+                                            text-anchor="middle"
+                                        >
+                                            meeting audio
+                                        </text>
+                                        <path
+                                            class="mb-arrow"
+                                            d="M132,70 L176,96"
+                                            marker-end="url(#mb-arrow)"
+                                        />
+                                        <path
+                                            class="mb-arrow"
+                                            d="M132,146 L176,120"
+                                            marker-end="url(#mb-arrow)"
+                                        />
+                                        <rect
+                                            class="mb-mix"
+                                            x="176"
+                                            y="76"
+                                            width="112"
+                                            height="64"
+                                            rx="6"
+                                        />
+                                        <text
+                                            class="mb-mixlbl"
+                                            x="232"
+                                            y="106"
+                                            text-anchor="middle"
+                                        >
+                                            Mixer
+                                        </text>
+                                        <text
+                                            class="mb-mixsub"
+                                            x="232"
+                                            y="122"
+                                            text-anchor="middle"
+                                        >
+                                            48 kHz
+                                        </text>
+                                        <text
+                                            class="mb-tag"
+                                            x="28"
+                                            y="38"
+                                        >
+                                            01 · capture
+                                        </text>
+                                        <text
+                                            class="mb-tag"
+                                            x="176"
+                                            y="70"
+                                        >
+                                            02 · mix
+                                        </text>
+                                    </svg>
+                                </div>
+                                <figcaption class="ledger__plate-cap">
+                                    fig. 00 · where every word goes
+                                </figcaption>
+                            </figure>
                         </li>
                         <li class="ledger__row">
-                            <p class="ledger__datum">whisper</p>
+                            <div class="ledger__rail">
+                                <p class="ledger__datum">whisper</p>
+                                <p class="ledger__measure">
+                                    on-device · metal-accelerated
+                                </p>
+                            </div>
                             <div class="ledger__body">
                                 <h3 class="ledger__name">
                                     Real-time transcription on your own
@@ -562,9 +707,29 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
+                            <figure class="ledger__plate" aria-hidden="true">
+                                <div class="ledger__plate-frame">
+                                    <img
+                                        class="ledger__plate-img"
+                                        src="assets/shot-transcription@1200.webp"
+                                        alt=""
+                                        loading="lazy"
+                                        width="1200"
+                                        height="840"
+                                    />
+                                </div>
+                                <figcaption class="ledger__plate-cap">
+                                    fig. 02 · live transcription
+                                </figcaption>
+                            </figure>
                         </li>
                         <li class="ledger__row">
-                            <p class="ledger__datum">summary</p>
+                            <div class="ledger__rail">
+                                <p class="ledger__datum">summary</p>
+                                <p class="ledger__measure">
+                                    title · summary · actions · decisions
+                                </p>
+                            </div>
                             <div class="ledger__body">
                                 <h3 class="ledger__name">
                                     The summary is the meeting, curated.
@@ -580,9 +745,29 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
+                            <figure class="ledger__plate" aria-hidden="true">
+                                <div class="ledger__plate-frame">
+                                    <img
+                                        class="ledger__plate-img"
+                                        src="assets/shot-summary@1200.webp"
+                                        alt=""
+                                        loading="lazy"
+                                        width="1200"
+                                        height="825"
+                                    />
+                                </div>
+                                <figcaption class="ledger__plate-cap">
+                                    fig. 03 · summary &amp; notes
+                                </figcaption>
+                            </figure>
                         </li>
                         <li class="ledger__row">
-                            <p class="ledger__datum">search</p>
+                            <div class="ledger__rail">
+                                <p class="ledger__datum">search</p>
+                                <p class="ledger__measure">
+                                    full-text · local index
+                                </p>
+                            </div>
                             <div class="ledger__body">
                                 <h3 class="ledger__name">
                                     Working memory that you can search.
@@ -599,6 +784,21 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
+                            <figure class="ledger__plate" aria-hidden="true">
+                                <div class="ledger__plate-frame">
+                                    <img
+                                        class="ledger__plate-img"
+                                        src="assets/shot-home@1600.webp"
+                                        alt=""
+                                        loading="lazy"
+                                        width="1600"
+                                        height="1072"
+                                    />
+                                </div>
+                                <figcaption class="ledger__plate-cap">
+                                    fig. 01 · the meeting home
+                                </figcaption>
+                            </figure>
                         </li>
                     </ol>
                 </div>

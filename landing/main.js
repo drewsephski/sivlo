@@ -43,6 +43,7 @@
   // the hairline is a no-op when the face is static.
   var word = document.querySelector('.specimen__word');
   var progress = document.querySelector('.topbar__progress');
+  var live = document.getElementById('liveWeight');
   var motion = !reduce && 'getComputedStyle' in window;
 
   var ticking = false;
@@ -74,7 +75,9 @@
           1,
           Math.max(0, window.scrollY / (window.innerHeight * 0.55))
         );
-        word.style.fontWeight = String(Math.round(450 + 350 * wp));
+        var w = Math.round(450 + 350 * wp);
+        word.style.fontWeight = String(w);
+        if (live) live.textContent = String(w);
       }
       if (progress) {
         progress.style.transform = 'scaleX(' + p + ')';
