@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>06 — CTA</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          background: #fafaf9;
+          color: #1f2937;
+          font-family: Inter, system-ui, sans-serif;
+          overflow: hidden;
+        }
+        .glow {
+          position: absolute;
+          left: 50%;
+          top: 46%;
+          width: 1200px;
+          height: 1200px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(circle, rgba(47, 125, 246, 0.5) 0%, rgba(47, 125, 246, 0) 62%);
+          opacity: 0;
+          z-index: 1;
+          will-change: transform, opacity;
+        }
+        .stack {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 48px;
+        }
+        .wordmark {
+          font-size: 132px;
+          font-weight: 600;
+          letter-spacing: -0.03em;
+          line-height: 1;
+          will-change: transform, opacity;
+        }
+        .tagline {
+          font-size: 40px;
+          color: #6b7280;
+          will-change: transform, opacity;
+        }
+        .cta-wrap {
+          position: relative;
+          margin-top: 16px;
+          will-change: transform, opacity;
+        }
+        .burst {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 620px;
+          height: 150px;
+          margin: -75px 0 0 -310px;
+          background: radial-gradient(ellipse, rgba(47, 125, 246, 0.55) 0%, rgba(47, 125, 246, 0) 70%);
+          z-index: 1;
+          opacity: 0;
+          will-change: transform, opacity;
+        }
+        .cta {
+          position: relative;
+          z-index: 2;
+          padding: 30px 70px;
+          border-radius: 48px;
+          background: #2f7df6;
+          color: #ffffff;
+          font-size: 42px;
+          font-weight: 600;
+          line-height: 1.1;
+          transform-origin: 50% 50%;
+          will-change: transform;
+        }
+        .cta-label {
+          position: relative;
+          z-index: 2;
+          display: inline-block;
+        }
+        .cta-clip {
+          position: absolute;
+          inset: 0;
+          border-radius: 48px;
+          overflow: hidden;
+          z-index: 1;
+        }
+        .shine {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -30%;
+          width: 40%;
+          background: linear-gradient(
+            92deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.35) 50%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: translateX(-120%) rotate(8deg);
+          will-change: transform;
+        }
+        .meta {
+          font-size: 30px;
+          color: #6b7280;
+          will-change: transform, opacity;
+        }
+      </style>
+      <div data-hf-id="hf-cg2q" id="root" data-composition-id="f06-cta" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-tp35" class="glow" id="f6-glow"></div>
+        <div data-hf-id="hf-d1zs" class="stack">
+          <div data-hf-id="hf-21cw" class="wordmark" id="f6-wordmark">sivlo</div>
+          <div data-hf-id="hf-22h8" class="tagline" id="f6-tagline">Turn conversations into working memory.</div>
+          <div data-hf-id="hf-63ih" class="cta-wrap" id="f6-cta-wrap">
+            <div data-hf-id="hf-qrdh" class="burst" id="f6-burst"></div>
+            <div data-hf-id="hf-qcgj" class="cta" id="f6-cta"><div data-hf-id="hf-cclip" class="cta-clip"><div data-hf-id="hf-sh3" class="shine" id="f6-shine"></div></div><span data-hf-id="hf-ctl1" class="cta-label">Download the macOS beta</span></div>
+          </div>
+          <div data-hf-id="hf-bror" class="meta" id="f6-meta">Direct download · Apple Silicon &amp; Intel · macOS 13+</div>
+        </div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        const glow = document.getElementById("f6-glow");
+        const phase = { p: 0 };
+        tl.fromTo(
+          "#f6-glow",
+          { opacity: 0, scale: 0.8 },
+          { opacity: 0.17, scale: 1, duration: 1.0, ease: "power2.out" },
+          0.05,
+        );
+        tl.to(
+          phase,
+          {
+            p: Math.PI * 2 * 2,
+            duration: 3.0,
+            ease: "none",
+            onUpdate: () => {
+              const s = Math.sin(phase.p);
+              glow.style.opacity = String(0.17 + s * 0.03);
+              glow.style.scale = String(1 + s * 0.02);
+            },
+          },
+          1.0,
+        );
+
+        tl.fromTo(
+          "#f6-wordmark",
+          { y: 22, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+          0.15,
+        );
+        tl.fromTo(
+          "#f6-tagline",
+          { y: 12, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          0.55,
+        );
+        tl.fromTo(
+          "#f6-cta-wrap",
+          { scale: 0.92, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" },
+          0.75,
+        );
+        tl.fromTo(
+          "#f6-meta",
+          { y: 10, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          1.1,
+        );
+
+        const PRESS = 2.35;
+        tl.to("#f6-cta", { scale: 0.94, duration: 0.1, ease: "power1.in" }, PRESS);
+        tl.to(
+          "#f6-cta",
+          { scale: 1, duration: 0.55, ease: "back.out(1.8)" },
+          PRESS + 0.1,
+        );
+        tl.fromTo(
+          "#f6-shine",
+          { xPercent: -420 },
+          { xPercent: 240, duration: 0.8, ease: "power2.out" },
+          PRESS,
+        );
+        tl.fromTo(
+          "#f6-burst",
+          { scale: 1, opacity: 0 },
+          { scale: 4.2, opacity: 0.5, duration: 0.35, ease: "power2.out" },
+          PRESS + 0.1,
+        );
+        tl.to("#f6-burst", { opacity: 0, duration: 0.45, ease: "power2.in" }, PRESS + 0.1 + 0.35);
+        tl.to("#f6-glow", { opacity: 0.26, duration: 0.6, ease: "power2.out" }, PRESS + 0.1);
+
+        window.__timelines["f06-cta"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

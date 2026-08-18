@@ -96,19 +96,30 @@
 })();
 
 // Download wiring --------------------------------------------------------
-// The Download actions resolve the real DMG at runtime: read the latest
-// release from GitHub, pick the binary for the visitor's architecture, and
-// point every Download link at it. Without JS the links fall back to the
-// release page, where both binaries are listed.
+// The Download actions resolve the real installer at runtime: read the
+// latest release from GitHub, detect the visitor's OS and architecture, and
+// point every Download link at the right binary. A quiet mono link beside
+// the action reveals the other platform's installer. Without JS the links
+// fall back to the release page, where every binary is listed.
 (function () {
   var RELEASE_URL = 'https://github.com/drewsephski/sivlo/releases/latest';
   var API_URL = 'https://api.github.com/repos/drewsephski/sivlo/releases/latest';
-  var actions = document.querySelectorAll(
-    'a.topbar__action, a.cta__primary[href*="/releases/"]'
-  );
+  var primaries = document.querySelectorAll('[data-download="primary"]');
+  var alts = document.querySelectorAll('[data-download="alt"]');
+  var facts = document.querySelectorAll('[data-download-facts]');
 
   var formatMb = function (bytes) {
     return Math.max(1, Math.round(bytes / 1048576)) + ' MB';
+  };
+
+  // OS detection. This is best-effort; Windows and macOS are reliable from
+  // the UA string. Anything else (Linux, unknown) leaves the primary link on
+  // the release page rather than guessing wrong.
+  var detectOs = function () {
+    var ua = navigator.userAgent || '';
+    if (/Windows/i.test(ua)) return 'windows';
+    if (/Macintosh|Mac OS X|MacIntel/i.test(ua)) return 'macos';
+    return null;
   };
 
   // Best-effort architecture detection. High-entropy values are only exposed
@@ -148,18 +159,102 @@
     return match.length ? match[0] : dmgs[0];
   };
 
-  // Push release facts into the mono coordinate lines so the page stays
-  // truthful without a rebuild. Only rewrites lines pinned to the old beta.
-  var setFacts = function (version, sizeText) {
-    var meta = document.querySelector('.topbar__meta');
-    if (meta && /^v\d+\./.test(meta.textContent.trim())) {
-      meta.textContent = 'v' + version + ' public beta · macOS 13+';
+  // Windows installers: prefer the NSIS setup .exe, fall back to the MSI.
+  var pickWindows = function (assets) {
+    var exes = assets.filter(function (a) {
+      return /\.exe$/i.test(a.name);
+    });
+    var setup = exes.filter(function (a) {
+      return /setup/i.test(a.name);
+    });
+    return (
+      (setup.length ? setup : exes)[0] ||
+      assets.filter(function (a) {
+        return /\.msi$/i.test(a.name);
+      })[0] ||
+      null
+    );
+  };
+
+  var setHref = function (els, url) {
+    els.forEach(function (a) {
+      a.href = url || RELEASE_URL;
+    });
+  };
+
+  // Push platform-correct release facts into the mono coordinate lines and
+  // the download links. Version is read live so the page stays truthful
+  // without a rebuild.
+  var apply = function (release, os, arm) {
+    var version = '0.4.0';
+    var m = (release.name || release.tag_name || '').match(/\d+\.\d+\.\d+/);
+    if (m) version = m[0];
+
+    var primaryAsset, altAsset, primaryLabel, altLabel, sizeText;
+    if (os === 'windows') {
+      primaryAsset = pickWindows(release.assets);
+      altAsset = pickDmg(release.assets, arm);
+      primaryLabel = 'Download for Windows';
+      altLabel = 'Also for macOS';
+      sizeText = primaryAsset ? formatMb(primaryAsset.size) : null;
+    } else if (os === 'macos') {
+      primaryAsset = pickDmg(release.assets, arm);
+      altAsset = pickWindows(release.assets);
+      primaryLabel = 'Download for macOS';
+      altLabel = 'Also for Windows';
+      sizeText = primaryAsset ? formatMb(primaryAsset.size) : null;
+    } else {
+      primaryLabel = 'Download';
+      altLabel = null;
     }
-    document.querySelectorAll('.cta__note').forEach(function (note) {
-      var t = note.textContent.trim();
-      if (!/^v\d+\./.test(t)) return;
-      var base = 'v' + version + ' public beta · Apple Silicon & Intel · notarized DMG · ';
-      note.textContent = sizeText ? base + 'direct download · ' + sizeText : base + 'direct download';
+
+    var primaryUrl = primaryAsset
+      ? primaryAsset.browser_download_url
+      : release.html_url || RELEASE_URL;
+
+    primaries.forEach(function (a) {
+      a.href = primaryUrl;
+      // The topbar button keeps its short "Download" label; only the big
+      // CTAs carry the platform name.
+      if (primaryLabel && a.classList.contains('cta__primary')) {
+        a.textContent = primaryLabel;
+      }
+    });
+    alts.forEach(function (a) {
+      if (altAsset && altLabel) {
+        a.href = altAsset.browser_download_url;
+        a.textContent = altLabel;
+        a.hidden = false;
+      } else {
+        a.hidden = true;
+      }
+    });
+
+    var meta = document.querySelector('.topbar__meta');
+    if (meta) {
+      var platform = os === 'windows' ? 'Windows 10+' : 'macOS 13+';
+      meta.textContent =
+        'v' + version + ' public beta · ' + platform;
+    }
+
+    var factLine = null;
+    if (os === 'windows') {
+      factLine =
+        'v' +
+        version +
+        ' public beta · Windows 10+ · signed installer · direct download';
+    } else if (os === 'macos') {
+      factLine =
+        'v' +
+        version +
+        ' public beta · Apple Silicon · notarized DMG · macOS 13+';
+    } else {
+      factLine =
+        'v' + version + ' public beta · macOS 13+ & Windows 10+';
+    }
+    if (sizeText) factLine += ' · ' + sizeText;
+    facts.forEach(function (n) {
+      n.textContent = factLine;
     });
   };
 
@@ -169,18 +264,9 @@
     })
     .then(async function (release) {
       if (!release || !release.assets || !release.assets.length) return;
+      var os = detectOs();
       var arm = await detArm();
-      var chosen = pickDmg(release.assets, arm);
-      var url = (chosen && chosen.browser_download_url) || release.html_url || RELEASE_URL;
-
-      actions.forEach(function (a) {
-        a.href = url;
-      });
-
-      var version = '0.4.0';
-      var m = (release.name || release.tag_name || '').match(/\d+\.\d+\.\d+/);
-      if (m) version = m[0];
-      setFacts(version, chosen ? formatMb(chosen.size) : null);
+      apply(release, os, arm);
     })
     .catch(function () {});
 })();

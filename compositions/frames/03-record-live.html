@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>03 — Record & transcribe, live</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          background: #fafaf9;
+          color: #1f2937;
+          font-family: Inter, system-ui, sans-serif;
+          overflow: hidden;
+        }
+        .glow {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 1200px;
+          height: 1200px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(circle, rgba(47, 125, 246, 0.45) 0%, rgba(47, 125, 246, 0) 62%);
+          opacity: 0;
+          z-index: 1;
+          will-change: transform, opacity;
+        }
+        .stage {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          height: 100%;
+          display: grid;
+          place-items: center;
+        }
+        .app {
+          width: 1320px;
+          height: 760px;
+          border: 2px solid #d1d5db;
+          border-radius: 24px;
+          background: #ffffff;
+          padding: 60px 80px;
+          display: flex;
+          flex-direction: column;
+          gap: 48px;
+          will-change: transform, opacity;
+        }
+        .topbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 34px;
+          color: #6b7280;
+        }
+        .rec {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          font-size: 32px;
+          color: #ef4444;
+          font-weight: 500;
+        }
+        .rec-dot {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #ef4444;
+          will-change: transform;
+        }
+        .wave {
+          display: flex;
+          align-items: flex-end;
+          gap: 6px;
+          height: 34px;
+          will-change: transform, opacity;
+        }
+        .wave .bar {
+          width: 6px;
+          border-radius: 3px;
+          background: #2f7df6;
+          transform-origin: bottom center;
+          will-change: transform;
+        }
+        .label {
+          font-size: 42px;
+          font-weight: 600;
+          will-change: transform, opacity;
+        }
+        .transcript {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 26px;
+          font-size: 40px;
+          line-height: 1.3;
+          color: #1f2937;
+        }
+        .line {
+          padding-left: 24px;
+          border-left: 6px solid #e5e7eb;
+          will-change: transform, opacity;
+        }
+        .line.active {
+          border-left-color: #2f7df6;
+          color: #1f2937;
+          position: relative;
+        }
+        .underline {
+          position: absolute;
+          left: 0;
+          bottom: -12px;
+          height: 4px;
+          width: 100%;
+          border-radius: 2px;
+          background: #2f7df6;
+          transform-origin: left center;
+          will-change: transform;
+        }
+      </style>
+      <div data-hf-id="hf-ou7p" id="root" data-composition-id="f03-record-live" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-3g2u" class="glow" id="f3-glow"></div>
+        <div data-hf-id="hf-tan6" class="stage">
+          <div data-hf-id="hf-znik" class="app" id="f3-app">
+            <div data-hf-id="hf-mndw" class="topbar">
+              <div data-hf-id="hf-s68h" class="rec"><span data-hf-id="hf-qcop" class="rec-dot" id="f3-rec"></span> Recording</div>
+              <div data-hf-id="hf-i6wq" class="wave" id="f3-wave">
+                <div data-hf-id="hf-w0a" class="bar" id="f3-b1" style="height: 8px"></div>
+                <div data-hf-id="hf-w0b" class="bar" id="f3-b2" style="height: 18px"></div>
+                <div data-hf-id="hf-w0c" class="bar" id="f3-b3" style="height: 12px"></div>
+                <div data-hf-id="hf-w0d" class="bar" id="f3-b4" style="height: 26px"></div>
+                <div data-hf-id="hf-w0e" class="bar" id="f3-b5" style="height: 10px"></div>
+              </div>
+              <div data-hf-id="hf-h56r">00:04:27</div>
+            </div>
+            <div data-hf-id="hf-kkza" class="label" id="f3-label">Team standup — live</div>
+            <div data-hf-id="hf-92by" class="transcript">
+              <div data-hf-id="hf-q2i9" class="line" id="f3-l1">Okay, so the Q3 numbers are in.</div>
+              <div data-hf-id="hf-knh2" class="line" id="f3-l2">And shipping the beta is on track for Friday.</div>
+              <div data-hf-id="hf-2dwy" class="line active" id="f3-l3">
+                Every word stays right here, on the device.
+                <div data-hf-id="hf-29lb" class="underline" id="f3-ul"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        const glow = document.getElementById("f3-glow");
+        const phase = { p: 0 };
+        tl.fromTo(
+          "#f3-glow",
+          { opacity: 0, scale: 0.8 },
+          { opacity: 0.16, scale: 1, duration: 1.0, ease: "power2.out" },
+          0.05,
+        );
+        tl.to(
+          phase,
+          {
+            p: Math.PI * 2 * 2,
+            duration: 4.6,
+            ease: "none",
+            onUpdate: () => {
+              const s = Math.sin(phase.p);
+              glow.style.opacity = String(0.16 + s * 0.03);
+            },
+          },
+          1.05,
+        );
+
+        const rec = document.getElementById("f3-rec");
+        const recPhase = { p: 0 };
+        tl.to(
+          recPhase,
+          {
+            p: Math.PI * 2 * 4,
+            duration: 4.2,
+            ease: "none",
+            onUpdate: () => {
+              rec.style.scale = String(1 + 0.14 * Math.sin(recPhase.p));
+            },
+          },
+          0.9,
+        );
+
+        tl.fromTo(
+          "#f3-wave",
+          { opacity: 0 },
+          { opacity: 1, duration: 0.4, ease: "power1.out" },
+          0.55,
+        );
+        const bars = ["#f3-b1", "#f3-b2", "#f3-b3", "#f3-b4", "#f3-b5"];
+        const barPhase = { p: 0 };
+        const barOffsets = [0, 0.8, 1.6, 2.4, 3.2];
+        tl.to(
+          barPhase,
+          {
+            p: Math.PI * 2 * 3,
+            duration: 3.0,
+            ease: "none",
+            onUpdate: () => {
+              bars.forEach((sel, i) => {
+                const h = 8 + 12 * (0.5 + 0.5 * Math.sin(barPhase.p + barOffsets[i]));
+                document.querySelector(sel).style.scaleY = String(h / 26);
+              });
+            },
+          },
+          0.6,
+        );
+
+        tl.fromTo(
+          "#f3-app",
+          { scale: 0.97, y: 20, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+          0.15,
+        );
+        tl.fromTo(
+          "#f3-label",
+          { y: 14, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          0.7,
+        );
+        tl.fromTo(
+          "#f3-l1",
+          { y: 16, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          0.9,
+        );
+        tl.fromTo(
+          "#f3-l2",
+          { y: 16, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          1.5,
+        );
+        tl.fromTo(
+          "#f3-l3",
+          { y: 16, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          2.1,
+        );
+        tl.fromTo("#f3-ul", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 2.3);
+
+        window.__timelines["f03-record-live"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

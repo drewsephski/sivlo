@@ -1,0 +1,18 @@
+{
+  "provider": "auto",
+  "lang": "en",
+  "speed": 1.1,
+  "voice": "007e1378fc454a9f976db570ba6164a7",
+  "lines": [
+    { "id": "l1", "text": "Turn conversations into working memory." },
+    { "id": "l2", "text": "Meetings drift. Decisions get lost. Your transcript? In someone else's cloud." },
+    { "id": "l3", "text": "Sivlo records and transcribes in real time — on your Mac, fully on device." },
+    { "id": "l4", "text": "Afterwards, Sivlo distills the meeting — summary, actions, decisions you can keep." },
+    { "id": "l5", "text": "Every word stays on your device. Privacy is the product." },
+    { "id": "l6", "text": "Sivlo — working memory for your next meeting. Download the beta." }
+  ],
+  "bgm": {
+    "mode": "retrieve",
+    "query": "uplifting corporate tech bright modern piano"
+  }
+}

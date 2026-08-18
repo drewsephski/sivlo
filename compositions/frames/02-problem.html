@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>02 — The problem</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          background: #fafaf9;
+          color: #1f2937;
+          font-family: Inter, system-ui, sans-serif;
+          overflow: hidden;
+        }
+        .glow {
+          position: absolute;
+          left: 50%;
+          top: 34%;
+          width: 1300px;
+          height: 900px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(ellipse, rgba(47, 125, 246, 0.4) 0%, rgba(47, 125, 246, 0) 65%);
+          opacity: 0;
+          z-index: 1;
+          will-change: transform, opacity;
+        }
+        .column {
+          position: relative;
+          z-index: 2;
+          width: 1520px;
+          height: 100%;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 72px;
+        }
+        .headline {
+          font-size: 64px;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          line-height: 1.22;
+          text-align: center;
+          will-change: transform, opacity;
+        }
+        .headline .muted {
+          color: #6b7280;
+          font-weight: 500;
+          will-change: transform, opacity;
+        }
+        .scene {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 72px;
+        }
+        .mac {
+          width: 600px;
+          height: 400px;
+          background: #ffffff;
+          border: 2px solid #d1d5db;
+          border-radius: 18px;
+          padding: 26px;
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
+          will-change: transform, opacity;
+        }
+        .titlebar {
+          display: flex;
+          gap: 10px;
+        }
+        .dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #e5e7eb;
+        }
+        .screen {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 22px;
+        }
+        .sbar {
+          height: 16px;
+          border-radius: 5px;
+          background: #eef0f2;
+          transform-origin: left center;
+          will-change: transform;
+        }
+        .sbar.w1 {
+          width: 88%;
+        }
+        .sbar.w2 {
+          width: 72%;
+        }
+        .sbar.w3 {
+          width: 58%;
+        }
+        .card {
+          width: 420px;
+          height: 150px;
+          background: #ffffff;
+          border: 2px solid #2f7df6;
+          border-radius: 16px;
+          padding: 24px 28px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 16px;
+          will-change: transform, opacity;
+        }
+        .card-label {
+          font-size: 32px;
+          font-weight: 600;
+          color: #2f7df6;
+        }
+        .cbar {
+          height: 14px;
+          border-radius: 5px;
+          background: #eef0f2;
+        }
+        .cbar.w1 {
+          width: 92%;
+        }
+        .cbar.w2 {
+          width: 64%;
+        }
+        .arrow {
+          font-size: 56px;
+          color: #2f7df6;
+          will-change: transform, opacity;
+        }
+        .cloud {
+          width: 168px;
+          height: 96px;
+          border: 2px solid #d1d5db;
+          border-radius: 48px;
+          display: grid;
+          place-items: center;
+          font-size: 24px;
+          color: #6b7280;
+          will-change: transform, opacity;
+        }
+        .subline {
+          font-size: 34px;
+          color: #6b7280;
+          will-change: transform, opacity;
+        }
+      </style>
+      <div data-hf-id="hf-siir" id="root" data-composition-id="f02-problem" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-wfm5" class="glow" id="f2-glow"></div>
+        <div data-hf-id="hf-84me" class="column">
+          <div data-hf-id="hf-8a71" class="headline" id="f2-headline">
+            Meetings drift. Decisions get lost in a pile of notes.
+            <div data-hf-id="hf-tiwa" class="muted" id="f2-muted">And the transcript?</div>
+          </div>
+          <div data-hf-id="hf-wua0" class="scene">
+            <div data-hf-id="hf-mhgx" class="mac" id="f2-mac">
+              <div data-hf-id="hf-t179" class="titlebar">
+                <div data-hf-id="hf-lu65" class="dot"></div>
+                <div data-hf-id="hf-ww7l" class="dot"></div>
+                <div data-hf-id="hf-y34o" class="dot"></div>
+              </div>
+              <div data-hf-id="hf-cdmk" class="screen">
+                <div data-hf-id="hf-r6ap" class="sbar w1" id="f2-s1"></div>
+                <div data-hf-id="hf-4k73" class="sbar w2" id="f2-s2"></div>
+                <div data-hf-id="hf-obqt" class="sbar w3" id="f2-s3"></div>
+              </div>
+            </div>
+            <div data-hf-id="hf-fniz" class="card" id="f2-card">
+              <div data-hf-id="hf-9tbx" class="card-label">transcript</div>
+              <div data-hf-id="hf-odb2" class="cbar w1"></div>
+              <div data-hf-id="hf-kf71" class="cbar w2"></div>
+            </div>
+            <div data-hf-id="hf-d3g5" class="arrow" id="f2-arrow">→</div>
+            <div data-hf-id="hf-xsym" class="cloud" id="f2-cloud">cloud</div>
+          </div>
+          <div data-hf-id="hf-1hzr" class="subline" id="f2-subline">…shipped to someone else’s cloud.</div>
+        </div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        const glow = document.getElementById("f2-glow");
+        const phase = { p: 0 };
+        tl.fromTo(
+          "#f2-glow",
+          { opacity: 0, scale: 0.85 },
+          { opacity: 0.15, scale: 1, duration: 1.0, ease: "power2.out" },
+          0.05,
+        );
+        tl.to(
+          phase,
+          {
+            p: Math.PI * 2 * 1.5,
+            duration: 3.4,
+            ease: "none",
+            onUpdate: () => {
+              const s = Math.sin(phase.p);
+              glow.style.opacity = String(0.15 + s * 0.03);
+            },
+          },
+          1.05,
+        );
+
+        tl.fromTo(
+          "#f2-headline",
+          { y: 24, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+          0.15,
+        );
+        tl.fromTo(
+          "#f2-muted",
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" },
+          0.55,
+        );
+        tl.fromTo(
+          "#f2-mac",
+          { scale: 0.94, y: 18, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 0.7, ease: "power3.out" },
+          0.85,
+        );
+        gsap.utils.toArray(["#f2-s1", "#f2-s2", "#f2-s3"]).forEach((el, i) => {
+          tl.fromTo(el, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, 1.2 + i * 0.1);
+        });
+        tl.fromTo(
+          "#f2-card",
+          { x: 24, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+          1.4,
+        );
+        tl.to(
+          "#f2-card",
+          { x: 46, scale: 0.94, opacity: 0.55, duration: 1.6, ease: "power1.inOut" },
+          2.1,
+        );
+        const pulse = { p: 0 };
+        tl.to(
+          pulse,
+          {
+            p: Math.PI * 2 * 2,
+            duration: 1.2,
+            ease: "none",
+            onUpdate: () => {
+              gsap.set("#f2-arrow", { x: 9 * Math.sin(pulse.p) });
+            },
+          },
+          1.9,
+        );
+        tl.fromTo(
+          "#f2-arrow",
+          { x: 12, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.45, ease: "power2.out" },
+          1.7,
+        );
+        tl.fromTo(
+          "#f2-cloud",
+          { x: 16, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.55, ease: "power2.out" },
+          1.75,
+        );
+        tl.fromTo(
+          "#f2-subline",
+          { y: 12, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55, ease: "power2.out" },
+          2.0,
+        );
+
+        window.__timelines["f02-problem"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

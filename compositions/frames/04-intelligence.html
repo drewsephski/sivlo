@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>04 — Meeting intelligence</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          background: #fafaf9;
+          color: #1f2937;
+          font-family: Inter, system-ui, sans-serif;
+          overflow: hidden;
+        }
+        .glow {
+          position: absolute;
+          left: 50%;
+          top: 58%;
+          width: 1400px;
+          height: 1000px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(ellipse, rgba(47, 125, 246, 0.4) 0%, rgba(47, 125, 246, 0) 66%);
+          opacity: 0;
+          z-index: 1;
+          will-change: transform, opacity;
+        }
+        .frame {
+          position: relative;
+          z-index: 2;
+          width: 1600px;
+          height: 100%;
+          margin: 0 auto;
+          padding: 84px 0 70px;
+          display: flex;
+          flex-direction: column;
+          gap: 56px;
+        }
+        .headline {
+          font-size: 62px;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          will-change: transform, opacity;
+        }
+        .headline .accent {
+          background: linear-gradient(
+            90deg,
+            #1f2937 0%,
+            #1f2937 30%,
+            #2f7df6 48%,
+            #1f2937 70%,
+            #1f2937 100%
+          );
+          background-size: 200% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          will-change: background-position, opacity;
+        }
+        .grid {
+          flex: 1;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+          gap: 40px;
+        }
+        .panel {
+          border: 2px solid #d1d5db;
+          border-radius: 20px;
+          background: #ffffff;
+          padding: 40px 46px;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          will-change: transform, opacity;
+        }
+        .panel.focal {
+          border-color: #2f7df6;
+          box-shadow: 0 0 0 2px rgba(47, 125, 246, 0.14);
+        }
+        .panel-title {
+          font-size: 36px;
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 8px;
+        }
+        .panel.focal .panel-title {
+          color: #2f7df6;
+        }
+        .pl {
+          font-size: 30px;
+          line-height: 1.35;
+          color: #6b7280;
+          will-change: transform, opacity;
+        }
+        .pl.solid {
+          color: #1f2937;
+        }
+        .pl .tick {
+          display: inline-block;
+          margin-right: 10px;
+          color: #2f7df6;
+          font-weight: 600;
+          will-change: transform, opacity;
+        }
+      </style>
+      <div data-hf-id="hf-pek9" id="root" data-composition-id="f04-intelligence" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-ndhv" class="glow" id="f4-glow"></div>
+        <div data-hf-id="hf-d9wv" class="frame">
+          <div data-hf-id="hf-c6yv" class="headline" id="f4-headline">Afterwards, it becomes <span data-hf-id="hf-acc1" class="accent" id="f4-accent">working memory.</span></div>
+          <div data-hf-id="hf-kxq8" class="grid">
+            <div data-hf-id="hf-i42v" class="panel focal" id="f4-p1">
+              <div data-hf-id="hf-c289" class="panel-title">Summary</div>
+              <div data-hf-id="hf-1xuj" class="pl solid">Q3 is on track.</div>
+              <div data-hf-id="hf-fen2" class="pl solid">The beta ships Friday.</div>
+            </div>
+            <div data-hf-id="hf-7fit" class="panel" id="f4-p2">
+              <div data-hf-id="hf-qtxr" class="panel-title">Actions &amp; Decisions</div>
+              <div data-hf-id="hf-licz" class="pl"><span data-hf-id="hf-tk1" class="tick" id="f4-t1">✓</span>Ship the beta · Friday</div>
+              <div data-hf-id="hf-4hak" class="pl"><span data-hf-id="hf-tk2" class="tick" id="f4-t2">✓</span>Send the Q3 recap</div>
+            </div>
+            <div data-hf-id="hf-4g98" class="panel" id="f4-p3">
+              <div data-hf-id="hf-v86c" class="panel-title">Notes</div>
+              <div data-hf-id="hf-3huq" class="pl">2nd weekly standup</div>
+              <div data-hf-id="hf-8umc" class="pl">27 minutes · 4 attendees</div>
+            </div>
+            <div data-hf-id="hf-rxqr" class="panel" id="f4-p4">
+              <div data-hf-id="hf-o9z3" class="panel-title">Search</div>
+              <div data-hf-id="hf-l6dq" class="pl">Find any meeting — instantly</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        const glow = document.getElementById("f4-glow");
+        const phase = { p: 0 };
+        tl.fromTo(
+          "#f4-glow",
+          { opacity: 0, scale: 0.85 },
+          { opacity: 0.15, scale: 1, duration: 1.0, ease: "power2.out" },
+          0.05,
+        );
+        tl.to(
+          phase,
+          {
+            p: Math.PI * 2 * 1.5,
+            duration: 4.2,
+            ease: "none",
+            onUpdate: () => {
+              const s = Math.sin(phase.p);
+              glow.style.opacity = String(0.15 + s * 0.03);
+            },
+          },
+          1.05,
+        );
+
+        tl.fromTo(
+          "#f4-headline",
+          { y: 22, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" },
+          0.15,
+        );
+        tl.fromTo(
+          "#f4-accent",
+          { backgroundPosition: "200% 0%" },
+          { backgroundPosition: "0% 0%", duration: 1.0, ease: "power2.out" },
+          0.35,
+        );
+        const panels = ["#f4-p1", "#f4-p2", "#f4-p3", "#f4-p4"];
+        const panelStarts = [0.55, 0.75, 0.95, 1.15];
+        panels.forEach((sel, i) => {
+          tl.fromTo(
+            sel,
+            { scale: 0.95, y: 16, opacity: 0 },
+            { scale: 1, y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+            panelStarts[i],
+          );
+        });
+        const lines = gsap.utils.toArray(".panel .pl");
+        lines.forEach((el, i) => {
+          tl.fromTo(
+            el,
+            { y: 8, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
+            1.35 + i * 0.09,
+          );
+        });
+        gsap.utils.toArray(["#f4-t1", "#f4-t2"]).forEach((el, i) => {
+          tl.fromTo(
+            el,
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)" },
+            1.75 + i * 0.09,
+          );
+        });
+        const focal = document.getElementById("f4-p1");
+        const focalPhase = { p: 0 };
+        tl.to(
+          focalPhase,
+          {
+            p: Math.PI * 2 * 1,
+            duration: 3.0,
+            ease: "none",
+            onUpdate: () => {
+              const s = Math.sin(focalPhase.p);
+              focal.style.boxShadow = `0 0 0 2px rgba(47, 125, 246, ${0.14 + s * 0.1}), 0 26px 60px -30px rgba(47, 125, 246, ${0.28 + s * 0.22})`;
+            },
+          },
+          1.2,
+        );
+
+        window.__timelines["f04-intelligence"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>01 — Hook</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          background: #fafaf9;
+          color: #1f2937;
+          font-family: Inter, system-ui, sans-serif;
+          overflow: hidden;
+        }
+        .glow {
+          position: absolute;
+          left: 50%;
+          top: 42%;
+          width: 1100px;
+          height: 1100px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(circle, rgba(47, 125, 246, 0.5) 0%, rgba(47, 125, 246, 0) 62%);
+          opacity: 0;
+          z-index: 1;
+          will-change: transform, opacity;
+        }
+        .stack {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 40px;
+        }
+        .wordmark {
+          font-size: 160px;
+          font-weight: 600;
+          letter-spacing: -0.03em;
+          line-height: 1;
+          color: #1f2937;
+        }
+        .letter {
+          display: inline-block;
+          will-change: transform, opacity;
+        }
+        .dot {
+          display: inline-block;
+          width: 26px;
+          height: 26px;
+          margin-left: 14px;
+          border-radius: 50%;
+          background: #2f7df6;
+          will-change: transform, opacity;
+        }
+        .ring {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 26px;
+          height: 26px;
+          margin: -13px 0 0 18px;
+          border: 4px solid #2f7df6;
+          border-radius: 50%;
+          opacity: 0;
+          will-change: transform, opacity;
+        }
+        .ring.echo {
+          border-width: 2px;
+          will-change: transform, opacity;
+        }
+        .tagline {
+          font-size: 48px;
+          font-weight: 400;
+          background: linear-gradient(
+            90deg,
+            #6b7280 0%,
+            #6b7280 32%,
+            #2f7df6 50%,
+            #6b7280 68%,
+            #6b7280 100%
+          );
+          background-size: 200% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          will-change: background-position, opacity;
+        }
+      </style>
+      <div data-hf-id="hf-kpa8" id="root" data-composition-id="f01-hook" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-ujfc" class="glow" id="f1-glow"></div>
+        <div data-hf-id="hf-d1zs" class="stack">
+          <div data-hf-id="hf-yfbo" class="wordmark" id="f1-wordmark">
+            <span data-hf-id="hf-y04u" class="letter">s</span><span data-hf-id="hf-8c3k" class="letter">i</span><span data-hf-id="hf-w0lp" class="letter">v</span><span data-hf-id="hf-6ckf" class="letter">l</span><span data-hf-id="hf-5y9e" class="letter">o</span><span data-hf-id="hf-dq8d" class="dot" id="f1-dot"></span>
+            <span data-hf-id="hf-ib0t" class="ring" id="f1-ring"></span>
+            <span data-hf-id="hf-r0a9" class="ring echo" id="f1-ring2"></span>
+          </div>
+          <div data-hf-id="hf-k559" class="tagline" id="f1-tagline">Turn conversations into working memory.</div>
+        </div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        const glow = document.getElementById("f1-glow");
+        const phase = { p: 0 };
+        tl.fromTo(
+          "#f1-glow",
+          { opacity: 0, scale: 0.8 },
+          { opacity: 0.18, scale: 1, duration: 0.9, ease: "power2.out" },
+          0.05,
+        );
+        tl.to(
+          phase,
+          {
+            p: Math.PI * 2 * 2,
+            duration: 2.6,
+            ease: "none",
+            onUpdate: () => {
+              const s = Math.sin(phase.p);
+              glow.style.opacity = String(0.18 + s * 0.03);
+              glow.style.scale = String(1 + s * 0.02);
+            },
+          },
+          0.95,
+        );
+
+        const letters = gsap.utils.toArray("#f1-wordmark .letter");
+        letters.forEach((el, i) => {
+          tl.fromTo(
+            el,
+            { y: 26, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" },
+            0.1 + i * 0.05,
+          );
+        });
+        tl.fromTo(
+          "#f1-dot",
+          { scale: 0, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.6)" },
+          0.5,
+        );
+        tl.fromTo(
+          "#f1-ring",
+          { scale: 0.6, opacity: 0.5 },
+          { scale: 1.9, opacity: 0, duration: 0.7, ease: "power2.out" },
+          0.55,
+        );
+        tl.fromTo(
+          "#f1-ring2",
+          { scale: 0.6, opacity: 0.4 },
+          { scale: 2.4, opacity: 0, duration: 0.9, ease: "power2.out" },
+          0.8,
+        );
+        tl.fromTo(
+          "#f1-tagline",
+          { y: 14, opacity: 0, backgroundPosition: "200% 0%" },
+          { y: 0, opacity: 1, backgroundPosition: "0% 0%", duration: 1.1, ease: "power2.out" },
+          1.0,
+        );
+
+        window.__timelines["f01-hook"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

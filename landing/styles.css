@@ -475,6 +475,31 @@ a {
     text-transform: uppercase;
     color: var(--color-ink-faint);
 }
+.cta__alt {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-rule);
+    padding-bottom: 1px;
+    white-space: nowrap;
+    transition:
+        color var(--dur-short) var(--ease-out),
+        border-color var(--dur-short) var(--ease-out);
+}
+.cta__alt:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+.cta__alt:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+}
+.cta__alt[hidden] {
+    display: none;
+}
 
 /* ---------- Section shell ---------- */
 

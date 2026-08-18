@@ -54,7 +54,7 @@ function ProviderDisclosure({ provider }: { provider: string }) {
       break;
   }
   return (
-    <p className="text-[11px] text-muted-foreground">
+    <p className="text-[9px] font-semibold text-muted-foreground">
       Responses use your {label}.
     </p>
   );

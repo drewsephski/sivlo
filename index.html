@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #fafaf9;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      #root > div[data-composition-src] {
+        position: absolute;
+        inset: 0;
+      }
+      #el-f2,
+      #el-f3,
+      #el-f4,
+      #el-f5,
+      #el-f6 {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-0mtn" id="root" data-composition-id="main" data-start="0" data-duration="27" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-e4ob" id="el-f1" data-composition-id="f01-hook" data-composition-src="compositions/frames/01-hook.html" data-start="0" data-duration="3" data-track-index="1" data-width="1920" data-height="1080" style="z-index: 1"></div>
+
+      <div data-hf-id="hf-1bhs" id="el-f2" data-composition-id="f02-problem" data-composition-src="compositions/frames/02-problem.html" data-start="2.7" data-duration="5.7" data-track-index="2" data-width="1920" data-height="1080" style="z-index: 2"></div>
+
+      <div data-hf-id="hf-009b" id="el-f3" data-composition-id="f03-record-live" data-composition-src="compositions/frames/03-record-live.html" data-start="8.4" data-duration="4.5" data-track-index="1" data-width="1920" data-height="1080" style="z-index: 3"></div>
+
+      <div data-hf-id="hf-4sk2" id="el-f4" data-composition-id="f04-intelligence" data-composition-src="compositions/frames/04-intelligence.html" data-start="12.9" data-duration="5.7" data-track-index="2" data-width="1920" data-height="1080" style="z-index: 4"></div>
+
+      <div data-hf-id="hf-zquq" id="el-f5" data-composition-id="f05-privacy" data-composition-src="compositions/frames/05-privacy.html" data-start="18.6" data-duration="4" data-track-index="1" data-width="1920" data-height="1080" style="z-index: 5"></div>
+
+      <div data-hf-id="hf-u6hy" id="el-f6" data-composition-id="f06-cta" data-composition-src="compositions/frames/06-cta.html" data-start="22.6" data-duration="4.4" data-track-index="2" data-width="1920" data-height="1080" style="z-index: 6"></div>
+
+      <audio data-hf-id="hf-zwpx" id="vo-l1" src="assets/voice/l1.wav" data-start="0.25" data-duration="2.2" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-kth4" id="vo-l2" src="assets/voice/l2.wav" data-start="3.2" data-duration="5.1" data-track-index="11" data-volume="1"></audio>
+      <audio data-hf-id="hf-wdxr" id="vo-l3" src="assets/voice/l3.wav" data-start="8.9" data-duration="3.9" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-fxf1" id="vo-l4" src="assets/voice/l4.wav" data-start="13.4" data-duration="5.1" data-track-index="13" data-volume="1"></audio>
+      <audio data-hf-id="hf-ant5" id="vo-l5" src="assets/voice/l5.wav" data-start="19.1" data-duration="3.34" data-track-index="14" data-volume="1"></audio>
+      <audio data-hf-id="hf-p4za" id="vo-l6" src="assets/voice/l6.wav" data-start="23.1" data-duration="3.4" data-track-index="15" data-volume="1"></audio>
+
+      <audio data-hf-id="hf-j19r" id="bgm" src="assets/bgm/track.mp3" data-start="0" data-duration="27" data-track-index="20" data-volume="0.12"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const cf = [
+        { t: 2.7, out: "#el-f1", inn: "#el-f2" },
+        { t: 8.4, out: "#el-f2", inn: "#el-f3" },
+        { t: 12.9, out: "#el-f3", inn: "#el-f4" },
+        { t: 18.6, out: "#el-f4", inn: "#el-f5" },
+        { t: 22.6, out: "#el-f5", inn: "#el-f6" },
+      ];
+      cf.forEach(({ t, out, inn }) => {
+        tl.to(out, { opacity: 0, duration: 0.4, ease: "power2.inOut" }, t);
+        tl.fromTo(inn, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.inOut" }, t);
+      });
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

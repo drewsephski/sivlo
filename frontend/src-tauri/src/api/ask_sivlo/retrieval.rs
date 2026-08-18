@@ -206,11 +206,13 @@ pub(crate) async fn retrieve_meeting_evidence(
                     });
                 }
 
-                // Action items
+                // Action items — include when section exists AND either
+                // (a) classification matches (intent-based), or (b) body contains query terms (lexical).
                 let actions =
                     extract_section_by_headings(&markdown, &["action items", "action item", "actions"]);
                 if !actions.is_empty()
-                    && terms.iter().any(|t| actions.to_lowercase().contains(t.as_str()))
+                    && (classification == "action_item"
+                        || terms.iter().any(|t| actions.to_lowercase().contains(t.as_str())))
                 {
                     candidates.push(RawEvidence {
                         meeting_id: meeting_id.clone(),
@@ -224,13 +226,15 @@ pub(crate) async fn retrieve_meeting_evidence(
                     });
                 }
 
-                // Decisions
+                // Decisions — include when section exists AND either
+                // (a) classification matches (intent-based), or (b) body contains query terms (lexical).
                 let decisions = extract_section_by_headings(
                     &markdown,
                     &["decisions", "decision", "key decisions"],
                 );
                 if !decisions.is_empty()
-                    && terms.iter().any(|t| decisions.to_lowercase().contains(t.as_str()))
+                    && (classification == "decision"
+                        || terms.iter().any(|t| decisions.to_lowercase().contains(t.as_str())))
                 {
                     candidates.push(RawEvidence {
                         meeting_id: meeting_id.clone(),
@@ -739,6 +743,85 @@ mod tests {
             .collect();
         assert!(decision_texts.iter().any(|t| t.contains("Use Rust")));
         assert!(!decision_texts.iter().any(|t| t.contains("Send proposal")));
+    }
+
+    // ── Action-item intent match: body does NOT contain "action"/"items" ──
+
+    #[tokio::test]
+    async fn action_item_intent_returns_evidence_without_lexical_match() {
+        let pool = test_db_pool().await;
+        seed_meeting(&pool, "m1", "Sprint").await;
+        let summary_json = "{\"markdown\": \"## Action Items\\n\\n- Send follow-up email\\n- Prepare proposal\"}";
+        seed_summary(&pool, "m1", summary_json).await;
+
+        // classification="action_item", but normalized terms are ["action", "items"]
+        // and the body text ("Send follow-up email\n- Prepare proposal") does NOT
+        // contain "action" or "items".  This must still return action_item evidence.
+        let results = retrieve_meeting_evidence(&pool, "What are my action items?", "action_item", &None)
+            .await
+            .unwrap();
+        let has_action = results.iter().any(|e| e.source_type == "action_item");
+        assert!(
+            has_action,
+            "action_item evidence must be returned when classification is action_item, even if body text lacks the literal terms"
+        );
+    }
+
+    #[tokio::test]
+    async fn decision_intent_returns_evidence_without_lexical_match() {
+        let pool = test_db_pool().await;
+        seed_meeting(&pool, "m1", "Sprint").await;
+        let summary_json = "{\"markdown\": \"## Decisions\\n\\n- Use PostgreSQL for the database\"}";
+        seed_summary(&pool, "m1", summary_json).await;
+
+        // classification="decision", terms=["decisions", "made"], body="Use PostgreSQL..."
+        // does not contain "decisions" or "made"
+        let results = retrieve_meeting_evidence(&pool, "What decisions were made?", "decision", &None)
+            .await
+            .unwrap();
+        let has_decision = results.iter().any(|e| e.source_type == "decision");
+        assert!(
+            has_decision,
+            "decision evidence must be returned when classification is decision, even if body text lacks the literal terms"
+        );
+    }
+
+    #[tokio::test]
+    async fn unrelated_classification_does_not_include_action_items() {
+        let pool = test_db_pool().await;
+        seed_meeting(&pool, "m1", "Sprint").await;
+        let summary_json = "{\"markdown\": \"## Action Items\\n\\n- Send proposal\\n\\n## Decisions\\n\\n- Use Rust\"}";
+        seed_summary(&pool, "m1", summary_json).await;
+
+        // classification="general" — should NOT auto-include action_item sections
+        let results = retrieve_meeting_evidence(&pool, "tell me about the project", "general", &None)
+            .await
+            .unwrap();
+        let has_action = results.iter().any(|e| e.source_type == "action_item");
+        let has_decision = results.iter().any(|e| e.source_type == "decision");
+        assert!(!has_action, "general classification must not include action_item evidence");
+        assert!(!has_decision, "general classification must not include decision evidence");
+    }
+
+    #[tokio::test]
+    async fn explicit_meeting_scope_isolated() {
+        let pool = test_db_pool().await;
+        seed_meeting(&pool, "m1", "Meeting A").await;
+        seed_meeting(&pool, "m2", "Meeting B").await;
+        let summary_a = "{\"markdown\": \"## Action Items\\n\\n- Task A\"}";
+        let summary_b = "{\"markdown\": \"## Action Items\\n\\n- Task B\"}";
+        seed_summary(&pool, "m1", summary_a).await;
+        seed_summary(&pool, "m2", summary_b).await;
+
+        let scope = Some(AskSivloScope {
+            kind: "meeting".into(),
+            meeting_id: Some("m1".into()),
+        });
+        let results = retrieve_meeting_evidence(&pool, "action items", "action_item", &scope)
+            .await
+            .unwrap();
+        assert!(results.iter().all(|e| e.meeting_id == "m1"));
+        assert!(!results.iter().any(|e| e.meeting_id == "m2"));
     }
 
     #[tokio::test]

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Sivlo — Private meeting intelligence for macOS</title>
+        <title>Sivlo — Private meeting intelligence</title>
         <meta
             name="description"
             content="Sivlo records, transcribes, and summarizes your meetings in real time — entirely on your device. No account, no upload, no cloud."
@@ -12,11 +12,11 @@
         <meta name="theme-color" content="#f5f2ec" />
         <meta
             property="og:title"
-            content="Sivlo — Private meeting intelligence for macOS"
+            content="Sivlo — Private meeting intelligence"
         />
         <meta
             property="og:description"
-            content="Turn conversations into working memory. Every meeting, transcribed and summarized on your own Mac."
+            content="Turn conversations into working memory. Every meeting, transcribed and summarized on your own device."
         />
         <meta property="og:type" content="website" />
         <link rel="icon" type="image/webp" href="assets/brand-icon.webp" />
@@ -32,8 +32,8 @@
         <!--
 THESIS: Sivlo's landing page is a type specimen of the product name on paper — the word and its claims set at awe scale in ink, measured by hairline rules and mono coordinates. It refuses the hero-card-and-screenshot SaaS template: no cards, no kickers, no stat tiles; proof is set as specimen figures and a ruled ledger.
 OWN-WORLD: warm paper ground, deep ink, one cobalt accent reserved for the live action and the "your device" boundary; hairlines as the only ornament; editorial display grotesque (Schibsted Grotesk, variable 400–900) at display scale, IBM Plex Mono for coordinates and data.
-STORY: the visitor reads the name large, understands that every meeting's words stay on their Mac, sees the local mechanism proven, and downloads the macOS beta.
-FIRST VIEWPORT: topbar (wordmark, mono nav to the sections, release line, bordered Download button), a giant "sivlo" specimen (bare, unruled), the tagline as the headline, a ~70ch lede, a mono proof row, and one cobalt "Download for macOS" action with release facts beside it.
+STORY: the visitor reads the name large, understands that every meeting's words stay on their device, sees the local mechanism proven, and downloads the beta for their platform.
+FIRST VIEWPORT: topbar (wordmark, mono nav to the sections, release line, bordered Download button), a giant "sivlo" specimen (bare, unruled), the tagline as the headline, a ~70ch lede, a mono proof row, and one cobalt "Download for macOS" action (auto-detected to the visitor's platform) with release facts beside it.
 FORM: interactive type specimen — the page as an index of figures.
 -->
         <a class="skip-link" href="#main">Skip to content</a>
@@ -51,13 +51,14 @@ FORM: interactive type specimen — the page as an index of figures.
                 </nav>
                 <div class="topbar__right">
                     <p class="topbar__meta" aria-hidden="true">
-                        v0.4.0 public beta · macOS 13+
+                        v0.4.0 public beta · macOS 13+ &amp; Windows 10+
                     </p>
                     <a
                         class="topbar__action"
                         href="https://github.com/drewsephski/sivlo/releases/latest"
                         target="_blank"
                         rel="noopener"
+                        data-download="primary"
                         >Download</a
                     >
                 </div>
@@ -122,11 +123,20 @@ FORM: interactive type specimen — the page as an index of figures.
                             href="https://github.com/drewsephski/sivlo/releases/latest"
                             target="_blank"
                             rel="noopener"
+                            data-download="primary"
                             >Download for macOS</a
                         >
-                        <p class="cta__note">
-                            Apple Silicon &amp; Intel · notarized DMG · direct
-                            download
+                        <a
+                            class="cta__alt"
+                            href="https://github.com/drewsephski/sivlo/releases/latest"
+                            target="_blank"
+                            rel="noopener"
+                            data-download="alt"
+                            hidden
+                            >Also for Windows</a
+                        >
+                        <p class="cta__note" data-download-facts>
+                            Apple Silicon · notarized DMG · direct download
                         </p>
                     </div>
                 </div>
@@ -144,8 +154,8 @@ FORM: interactive type specimen — the page as an index of figures.
                         </h2>
                         <p class="section__lede">
                             Audiophile-grade capture meets local speech
-                            recognition. Everything below runs on your Mac; none
-                            of it is a server.
+                            recognition. Everything below runs on your device;
+                            none of it is a server.
                         </p>
                     </div>
 
@@ -167,7 +177,7 @@ FORM: interactive type specimen — the page as an index of figures.
                                 viewBox="0 0 1720 780"
                                 xmlns="http://www.w3.org/2000/svg"
                                 role="img"
-                                aria-label="Where every word goes — the Sivlo local pipeline. A left-to-right pipeline inside a dashed YOUR MAC boundary. 01 capture — Mic and System audio — feeds 02 mix (Mixer · 48 kHz), which forks into 03 transcribe (Whisper · on-device) and 04 record (Recording · saved locally); both lanes drop into 05 remember, the working memory holding transcript, summary, actions and notes. Below the memory, a dotted connector drops to a cobalt 0 uploads seal with the lines no account · no telemetry and offline by design. An X on the boundary edge reads nothing crosses this line, and the cloud sits outside the frame labeled never involved."
+                                aria-label="Where every word goes — the Sivlo local pipeline. A left-to-right pipeline inside a dashed YOUR DEVICE boundary. 01 capture — Mic and System audio — feeds 02 mix (Mixer · 48 kHz), which forks into 03 transcribe (Whisper · on-device) and 04 record (Recording · saved locally); both lanes drop into 05 remember, the working memory holding transcript, summary, actions and notes. Below the memory, a dotted connector drops to a cobalt 0 uploads seal with the lines no account · no telemetry and offline by design. An X on the boundary edge reads nothing crosses this line, and the cloud sits outside the frame labeled never involved."
                             >
 
                                 <defs>
@@ -240,7 +250,7 @@ FORM: interactive type specimen — the page as an index of figures.
                                     width="10"
                                     height="10"
                                 />
-                                <text class="boundary-label anim-boundary" x="110" y="152">YOUR MAC</text>
+                                <text class="boundary-label anim-boundary" x="110" y="152">YOUR DEVICE</text>
                                 <text class="boundary-sub anim-boundary" x="110" y="178">everything below happens on this device</text>
 
                                 <!-- top flow readout -->
@@ -370,10 +380,10 @@ FORM: interactive type specimen — the page as an index of figures.
                                     class="node anim-node"
                                     data-flow="record"
                                     data-title="Recording"
-                                    data-sub="saved locally to your Mac"
+                                    data-sub="saved locally to your device"
                                     tabindex="0"
                                     role="group"
-                                    aria-label="Recording: saved locally to your Mac"
+                                    aria-label="Recording: saved locally to your device"
                                     style="animation-delay: 0.52s"
                                 >
                                     <rect class="node-rect node-rect--raised" x="640" y="420" width="240" height="88" rx="8"/>
@@ -685,7 +695,7 @@ FORM: interactive type specimen — the page as an index of figures.
                             <div class="ledger__rail">
                                 <p class="ledger__datum">whisper</p>
                                 <p class="ledger__measure">
-                                    on-device · metal-accelerated
+                                    on-device · gpu-accelerated
                                 </p>
                             </div>
                             <div class="ledger__body">
@@ -696,7 +706,7 @@ FORM: interactive type specimen — the page as an index of figures.
                                 <p class="ledger__desc">
                                     Speech is filtered for voice activity,
                                     then transcribed on-device, accelerated
-                                    by Metal on your Mac. Speaking becomes
+                                    by your device's GPU. Speaking becomes
                                     text as it happens.
                                 </p>
                                 <p class="ledger__meta">
@@ -860,9 +870,9 @@ FORM: interactive type specimen — the page as an index of figures.
                             Take your meetings<br />home with you.
                         </h2>
                         <p class="download__sub">
-                            Sivlo for macOS is in public beta. Record,
-                            transcribe, and remember, with nothing leaving your
-                            Mac.
+                            Sivlo for macOS and Windows is in public beta.
+                            Record, transcribe, and remember, with nothing
+                            leaving your device.
                         </p>
                         <div class="cta cta--dl">
                             <a
@@ -870,11 +880,21 @@ FORM: interactive type specimen — the page as an index of figures.
                                 href="https://github.com/drewsephski/sivlo/releases/latest"
                                 target="_blank"
                                 rel="noopener"
+                                data-download="primary"
                                 >Download for macOS</a
                             >
-                            <p class="cta__note">
-                                v0.4.0 public beta · Apple Silicon &amp; Intel ·
-                                notarized DMG · macOS 13+
+                            <a
+                                class="cta__alt"
+                                href="https://github.com/drewsephski/sivlo/releases/latest"
+                                target="_blank"
+                                rel="noopener"
+                                data-download="alt"
+                                hidden
+                                >Also for Windows</a
+                            >
+                            <p class="cta__note" data-download-facts>
+                                v0.4.0 public beta · Apple Silicon · notarized
+                                DMG · macOS 13+
                             </p>
                         </div>
                     </div>

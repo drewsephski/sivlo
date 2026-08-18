@@ -1,0 +1,443 @@
+{
+  "tts_provider": "heygen",
+  "voice_id": "007e1378fc454a9f976db570ba6164a7",
+  "bgm": {
+    "path": "assets/bgm/track.mp3",
+    "volume": 0.12,
+    "query": "uplifting corporate tech bright modern piano",
+    "mode": "retrieve",
+    "duration_s": 42
+  },
+  "bgm_pending": false,
+  "bgm_provider": "heygen",
+  "bgm_pid": null,
+  "bgm_log": null,
+  "bgm_mode": "retrieve",
+  "bgm_target_duration_s": null,
+  "bgm_seed_duration_s": null,
+  "bgm_loop_count": null,
+  "voices": [
+    {
+      "id": "l1",
+      "path": "assets/voice/l1.wav",
+      "duration_s": 2.194,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Turn",
+          "start": 0.099,
+          "end": 0.259
+        },
+        {
+          "id": "w1",
+          "text": "conversations",
+          "start": 0.359,
+          "end": 1
+        },
+        {
+          "id": "w2",
+          "text": "into",
+          "start": 1.039,
+          "end": 1.199
+        },
+        {
+          "id": "w3",
+          "text": "working",
+          "start": 1.279,
+          "end": 1.479
+        },
+        {
+          "id": "w4",
+          "text": "memory.",
+          "start": 1.599,
+          "end": 1.879
+        }
+      ]
+    },
+    {
+      "id": "l2",
+      "path": "assets/voice/l2.wav",
+      "duration_s": 5.094,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Meetings",
+          "start": 0.199,
+          "end": 0.459
+        },
+        {
+          "id": "w1",
+          "text": "drift.",
+          "start": 0.519,
+          "end": 0.839
+        },
+        {
+          "id": "w2",
+          "text": "Decisions",
+          "start": 1.319,
+          "end": 1.699
+        },
+        {
+          "id": "w3",
+          "text": "get",
+          "start": 1.74,
+          "end": 1.879
+        },
+        {
+          "id": "w4",
+          "text": "lost.",
+          "start": 1.899,
+          "end": 2.24
+        },
+        {
+          "id": "w5",
+          "text": "Your",
+          "start": 2.72,
+          "end": 2.839
+        },
+        {
+          "id": "w6",
+          "text": "transcript?",
+          "start": 2.839,
+          "end": 3.359
+        },
+        {
+          "id": "w7",
+          "text": "In",
+          "start": 3.839,
+          "end": 3.939
+        },
+        {
+          "id": "w8",
+          "text": "someone",
+          "start": 3.98,
+          "end": 4.159
+        },
+        {
+          "id": "w9",
+          "text": "else's",
+          "start": 4.199,
+          "end": 4.48
+        },
+        {
+          "id": "w10",
+          "text": "cloud.",
+          "start": 4.519,
+          "end": 4.819
+        }
+      ]
+    },
+    {
+      "id": "l3",
+      "path": "assets/voice/l3.wav",
+      "duration_s": 3.866,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Sivlo",
+          "start": 0.119,
+          "end": 0.439
+        },
+        {
+          "id": "w1",
+          "text": "records",
+          "start": 0.479,
+          "end": 0.759
+        },
+        {
+          "id": "w2",
+          "text": "and",
+          "start": 0.799,
+          "end": 0.879
+        },
+        {
+          "id": "w3",
+          "text": "transcribes",
+          "start": 0.919,
+          "end": 1.36
+        },
+        {
+          "id": "w4",
+          "text": "in",
+          "start": 1.399,
+          "end": 1.439
+        },
+        {
+          "id": "w5",
+          "text": "real",
+          "start": 1.5,
+          "end": 1.599
+        },
+        {
+          "id": "w6",
+          "text": "time",
+          "start": 1.679,
+          "end": 1.839
+        },
+        {
+          "id": "w7",
+          "text": "—",
+          "start": 1.839,
+          "end": 1.839
+        },
+        {
+          "id": "w8",
+          "text": "on",
+          "start": 1.86,
+          "end": 1.939
+        },
+        {
+          "id": "w9",
+          "text": "your",
+          "start": 1.979,
+          "end": 2.059
+        },
+        {
+          "id": "w10",
+          "text": "Mac,",
+          "start": 2.099,
+          "end": 2.339
+        },
+        {
+          "id": "w11",
+          "text": "fully",
+          "start": 2.819,
+          "end": 3.019
+        },
+        {
+          "id": "w12",
+          "text": "on",
+          "start": 3.079,
+          "end": 3.119
+        },
+        {
+          "id": "w13",
+          "text": "device.",
+          "start": 3.199,
+          "end": 3.559
+        }
+      ]
+    },
+    {
+      "id": "l4",
+      "path": "assets/voice/l4.wav",
+      "duration_s": 5.094,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Afterwards,",
+          "start": 0.179,
+          "end": 0.74
+        },
+        {
+          "id": "w1",
+          "text": "Sivlo",
+          "start": 0.799,
+          "end": 1.1
+        },
+        {
+          "id": "w2",
+          "text": "distills",
+          "start": 1.139,
+          "end": 1.559
+        },
+        {
+          "id": "w3",
+          "text": "the",
+          "start": 1.579,
+          "end": 1.639
+        },
+        {
+          "id": "w4",
+          "text": "meeting",
+          "start": 1.699,
+          "end": 1.919
+        },
+        {
+          "id": "w5",
+          "text": "—",
+          "start": 1.919,
+          "end": 1.919
+        },
+        {
+          "id": "w6",
+          "text": "summary,",
+          "start": 2.019,
+          "end": 2.299
+        },
+        {
+          "id": "w7",
+          "text": "actions,",
+          "start": 2.879,
+          "end": 3.339
+        },
+        {
+          "id": "w8",
+          "text": "decisions",
+          "start": 3.799,
+          "end": 4.239
+        },
+        {
+          "id": "w9",
+          "text": "you",
+          "start": 4.299,
+          "end": 4.38
+        },
+        {
+          "id": "w10",
+          "text": "can",
+          "start": 4.4,
+          "end": 4.539
+        },
+        {
+          "id": "w11",
+          "text": "keep.",
+          "start": 4.579,
+          "end": 4.799
+        }
+      ]
+    },
+    {
+      "id": "l5",
+      "path": "assets/voice/l5.wav",
+      "duration_s": 3.344,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Every",
+          "start": 0.219,
+          "end": 0.439
+        },
+        {
+          "id": "w1",
+          "text": "word",
+          "start": 0.459,
+          "end": 0.639
+        },
+        {
+          "id": "w2",
+          "text": "stays",
+          "start": 0.74,
+          "end": 0.919
+        },
+        {
+          "id": "w3",
+          "text": "on",
+          "start": 0.959,
+          "end": 1.039
+        },
+        {
+          "id": "w4",
+          "text": "your",
+          "start": 1.079,
+          "end": 1.159
+        },
+        {
+          "id": "w5",
+          "text": "device.",
+          "start": 1.199,
+          "end": 1.579
+        },
+        {
+          "id": "w6",
+          "text": "Privacy",
+          "start": 2.019,
+          "end": 2.46
+        },
+        {
+          "id": "w7",
+          "text": "is",
+          "start": 2.5,
+          "end": 2.599
+        },
+        {
+          "id": "w8",
+          "text": "the",
+          "start": 2.619,
+          "end": 2.659
+        },
+        {
+          "id": "w9",
+          "text": "product.",
+          "start": 2.72,
+          "end": 3.059
+        }
+      ]
+    },
+    {
+      "id": "l6",
+      "path": "assets/voice/l6.wav",
+      "duration_s": 3.396,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Sivlo",
+          "start": 0.179,
+          "end": 0.519
+        },
+        {
+          "id": "w1",
+          "text": "—",
+          "start": 0.519,
+          "end": 0.519
+        },
+        {
+          "id": "w2",
+          "text": "working",
+          "start": 0.62,
+          "end": 0.899
+        },
+        {
+          "id": "w3",
+          "text": "memory",
+          "start": 0.919,
+          "end": 1.199
+        },
+        {
+          "id": "w4",
+          "text": "for",
+          "start": 1.24,
+          "end": 1.299
+        },
+        {
+          "id": "w5",
+          "text": "your",
+          "start": 1.339,
+          "end": 1.419
+        },
+        {
+          "id": "w6",
+          "text": "next",
+          "start": 1.459,
+          "end": 1.62
+        },
+        {
+          "id": "w7",
+          "text": "meeting.",
+          "start": 1.659,
+          "end": 1.899
+        },
+        {
+          "id": "w8",
+          "text": "Download",
+          "start": 2.419,
+          "end": 2.7
+        },
+        {
+          "id": "w9",
+          "text": "the",
+          "start": 2.72,
+          "end": 2.799
+        },
+        {
+          "id": "w10",
+          "text": "beta.",
+          "start": 2.819,
+          "end": 3.079
+        }
+      ]
+    }
+  ],
+  "sfx": [],
+  "total_duration_s": 22.988
+}
