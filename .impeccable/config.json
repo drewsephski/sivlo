@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gray-on-color",
+        "value": "text-gray-700",
+        "files": [
+          "frontend/src/components/Sidebar/index.tsx"
+        ],
+        "createdAt": "2026-08-18T15:11:46.162Z",
+        "reason": "pre-existing sidebar button styling triaged during version update; full sidebar restyle out of scope"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "frontend/src/components/Sidebar/index.tsx"
+        ],
+        "createdAt": "2026-08-18T15:12:21.819Z",
+        "reason": "legacy sidebar palette; full sidebar token migration tracked separately from production-readiness work"
+      }
+    ]
+  }
+}
