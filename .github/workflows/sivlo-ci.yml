@@ -76,7 +76,7 @@ jobs:
           echo "All manifests aligned at version $MANIFEST_VERSION"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 10
           run_install: false
