@@ -1,10 +1,13 @@
-name: "Sivlo macOS CI"
+name: "Sivlo Release"
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
 
 concurrency:
-  group: sivlo-ci-${{ github.ref }}
+  group: sivlo-release-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -43,6 +46,18 @@ jobs:
         run: |
           VERSION=$(grep -o '"version": "[^"]*"' frontend/src-tauri/tauri.conf.json | cut -d'"' -f4)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag matches manifest version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          MANIFEST_VERSION="${{ steps.get-version.outputs.version }}"
+          if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match manifest version ($MANIFEST_VERSION)"
+            exit 1
+          fi
+          echo "Tag version matches manifest: $MANIFEST_VERSION"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -347,40 +362,89 @@ jobs:
           rm -f certificate.p12 2>/dev/null || true
           rm -f /tmp/AuthKey_*.p8 2>/dev/null || true
 
-  # Roll a rolling "latest" release from every green build so the landing
-  # page's Download buttons have a stable, public URL to hit. The tag is
-  # deleted and recreated so stale assets never linger; the concurrency guard
-  # above ensures only one publish runs at a time.
-  publish-latest:
-    name: Publish latest release
+  publish-release:
+    name: Publish GitHub Release
     needs: build-macos
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download macOS artifacts
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all macOS artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: sivlo-macos-*
           path: dist
           merge-multiple: true
 
-      - name: Publish latest release
+      - name: Get version
+        id: get-version
         shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(grep -o '"version": "[^"]*"' frontend/src-tauri/tauri.conf.json | cut -d'"' -f4)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release assets
+        id: prepare-assets
+        shell: bash
         run: |
           set -euo pipefail
 
-          DMG=$(find dist -name '*.dmg' | head -1)
-          VERSION=$(basename "${DMG}" | sed -E 's/^[^_]+_([0-9]+(\.[0-9]+)+).*\.dmg$/\1/')
-          echo "Detected app version: ${VERSION}"
+          VERSION="${{ steps.get-version.outputs.version }}"
 
-          ASSETS=$(find dist -type f \( -name '*.dmg' -o -name '*.app.tar.gz' -o -name '*.app.tar.gz.sig' \) -exec basename {} \; | sort | sed 's/^/- /')
+          # Rename DMGs to include architecture for clarity
+          for DMG in dist/*.dmg; do
+            BASENAME=$(basename "$DMG")
+            if echo "$BASENAME" | grep -q "aarch64"; then
+              mv "$DMG" "dist/Sivlo-${VERSION}-Apple-Silicon.dmg"
+            elif echo "$BASENAME" | grep -q "x86_64"; then
+              mv "$DMG" "dist/Sivlo-${VERSION}-Intel.dmg"
+            fi
+          done
 
-          gh release delete latest --yes --cleanup-tag >/dev/null 2>&1 || true
+          # Generate latest.json for the Tauri updater
+          ARM_SIG=$(cat dist/Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz.sig 2>/dev/null || true)
+          INTEL_SIG=$(cat dist/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz.sig 2>/dev/null || true)
 
-          gh release create latest \
-            --title "Sivlo v${VERSION} — latest build" \
-            --notes "$(printf 'Automated build published by the Sivlo macOS CI.\n\n%s' "${ASSETS}")" \
-            dist/*.dmg dist/*.app.tar.gz dist/*.app.tar.gz.sig
+          jq -n \
+            --arg version "$VERSION" \
+            --arg notes "Sivlo ${VERSION}" \
+            --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg arm_url "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Sivlo-${VERSION}-aarch64-apple-darwin.app.tar.gz" \
+            --arg arm_sig "$ARM_SIG" \
+            --arg intel_url "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz" \
+            --arg intel_sig "$INTEL_SIG" \
+            '{
+              version: $version,
+              notes: $notes,
+              pub_date: $pub_date,
+              platforms: {
+                "darwin-aarch64": { signature: $arm_sig, url: $arm_url },
+                "darwin-x86_64": { signature: $intel_sig, url: $intel_url }
+              }
+            }' > dist/latest.json
+
+          echo "Release assets:"
+          ls -la dist/
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ steps.get-version.outputs.version }}"
+
+          gh release create "v${VERSION}" \
+            --title "Sivlo ${VERSION} Public Beta" \
+            --generate-notes \
+            dist/Sivlo-${VERSION}-Apple-Silicon.dmg \
+            dist/Sivlo-${VERSION}-Intel.dmg \
+            dist/*.app.tar.gz \
+            dist/*.app.tar.gz.sig \
+            dist/latest.json
+
+          echo "Release published: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}"
