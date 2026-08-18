@@ -6,6 +6,11 @@ const resolveFromTiptapPm = (pkg) =>
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false, // Disabled for BlockNote compatibility
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
+      ? { exclude: ['error', 'warn'] }
+      : false,
+  },
   output: 'export',
   images: {
     unoptimized: true,

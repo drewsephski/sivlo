@@ -1,6 +1,6 @@
 {
     "name": "sivlo",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "private": true,
     "main": "electron/main.js",
     "scripts": {
@@ -25,7 +25,8 @@
         "tauri:build:coreml": "tauri build -- --features coreml",
         "tauri:build:openblas": "tauri build -- --features openblas",
         "tauri:build:hipblas": "tauri build -- --features hipblas",
-        "lint": "next lint"
+        "lint": "next lint",
+        "test": "bun test"
     },
     "dependencies": {
         "@blocknote/core": "0.36.0",

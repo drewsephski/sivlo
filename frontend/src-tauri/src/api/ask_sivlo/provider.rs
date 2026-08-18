@@ -102,6 +102,7 @@ mod tests {
     use sqlx::sqlite::SqliteConnectOptions;
 
     async fn test_db_pool() -> SqlitePool {
+        crate::secrets::init_test_keyring();
         let options = SqliteConnectOptions::new()
             .filename(":memory:")
             .create_if_missing(true);

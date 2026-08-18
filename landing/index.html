@@ -51,7 +51,7 @@ FORM: interactive type specimen — the page as an index of figures.
                 </nav>
                 <div class="topbar__right">
                     <p class="topbar__meta" aria-hidden="true">
-                        v0.4.0 public beta · macOS 13+ &amp; Windows 10+
+                        v0.1.1 public beta · macOS 13+
                     </p>
                     <a
                         class="topbar__action"
@@ -64,6 +64,15 @@ FORM: interactive type specimen — the page as an index of figures.
                 </div>
             </div>
         </header>
+
+        <nav class="topbar__rail" aria-label="Sections">
+            <div class="wrap">
+                <a href="#mechanism">Mechanism</a>
+                <a href="#features">Features</a>
+                <a href="#privacy">Privacy</a>
+                <a href="#download">Download</a>
+            </div>
+        </nav>
 
         <main id="main">
             <section class="hero" id="top" aria-labelledby="headline">
@@ -78,7 +87,13 @@ FORM: interactive type specimen — the page as an index of figures.
                         <div class="specimen__grid" aria-hidden="true"></div>
                         <p class="specimen__word" aria-hidden="true">sivlo</p>
                         <div class="specimen__rule" aria-hidden="true"></div>
-
+                        <p class="specimen__coord" aria-hidden="true">
+                            wght
+                            <span class="specimen__live" id="liveWeight"
+                                >450</span
+                            >
+                            · Schibsted Grotesk variable
+                        </p>
                     </div>
 
                     <div class="hero__text">
@@ -92,52 +107,59 @@ FORM: interactive type specimen — the page as an index of figures.
                         </p>
                     </div>
 
-                    <dl class="proof" aria-label="Capability and privacy facts">
-                        <div class="proof__item">
-                            <dt class="proof__k">REC</dt>
-                            <dd class="proof__v">
-                                48 kHz · mic + system audio
-                            </dd>
-                        </div>
-                        <div class="proof__item">
-                            <dt class="proof__k">STT</dt>
-                            <dd class="proof__v">on-device whisper</dd>
-                        </div>
-                        <div class="proof__item">
-                            <dt class="proof__k">SUM</dt>
-                            <dd class="proof__v">actions &amp; decisions</dd>
-                        </div>
-                        <div class="proof__item">
-                            <dt class="proof__k">MEM</dt>
-                            <dd class="proof__v">notes · full-text search</dd>
-                        </div>
-                        <div class="proof__item proof__item--net">
-                            <dt class="proof__k">NET</dt>
-                            <dd class="proof__v">0 uploads · ever</dd>
-                        </div>
-                    </dl>
+                    <div class="hero__closing">
+                        <dl
+                            class="proof"
+                            aria-label="Capability and privacy facts"
+                        >
+                            <div class="proof__item">
+                                <dt class="proof__k">REC</dt>
+                                <dd class="proof__v">
+                                    48 kHz · mic + system audio
+                                </dd>
+                            </div>
+                            <div class="proof__item">
+                                <dt class="proof__k">STT</dt>
+                                <dd class="proof__v">on-device whisper</dd>
+                            </div>
+                            <div class="proof__item">
+                                <dt class="proof__k">SUM</dt>
+                                <dd class="proof__v">actions &amp; decisions</dd>
+                            </div>
+                            <div class="proof__item">
+                                <dt class="proof__k">MEM</dt>
+                                <dd class="proof__v">
+                                    notes · full-text search
+                                </dd>
+                            </div>
+                            <div class="proof__item proof__item--net">
+                                <dt class="proof__k">NET</dt>
+                                <dd class="proof__v">0 uploads · ever</dd>
+                            </div>
+                        </dl>
 
-                    <div class="cta">
-                        <a
-                            class="cta__primary"
-                            href="https://github.com/drewsephski/sivlo/releases/latest"
-                            target="_blank"
-                            rel="noopener"
-                            data-download="primary"
-                            >Download for macOS</a
-                        >
-                        <a
-                            class="cta__alt"
-                            href="https://github.com/drewsephski/sivlo/releases/latest"
-                            target="_blank"
-                            rel="noopener"
-                            data-download="alt"
-                            hidden
-                            >Also for Windows</a
-                        >
-                        <p class="cta__note" data-download-facts>
-                            Apple Silicon · notarized DMG · direct download
-                        </p>
+                        <div class="cta cta--hero">
+                            <a
+                                class="cta__primary"
+                                href="https://github.com/drewsephski/sivlo/releases/latest"
+                                target="_blank"
+                                rel="noopener"
+                                data-download="primary"
+                                >Download for macOS</a
+                            >
+                            <a
+                                class="cta__alt"
+                                href="https://github.com/drewsephski/sivlo/releases/latest"
+                                target="_blank"
+                                rel="noopener"
+                                data-download="alt"
+                                hidden
+                                >Also for Windows</a
+                            >
+                            <p class="cta__note" data-download-facts>
+                                Apple Silicon · notarized DMG · direct download
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -163,7 +185,7 @@ FORM: interactive type specimen — the page as an index of figures.
                         <div class="fig-frame">
                             <div class="fig-frame__head">
                                 <span class="fig-frame__meta"
-                                    >sivlo-pipeline · 1720 × 780 viewBox</span
+                                    >fig. 00 · local pipeline</span
                                 >
                                 <span
                                     class="fig-frame__meta fig-frame__meta--accent"
@@ -559,137 +581,6 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
-                            <figure class="ledger__plate" aria-hidden="true">
-                                <div class="ledger__plate-frame">
-                                    <svg
-                                        class="ledger__plate-svg"
-                                        viewBox="0 0 320 232"
-                                        role="img"
-                                        aria-label="Mic and system audio feed a 48 kHz mixer."
-                                    >
-                                        <defs>
-                                            <marker
-                                                id="mb-arrow"
-                                                markerWidth="7"
-                                                markerHeight="5"
-                                                refX="6"
-                                                refY="2.5"
-                                                orient="auto"
-                                                ><polygon
-                                                    points="0 0, 7 2.5, 0 5"
-                                                /></marker
-                                            >
-                                        </defs>
-                                        <rect
-                                            class="mb-bd"
-                                            x="16"
-                                            y="16"
-                                            width="288"
-                                            height="200"
-                                            rx="6"
-                                        />
-                                        <rect
-                                            class="mb-in"
-                                            x="28"
-                                            y="44"
-                                            width="104"
-                                            height="52"
-                                            rx="6"
-                                        />
-                                        <text
-                                            class="mb-lbl"
-                                            x="80"
-                                            y="70"
-                                            text-anchor="middle"
-                                        >
-                                            Mic
-                                        </text>
-                                        <text
-                                            class="mb-sub"
-                                            x="80"
-                                            y="86"
-                                            text-anchor="middle"
-                                        >
-                                            your voice
-                                        </text>
-                                        <rect
-                                            class="mb-in"
-                                            x="28"
-                                            y="120"
-                                            width="104"
-                                            height="52"
-                                            rx="6"
-                                        />
-                                        <text
-                                            class="mb-lbl"
-                                            x="80"
-                                            y="146"
-                                            text-anchor="middle"
-                                        >
-                                            System audio
-                                        </text>
-                                        <text
-                                            class="mb-sub"
-                                            x="80"
-                                            y="162"
-                                            text-anchor="middle"
-                                        >
-                                            meeting audio
-                                        </text>
-                                        <path
-                                            class="mb-arrow"
-                                            d="M132,70 L176,96"
-                                            marker-end="url(#mb-arrow)"
-                                        />
-                                        <path
-                                            class="mb-arrow"
-                                            d="M132,146 L176,120"
-                                            marker-end="url(#mb-arrow)"
-                                        />
-                                        <rect
-                                            class="mb-mix"
-                                            x="176"
-                                            y="76"
-                                            width="112"
-                                            height="64"
-                                            rx="6"
-                                        />
-                                        <text
-                                            class="mb-mixlbl"
-                                            x="232"
-                                            y="106"
-                                            text-anchor="middle"
-                                        >
-                                            Mixer
-                                        </text>
-                                        <text
-                                            class="mb-mixsub"
-                                            x="232"
-                                            y="122"
-                                            text-anchor="middle"
-                                        >
-                                            48 kHz
-                                        </text>
-                                        <text
-                                            class="mb-tag"
-                                            x="28"
-                                            y="38"
-                                        >
-                                            01 · capture
-                                        </text>
-                                        <text
-                                            class="mb-tag"
-                                            x="176"
-                                            y="70"
-                                        >
-                                            02 · mix
-                                        </text>
-                                    </svg>
-                                </div>
-                                <figcaption class="ledger__plate-cap">
-                                    fig. 00 · where every word goes
-                                </figcaption>
-                            </figure>
                         </li>
                         <li class="ledger__row">
                             <div class="ledger__rail">
@@ -717,21 +608,6 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
-                            <figure class="ledger__plate" aria-hidden="true">
-                                <div class="ledger__plate-frame">
-                                    <img
-                                        class="ledger__plate-img"
-                                        src="assets/shot-transcription@1200.webp"
-                                        alt=""
-                                        loading="lazy"
-                                        width="1200"
-                                        height="840"
-                                    />
-                                </div>
-                                <figcaption class="ledger__plate-cap">
-                                    fig. 02 · live transcription
-                                </figcaption>
-                            </figure>
                         </li>
                         <li class="ledger__row">
                             <div class="ledger__rail">
@@ -755,21 +631,6 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
-                            <figure class="ledger__plate" aria-hidden="true">
-                                <div class="ledger__plate-frame">
-                                    <img
-                                        class="ledger__plate-img"
-                                        src="assets/shot-summary@1200.webp"
-                                        alt=""
-                                        loading="lazy"
-                                        width="1200"
-                                        height="825"
-                                    />
-                                </div>
-                                <figcaption class="ledger__plate-cap">
-                                    fig. 03 · summary &amp; notes
-                                </figcaption>
-                            </figure>
                         </li>
                         <li class="ledger__row">
                             <div class="ledger__rail">
@@ -794,21 +655,6 @@ FORM: interactive type specimen — the page as an index of figures.
                                     >
                                 </p>
                             </div>
-                            <figure class="ledger__plate" aria-hidden="true">
-                                <div class="ledger__plate-frame">
-                                    <img
-                                        class="ledger__plate-img"
-                                        src="assets/shot-home@1600.webp"
-                                        alt=""
-                                        loading="lazy"
-                                        width="1600"
-                                        height="1072"
-                                    />
-                                </div>
-                                <figcaption class="ledger__plate-cap">
-                                    fig. 01 · the meeting home
-                                </figcaption>
-                            </figure>
                         </li>
                     </ol>
                 </div>
@@ -843,9 +689,9 @@ FORM: interactive type specimen — the page as an index of figures.
                                 payload.
                             </li>
                             <li>
-                                Transcription uses local models on local
-                                hardware. Offline is not a mode; it is the
-                                design.
+                                Optional cloud AI providers (Claude, Groq, etc.)
+                                are user-controlled — only active when you
+                                configure them.
                             </li>
                         </ul>
                     </div>
@@ -870,9 +716,9 @@ FORM: interactive type specimen — the page as an index of figures.
                             Take your meetings<br />home with you.
                         </h2>
                         <p class="download__sub">
-                            Sivlo for macOS and Windows is in public beta.
-                            Record, transcribe, and remember, with nothing
-                            leaving your device.
+                            Sivlo for macOS is in public beta (Apple Silicon +
+                            Intel). Record, transcribe, and remember — local by
+                            default.
                         </p>
                         <div class="cta cta--dl">
                             <a
@@ -893,7 +739,7 @@ FORM: interactive type specimen — the page as an index of figures.
                                 >Also for Windows</a
                             >
                             <p class="cta__note" data-download-facts>
-                                v0.4.0 public beta · Apple Silicon · notarized
+                                v0.1.1 public beta · Apple Silicon + Intel · notarized
                                 DMG · macOS 13+
                             </p>
                         </div>

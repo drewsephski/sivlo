@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useRecordingState } from '@/contexts/RecordingStateContext';
 import { useImportDialog } from '@/contexts/ImportDialogContext';
 import { useConfig } from '@/contexts/ConfigContext';
+import { AppVersion } from '@/components/AppVersion';
 
 import {
   Dialog,
@@ -679,8 +680,8 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
 
               {/* Show transcript match snippet if available */}
               {hasTranscriptMatch && (
-                <div className="mt-1 ml-8 text-xs text-gray-500 bg-yellow-50 p-1.5 rounded border border-yellow-100 line-clamp-2">
-                  <span className="font-medium text-yellow-600">Match:</span> {matchingResult.matchContext}
+                <div className="mt-1 ml-8 text-xs text-amber-900/80 bg-yellow-50 p-1.5 rounded border border-yellow-100 line-clamp-2">
+                  <span className="font-medium text-yellow-800">Match:</span> {matchingResult.matchContext}
                 </div>
               )}
             </div>
@@ -730,9 +731,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
           <div className="flex-1">
             {!isCollapsed && (
               <div className="p-3">
-                {/* <span className="text-lg text-center border rounded-full bg-blue-50 border-white font-semibold text-gray-700 mb-2 block items-center">
-                  <span>Meetily</span>
-                </span> */}
                 {!isContextMode && <Logo isCollapsed={isCollapsed} />}
 
                 <div className="relative mb-1">
@@ -878,7 +876,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
             {betaFeatures.importAndRetranscribe && (
               <button
                 onClick={() => openImportDialog()}
-                className="w-full flex items-center justify-center px-3 py-2 mt-1 text-sm font-medium text-gray-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors shadow-sm"
+                className="w-full flex items-center justify-center px-3 py-2 mt-1 text-sm font-medium text-blue-900 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors shadow-sm"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 <span>Import Audio</span>
@@ -893,8 +891,8 @@ const Sidebar: React.FC<SidebarProps> = ({ mode = 'legacy' }) => {
               <span>Settings</span>
             </button>
             <Info isCollapsed={isCollapsed} />
-            <div className="w-full flex items-center justify-center px-3 py-1 text-xs text-gray-400">
-              v0.4.0
+            <div className="w-full flex items-center justify-center px-3 py-1 text-xs text-muted-foreground">
+              <AppVersion />
             </div>
           </div>
         )}

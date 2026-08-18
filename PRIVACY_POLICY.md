@@ -1,127 +1,62 @@
-# Meetily Privacy Policy
+# Sivlo Privacy Policy
 
-*Last updated: [Current Date]*
+*Last updated: August 18, 2026*
 
-## Our Privacy-First Commitment
+## Our commitment
 
-Meetily is built on the principle that your meeting data should remain private and under your control. This privacy policy explains how we handle data in our open-source meeting assistant.
+Sivlo is built on the principle that your meeting data belongs to you. This policy explains how the Sivlo desktop app handles your information.
 
-## Data Processing Philosophy
+## Local-first by default
 
-### Local-First Processing
-- **Meeting transcription**: Processed entirely on your device using local Whisper models
-- **Audio recordings**: Never transmitted to external servers
-- **Meeting content**: Remains on your infrastructure
-- **AI summaries**: Generated locally or through your chosen LLM provider
+- **Audio recordings** are stored on your device and are never uploaded by Sivlo.
+- **Transcription** runs locally using Whisper or Parakeet models on your machine.
+- **Meeting transcripts, summaries, and notes** are stored in a local SQLite database on your device.
+- **No account is required** to use Sivlo.
 
-### Your Data Ownership
-- You own all meeting data, transcripts, and recordings
-- Data is stored locally on your device
-- No vendor lock-in - export your data anytime
-- Complete control over data retention and deletion
+## Optional cloud AI providers
 
-## Usage Analytics
+If you choose to configure a cloud AI provider (e.g., Claude, Groq, OpenRouter, OpenAI), transcript or summary text **may be sent to that provider** to generate results. This is entirely under your control:
 
-### What We Collect
-Usage analytics is optional and off by default. When you choose to enable it, Meetily collects minimal, anonymized usage data:
+- Cloud providers are never enabled by default.
+- You provide and manage your own API keys.
+- API keys are stored in your operating system's secure credential store (macOS Keychain), not in plaintext database files.
 
-**Application Usage:**
-- Feature usage patterns (which tools you use most)
+## Usage analytics (opt-in only)
+
+Analytics are **disabled by default**. If you choose to enable them, Sivlo collects minimal, anonymized usage data:
+
+**What may be collected (when opted in):**
+- Feature usage patterns (which tools you use)
 - Session duration and frequency
-- Performance metrics (transcription success rates, error frequencies)
-- UI interaction patterns (button clicks, navigation flows)
+- App version, platform, and architecture
+- Error categories (not meeting content)
 
-**Technical Metrics:**
-- Application version and platform information
-- Error logs and crash reports (anonymized)
-- Performance benchmarks (processing times, resource usage)
+**What is never collected:**
+- Meeting audio, transcripts, summaries, or notes
+- Meeting titles or participant names
+- API keys or credentials
+- File paths or personal identifiers beyond an anonymous device ID
 
-### What We DON'T Collect
-We never collect:
-- ❌ Meeting content, transcripts, or recordings
-- ❌ Personal information or identifiable data
-- ❌ File names, meeting titles, or metadata
-- ❌ Audio data or voice patterns
-- ❌ Participant names or contact information
-- ❌ LLM conversations or AI-generated content
+Analytics use [PostHog](https://posthog.com/) and only activate when a build-time analytics key is present **and** you opt in via Settings.
 
-### Why We Collect This Data
-When enabled, analytics helps us with:
-- **Product Quality**: Identifying and fixing bugs that impact user experience
-- **Performance Optimization**: Understanding resource usage and system bottlenecks
-- **Security**: Detecting potential security issues and vulnerabilities
-- **Feature Development**: Making data-driven decisions about new features
-- **Open Source Sustainability**: Ensuring the project meets user needs effectively
+## Data storage and deletion
 
-### Analytics Implementation
-- **Provider**: PostHog (privacy-focused analytics platform)
-- **Default**: Off by default; analytics starts only after you enable it in settings
-- **Anonymization**: All data linked to generated user IDs only - no personal identification
-- **Data retention**: 12 months maximum, then automatically deleted
-- **Encryption**: All data encrypted in transit using industry-standard protocols
-- **Location**: Data processed in accordance with PostHog's privacy policy
-- **Access Control**: Strictly limited to core development team members
+- All meeting data is stored locally in your app data directory.
+- You can delete individual meetings or uninstall the app to remove all local data.
+- Analytics data (if opted in) is governed by PostHog's data retention policies.
 
-## Third-Party Services
+## Children's privacy
 
-### LLM Providers (Optional)
-If you choose to use external LLM providers:
-- **Anthropic Claude**: Subject to Anthropic's privacy policy
-- **Groq**: Subject to Groq's privacy policy
-- **Local Ollama**: Processed entirely on your device
+Sivlo is not directed at children under 13. We do not knowingly collect information from children.
 
-### Analytics Service (Optional)
-- **PostHog**: Used for usage analytics when enabled
-- **Data**: Only anonymized usage patterns, no meeting content
-- **Control**: Completely optional, off by default, and user-controlled
+## Changes to this policy
 
-## Your Privacy Rights
+We may update this policy as Sivlo evolves. Material changes will be reflected in the app and in this document with an updated date.
 
-### Data Control
-- **Access**: View all data stored locally on your device
-- **Export**: Export your data in standard formats
-- **Delete**: Remove all data from your device
+## Contact
 
+For privacy questions: open an issue on [GitHub](https://github.com/drewsephski/sivlo/issues) or email the address listed in [SECURITY.md](SECURITY.md).
 
-### Analytics Transparency
-- **Open source**: Full analytics implementation available for review in our source code
-- **Opt-in**: New and existing installs have analytics disabled until you turn it on
-- **Questions**: Contact us for any analytics-related concerns
+## Open source
 
-## Data Security
-
-### Local Security
-- Data encrypted at rest using your device's security features
-- No transmission of sensitive meeting data
-- Standard file system permissions protect your data
-
-### Open Source Transparency
-- Full source code available for security review
-- Community-audited privacy implementations
-- No hidden data collection or tracking
-
-## Changes to This Policy
-
-We will notify users of any material changes to this privacy policy through:
-- Updates to this document in our GitHub repository
-- Release notes for application updates
-- In-app notifications for significant privacy changes
-
-## Contact Us
-
-For privacy-related questions or concerns:
-- **GitHub Issues**: [Create an issue](https://github.com/Zackriya-Solutions/meeting-minutes/issues)
-- **Email**: [Contact form](https://www.zackriya.com/service-interest-form/)
-- **Community**: [Discord](https://discord.gg/crRymMQBFH)
-
-## Open Source Commitment
-
-As an open-source project under MIT license, you can:
-- Review our complete privacy implementation
-- Modify data handling to meet your requirements
-- Deploy entirely on your own infrastructure
-- Contribute to privacy improvements
-
----
-
-*This privacy policy applies to Meetily v0.0.5 and later versions. For enterprise deployments, additional privacy controls may be available.*
+Sivlo is open source (MIT). You can inspect exactly how data is handled in the [source code](https://github.com/drewsephski/sivlo).

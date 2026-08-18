@@ -26,6 +26,7 @@ import { ImportAudioDialog, ImportDropOverlay } from '@/components/ImportAudio'
 import { ImportDialogProvider } from '@/contexts/ImportDialogContext'
 import { isAudioExtension, getAudioFormatsDisplayList } from '@/constants/audioFormats'
 import { ThemeProvider } from '@/features/theme/ThemeProvider'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 
 const sourceSans3 = Source_Sans_3({
@@ -235,6 +236,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${sourceSans3.variable} font-sans antialiased`}>
         <ThemeProvider>
+          <ErrorBoundary>
           <AnalyticsProvider>
             <RecordingStateProvider>
               <TranscriptProvider>
@@ -280,6 +282,7 @@ export default function RootLayout({
           </AnalyticsProvider>
 
           <Toaster position="bottom-center" richColors closeButton />
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

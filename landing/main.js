@@ -28,7 +28,7 @@
   // Where the visitor is in the ledger. This is state, not motion, so it
   // stays live for keyboard and reduced-motion users.
   var navLinks = Array.prototype.slice.call(
-    document.querySelectorAll('.topbar__nav a')
+    document.querySelectorAll('.topbar__nav a, .topbar__rail a')
   );
   var activeBySection = {};
   navLinks.forEach(function (link) {
