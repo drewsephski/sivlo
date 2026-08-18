@@ -71,6 +71,14 @@ jobs:
             gir1.2-javascriptcoregtk-4.1=2.44.0-2 \
             gir1.2-webkit2-4.1=2.44.0-2
 
+      - name: Build llama-helper sidecar
+        run: |
+          echo "Building llama-helper sidecar (CPU mode)..."
+          cargo build --release -p llama-helper
+          mkdir -p frontend/src-tauri/binaries
+          cp target/release/llama-helper frontend/src-tauri/binaries/llama-helper-x86_64-unknown-linux-gnu
+          echo "Copied llama-helper to frontend/src-tauri/binaries/"
+
       - name: Run Rust tests
         working-directory: frontend/src-tauri
         run: cargo test
