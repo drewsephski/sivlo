@@ -155,7 +155,7 @@ jobs:
 
       - name: Build Tauri app (with code signing)
         if: ${{ github.event.inputs.sign-build == 'true' }}
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # macOS code signing
@@ -180,7 +180,7 @@ jobs:
 
       - name: Build Tauri app (unsigned)
         if: ${{ github.event.inputs.sign-build != 'true' }}
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Tauri updater signing (ALWAYS enabled for .sig files)
