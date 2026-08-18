@@ -847,11 +847,8 @@ mod tests {
             "query must be preserved intact under budget pressure"
         );
 
-        // System prompt must use the general constant
-        assert!(
-            system_prompt.contains("general-purpose assistant"),
-            "system prompt must be SYSTEM_PROMPT_GENERAL"
-        );
+        // System prompt must exactly equal the general constant
+        assert_eq!(system_prompt, SYSTEM_PROMPT_GENERAL);
 
         // Newest history messages survive preferentially — last message should be present
         assert!(
