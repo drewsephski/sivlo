@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { Suspense, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { invoke } from '@tauri-apps/api/core';
 import { motion } from 'framer-motion';
 import { TranscriptSettings } from '@/components/TranscriptSettings';
@@ -12,24 +12,41 @@ import { SummaryModelSettings } from '@/components/SummaryModelSettings';
 import { BetaSettings } from '@/components/BetaSettings';
 import { useConfig } from '@/contexts/ConfigContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { SETTINGS_TAB, parseSettingsTab, type SettingsTab } from '@/features/settings/settingsTab';
 
 // Tabs configuration (constant)
 const TABS = [
-  { value: 'general', label: 'General', icon: Settings2 },
-  { value: 'recording', label: 'Recordings', icon: Mic },
-  { value: 'Transcriptionmodels', label: 'Transcription', icon: DatabaseIcon },
-  { value: 'summaryModels', label: 'Summary', icon: SparkleIcon },
-  { value: 'beta', label: 'Beta', icon: FlaskConical }
+  { value: SETTINGS_TAB.general, label: 'General', icon: Settings2 },
+  { value: SETTINGS_TAB.recording, label: 'Recordings', icon: Mic },
+  { value: SETTINGS_TAB.transcription, label: 'Transcription', icon: DatabaseIcon },
+  { value: SETTINGS_TAB.summary, label: 'Summary', icon: SparkleIcon },
+  { value: SETTINGS_TAB.beta, label: 'Beta', icon: FlaskConical }
 ] as const;
 
 export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const { transcriptModelConfig, setTranscriptModelConfig } = useConfig();
 
   // Animation state for tabs
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState<SettingsTab>(
+    () => parseSettingsTab(tabParam),
+  );
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    setActiveTab(parseSettingsTab(tabParam));
+  }, [tabParam]);
 
   // Load saved transcript configuration on mount
   useEffect(() => {
@@ -84,7 +101,7 @@ export default function SettingsPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto p-8 pt-6">
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SettingsTab)}>
             <TabsList className="bg-transparent relative rounded-none border-b border-gray-200 p-0 h-auto">
               {TABS.map((tab, index) => {
                 const Icon = tab.icon;
@@ -109,22 +126,22 @@ export default function SettingsPage() {
               />
             </TabsList>
 
-            <TabsContent value="general">
+            <TabsContent value={SETTINGS_TAB.general}>
               <PreferenceSettings />
             </TabsContent>
-            <TabsContent value="recording">
+            <TabsContent value={SETTINGS_TAB.recording}>
               <RecordingSettings />
             </TabsContent>
-            <TabsContent value="Transcriptionmodels">
+            <TabsContent value={SETTINGS_TAB.transcription}>
               <TranscriptSettings
                 transcriptModelConfig={transcriptModelConfig}
                 setTranscriptModelConfig={setTranscriptModelConfig}
               />
             </TabsContent>
-            <TabsContent value="summaryModels">
+            <TabsContent value={SETTINGS_TAB.summary}>
               <SummaryModelSettings />
             </TabsContent>
-            <TabsContent value="beta" className="mt-6">
+            <TabsContent value={SETTINGS_TAB.beta} className="mt-6">
               <BetaSettings />
             </TabsContent>
           </Tabs>

@@ -18,6 +18,10 @@ import {
 } from "@/components/ui/select";
 import type { AskSivloMessage } from "./types";
 import { shouldSubmitAskSivloKey } from "./composer";
+import {
+  ASK_SIVLO_EMPTY_STATE_COPY,
+  ASK_SIVLO_CONFIGURE_AI_PATH,
+} from "./uiConstants";
 
 function isConfigError(error: string | null): boolean {
   if (!error) return false;
@@ -149,7 +153,7 @@ export function AskSivlo() {
   }, [clearChat]);
 
   const handleConfigureAI = useCallback(() => {
-    router.push("/settings");
+    router.push(ASK_SIVLO_CONFIGURE_AI_PATH);
   }, [router]);
 
   const scopeValue = scope.kind === "all" ? "all" : scope.meetingId ?? "all";
@@ -200,7 +204,7 @@ export function AskSivlo() {
         {!hasContent ? (
           <div className="pb-4 text-center">
             <p className="text-sm text-muted-foreground">
-              Ask about your meetings or Sivlo.
+              {ASK_SIVLO_EMPTY_STATE_COPY}
             </p>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {[

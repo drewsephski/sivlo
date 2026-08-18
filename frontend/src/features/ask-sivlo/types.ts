@@ -14,7 +14,7 @@ export interface AskSivloMessage {
   role: 'user' | 'assistant';
   content: string;
   citations?: AskSivloCitation[];
-  route?: 'meeting' | 'product';
+  route?: 'meeting' | 'product' | 'general';
   timestamp: number;
 }
 
@@ -30,7 +30,7 @@ export interface AskSivloHistoryMessage {
 
 export interface AskSivloResponse {
   answer: string;
-  route: 'meeting' | 'product';
+  route: 'meeting' | 'product' | 'general';
   citations: AskSivloCitation[];
 }
 

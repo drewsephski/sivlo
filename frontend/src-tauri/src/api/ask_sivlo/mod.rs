@@ -6,7 +6,7 @@ pub mod retrieval;
 pub mod summary_text;
 pub use models::*;
 
-use grounding::{build_bounded_history, sanitize_history};
+use grounding::{build_bounded_history, build_general_context, sanitize_history};
 use product_knowledge::{find_matching_product_facts, ProductFact};
 
 use std::collections::HashMap;
@@ -206,6 +206,15 @@ pub(crate) fn build_product_prompt(
     full_prompt
 }
 
+/// Construct a general-route response: no citations, no evidence.
+fn build_general_response(answer: String) -> AskSivloResponse {
+    AskSivloResponse {
+        answer,
+        route: "general".to_string(),
+        citations: vec![],
+    }
+}
+
 /// Handle a product-route query end-to-end.
 /// 1. Match product facts; fallback if none
 /// 2. Sanitize and bound history
@@ -256,6 +265,40 @@ pub(crate) async fn handle_product_route(
     })
 }
 
+/// Handle a general-route query end-to-end.
+/// Uses existing provider and generate_summary infrastructure.
+/// No retrieval, no PRODUCT_FACTS, no citation extraction.
+pub(crate) async fn handle_general_route(
+    query: &str,
+    history: &[AskSivloHistoryMessage],
+    pool: &sqlx::SqlitePool,
+    app: &tauri::AppHandle<impl tauri::Runtime>,
+) -> Result<AskSivloResponse, String> {
+    let (system_prompt, user_prompt) = build_general_context(query, history);
+
+    let config = provider::resolve_provider_config(pool, app).await?;
+    let client = reqwest::Client::new();
+
+    let answer = crate::summary::llm_client::generate_summary(
+        &client,
+        &config.provider,
+        &config.model_name,
+        &config.api_key,
+        &system_prompt,
+        &user_prompt,
+        config.ollama_endpoint.as_deref(),
+        config.custom_openai_endpoint.as_deref(),
+        config.max_tokens,
+        config.temperature,
+        config.top_p,
+        config.app_data_dir.as_ref(),
+        None,
+    )
+    .await?;
+
+    Ok(build_general_response(answer))
+}
+
 /// Ask Sivlo — Tauri command endpoint.
 /// Routes a user query to either product knowledge or meeting retrieval,
 /// generates a grounded LLM response, and resolves cited sources.
@@ -280,6 +323,10 @@ pub async fn api_ask_sivlo<R: tauri::Runtime>(
 
     if route == "product" {
         return handle_product_route(&query, &history, pool, &app).await;
+    }
+
+    if route == "general" {
+        return handle_general_route(&query, &history, pool, &app).await;
     }
 
     // D. Meeting retrieval
@@ -630,5 +677,24 @@ mod tests {
             super::SYSTEM_PROMPT_MEETING.chars().count(),
             super::MAX_SYSTEM_PROMPT_CHARS,
         );
+    }
+
+    // ── Task 2 — General response contract ──
+
+    #[test]
+    fn general_response_contract_has_general_route_and_no_citations() {
+        let response = super::build_general_response("test answer".to_string());
+        assert_eq!(response.answer, "test answer");
+        assert_eq!(response.route, "general");
+        assert!(response.citations.is_empty());
+    }
+
+    #[test]
+    fn build_general_response_preserves_answer_text() {
+        let answer = "OAuth is a standard for token-based authentication that allows third-party apps to access user data without sharing credentials.";
+        let response = super::build_general_response(answer.to_string());
+        assert_eq!(response.answer, answer);
+        assert_eq!(response.route, "general");
+        assert!(response.citations.is_empty());
     }
 }
