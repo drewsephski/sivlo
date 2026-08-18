@@ -406,7 +406,7 @@ jobs:
           echo "No secret files in build output"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sivlo-macos-${{ matrix.arch }}-${{ steps.get-version.outputs.version }}
           path: |
