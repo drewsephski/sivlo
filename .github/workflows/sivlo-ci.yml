@@ -359,6 +359,8 @@ jobs:
           BUNDLE_DMG="target/${{ matrix.rust_target }}/release/bundle/dmg"
           BUNDLE_MACOS="target/${{ matrix.rust_target }}/release/bundle/macos"
 
+          mkdir -p dist
+
           # Human-readable DMG label
           case "$ARCH" in
             aarch64) DMG_LABEL="Apple-Silicon" ;;
@@ -423,6 +425,7 @@ jobs:
 
   publish-release:
     name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: build-macos
     runs-on: ubuntu-latest
     permissions:
@@ -495,8 +498,8 @@ jobs:
           INTEL_SIG=$(cat "dist/Sivlo-${VERSION}-x86_64-apple-darwin.app.tar.gz.sig")
 
           # Assert signatures are non-empty
-          jq -e --arg sig "$ARM_SIG"   '. | length > 0' <<< "\"$ARM_SIG\"" > /dev/null
-          jq -e --arg sig "$INTEL_SIG" '. | length > 0' <<< "\"$INTEL_SIG\"" > /dev/null
+          jq -n -e --arg sig "$ARM_SIG"   '$sig | length > 0' >/dev/null
+          jq -n -e --arg sig "$INTEL_SIG" '$sig | length > 0' >/dev/null
 
           jq -n \
             --arg version "$VERSION" \

@@ -161,23 +161,6 @@
     return match.length ? match[0] : null;
   };
 
-  // Windows installers: prefer the NSIS setup .exe, fall back to the MSI.
-  var pickWindows = function (assets) {
-    var exes = assets.filter(function (a) {
-      return /\.exe$/i.test(a.name);
-    });
-    var setup = exes.filter(function (a) {
-      return /setup/i.test(a.name);
-    });
-    return (
-      (setup.length ? setup : exes)[0] ||
-      assets.filter(function (a) {
-        return /\.msi$/i.test(a.name);
-      })[0] ||
-      null
-    );
-  };
-
   var setHref = function (els, url) {
     els.forEach(function (a) {
       a.href = url || RELEASE_URL;
@@ -194,19 +177,20 @@
 
     var primaryAsset, altAsset, primaryLabel, altLabel, sizeText;
     if (os === 'windows') {
-      primaryAsset = pickWindows(release.assets);
+      primaryAsset = null;
       altAsset = pickDmg(release.assets, arm);
-      primaryLabel = 'Download for Windows';
-      altLabel = 'Also for macOS';
-      sizeText = primaryAsset ? formatMb(primaryAsset.size) : null;
+      primaryLabel = 'View downloads';
+      altLabel = null;
+      sizeText = null;
     } else if (os === 'macos') {
       primaryAsset = pickDmg(release.assets, arm);
-      altAsset = pickWindows(release.assets);
-      primaryLabel = 'Download for macOS';
-      altLabel = 'Also for Windows';
+      altAsset = null;
+      primaryLabel = primaryAsset ? 'Download for macOS' : 'View downloads';
+      altLabel = null;
       sizeText = primaryAsset ? formatMb(primaryAsset.size) : null;
     } else {
-      primaryLabel = 'Download';
+      primaryAsset = null;
+      primaryLabel = 'View downloads';
       altLabel = null;
     }
 
@@ -234,25 +218,24 @@
 
     var meta = document.querySelector('.topbar__meta');
     if (meta) {
-      var platform = os === 'windows' ? 'Windows 10+' : 'macOS 13+';
+      var platform = os === 'macos' ? 'macOS 13+' : 'downloads';
       meta.textContent =
         'v' + version + ' public beta · ' + platform;
     }
 
     var factLine = null;
-    if (os === 'windows') {
+    if (os === 'macos') {
+      var macArch =
+        arm === true  ? 'Apple Silicon' :
+        arm === false ? 'Intel' :
+        null;
       factLine =
-        'v' +
-        version +
-        ' public beta · Windows 10+ · signed installer · direct download';
-    } else if (os === 'macos') {
-      factLine =
-        'v' +
-        version +
-        ' public beta · Apple Silicon · notarized DMG · macOS 13+';
+        'v' + version + ' public beta · ' +
+        (macArch ? macArch + ' · ' : '') +
+        'notarized DMG · macOS 13+';
     } else {
       factLine =
-        'v' + version + ' public beta · macOS 13+ & Windows 10+';
+        'v' + version + ' public beta';
     }
     if (sizeText) factLine += ' · ' + sizeText;
     facts.forEach(function (n) {
