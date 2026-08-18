@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { brand } from '@/config/brand';
 import { PrimaryActions } from './PrimaryActions';
 import { RecentMeetings } from './RecentMeetings';
+import { AskSivlo } from '@/features/ask-sivlo/AskSivlo';
 
 interface HomeWorkspaceProps {
   onStartRecording: () => void;
@@ -31,6 +32,10 @@ export function HomeWorkspace({ onStartRecording, onImport }: HomeWorkspaceProps
 
         <div className="mt-9">
           <PrimaryActions onStartRecording={onStartRecording} onImport={onImport} />
+        </div>
+
+        <div className="mt-10">
+          <AskSivlo />
         </div>
 
         <section className="mt-14" aria-label="Recent meetings">
