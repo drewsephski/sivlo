@@ -504,14 +504,14 @@ a {
 /* ---------- Section shell ---------- */
 
 .section {
-    padding-block: clamp(4.5rem, 10vh, 7rem);
+    padding-block: clamp(5rem, 12vh, 8rem);
 }
 .section__head {
     max-width: 46rem;
 }
 .section__title {
     margin: 0;
-    font-size: clamp(1.75rem, 3.5vw, 2.625rem);
+    font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 600;
     line-height: 1.06;
     letter-spacing: -0.02em;
@@ -998,7 +998,7 @@ a {
 .ledger__datum {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: clamp(1rem, 1.3vw, 1.25rem);
+    font-size: clamp(1.0625rem, 1.4vw, 1.375rem);
     font-weight: 500;
     color: var(--color-ink);
     letter-spacing: -0.01em;
@@ -1070,7 +1070,7 @@ a {
     margin: 0;
     min-width: 0;
     align-self: start;
-    opacity: 0.8;
+    opacity: 0.85;
     transform: translateY(6px);
     transition:
         opacity var(--dur-med) var(--ease-out),
@@ -1180,7 +1180,7 @@ a {
 }
 .privacy__title {
     margin: 0;
-    font-size: clamp(1.75rem, 3.5vw, 2.625rem);
+    font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 600;
     line-height: 1.06;
     letter-spacing: -0.02em;
@@ -1227,17 +1227,20 @@ a {
 .privacy__proof {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
-    margin: 2.5rem 0 0;
+    gap: var(--space-md);
+    margin: clamp(3rem, 7vh, 5rem) 0 0;
+    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+    border: 1px solid var(--color-accent);
+    background: color-mix(in oklch, var(--color-accent) 4%, var(--color-paper));
     font-family: var(--font-mono);
-    font-size: var(--text-sm);
+    font-size: clamp(0.875rem, 1.2vw, 1.0625rem);
     letter-spacing: 0.03em;
     text-transform: uppercase;
     color: var(--color-ink);
 }
 .privacy__proof-mark {
-    width: 0.625rem;
-    height: 0.625rem;
+    width: 0.75rem;
+    height: 0.75rem;
     background: var(--color-accent);
     flex: 0 0 auto;
     animation: pulse 3s var(--ease-in-out) infinite;
@@ -1255,33 +1258,33 @@ a {
 /* ---------- Download ---------- */
 
 .section--download {
-    padding-block: clamp(5rem, 12vh, 8rem);
+    padding-block: clamp(6rem, 14vh, 10rem);
     border-bottom: 1px solid var(--color-rule);
 }
 .download__inner {
-    max-width: 44rem;
+    max-width: 48rem;
 }
 .download__title {
     margin: 0;
-    font-size: clamp(2.25rem, 6vw, 4rem);
+    font-size: clamp(2.75rem, 7vw, 4.75rem);
     font-weight: 600;
-    line-height: 1.05;
+    line-height: 1.04;
     letter-spacing: -0.03em;
     overflow-wrap: anywhere;
     min-width: 0;
 }
 .download__sub {
-    margin: 1.5rem 0 0;
+    margin: 1.75rem 0 0;
     font-size: var(--text-md);
     color: var(--color-ink-soft);
     max-width: 46ch;
 }
 .cta--dl {
-    margin-top: 2.5rem;
+    margin-top: 3rem;
 }
 .cta__primary--large {
-    font-size: 1.0625rem;
-    padding: 1.25rem 2rem;
+    font-size: 1.125rem;
+    padding: 1.375rem 2.25rem;
 }
 
 /* ---------- Footer ---------- */
