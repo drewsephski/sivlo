@@ -6,7 +6,7 @@ use regex::Regex;
 use super::models::{
     AskSivloCitation, AskSivloHistoryMessage, AskSivloScope, RawEvidence, MAX_EVIDENCE_CONTEXT_CHARS,
     MAX_EVIDENCE_ITEMS, MAX_EXCERPT_CHARS, MAX_HISTORY_CHARS, MAX_HISTORY_MESSAGES,
-    MAX_SYSTEM_PROMPT_CHARS, MAX_USER_PROMPT_CHARS, SYSTEM_PROMPT_MEETING,
+    MAX_SYSTEM_PROMPT_CHARS, MAX_USER_PROMPT_CHARS, SYSTEM_PROMPT_GENERAL, SYSTEM_PROMPT_MEETING,
 };
 
 static CITATION_MARKER_RE: Lazy<Regex> = Lazy::new(|| {
@@ -82,8 +82,8 @@ pub(crate) fn route_query(query: &str, scope: &Option<AskSivloScope>) -> &'stati
         return "product";
     }
 
-    // 5. Otherwise -> meeting
-    "meeting"
+    // 5. Otherwise -> general
+    "general"
 }
 
 pub(crate) fn classify_query(query: &str) -> &'static str {
@@ -264,6 +264,62 @@ pub(crate) fn build_meeting_context(
     (system_prompt, user_prompt)
 }
 
+/// Build general-purpose context with bounded history and current query.
+/// Returns (system_prompt, user_prompt). No retrieval, no evidence, no citations.
+pub(crate) fn build_general_context(
+    query: &str,
+    history: &[AskSivloHistoryMessage],
+) -> (String, String) {
+    let sanitized = sanitize_history(history);
+    let bounded_history = build_bounded_history(&sanitized, MAX_HISTORY_MESSAGES, MAX_HISTORY_CHARS);
+
+    let system_prompt = SYSTEM_PROMPT_GENERAL.to_string();
+
+    let history_text: String = bounded_history
+        .iter()
+        .map(|m| format!("{}: {}", m.role, m.content))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    // Fixed overhead: section labels, role prefixes already in history_text
+    let overhead = SYSTEM_PROMPT_GENERAL.chars().count() + 200;
+
+    // Budget: preserve full query, trim history from oldest if needed
+    let query_chars = query.chars().count();
+    let available_for_history = MAX_USER_PROMPT_CHARS
+        .saturating_sub(overhead)
+        .saturating_sub(query_chars);
+
+    // Re-bound history if the assembled prompt would exceed MAX_USER_PROMPT_CHARS
+    let final_history: Vec<AskSivloHistoryMessage> = if history_text.chars().count() > available_for_history {
+        build_bounded_history(&sanitized, MAX_HISTORY_MESSAGES, available_for_history)
+    } else {
+        bounded_history
+    };
+
+    let mut user_parts: Vec<String> = Vec::new();
+
+    if !final_history.is_empty() {
+        user_parts.push("## Conversation History".to_string());
+        for msg in &final_history {
+            user_parts.push(format!("{}: {}", msg.role, msg.content));
+        }
+        user_parts.push(String::new());
+    }
+
+    user_parts.push("## Question".to_string());
+    user_parts.push(query.to_string());
+
+    let user_prompt = user_parts.join("\n");
+
+    debug_assert!(
+        user_prompt.chars().count() <= MAX_USER_PROMPT_CHARS,
+        "general user prompt exceeds MAX_USER_PROMPT_CHARS"
+    );
+
+    (system_prompt, user_prompt)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -376,13 +432,33 @@ mod tests {
     #[test]
     fn route_meeting_default() {
         let q = "tell me about the project";
-        assert_eq!(route_query(q, &None), "meeting");
+        assert_eq!(route_query(q, &None), "general");
     }
 
     #[test]
     fn route_product_only_pattern_no_match() {
         let q = "how do i cook pasta";
-        assert_eq!(route_query(q, &None), "meeting");
+        assert_eq!(route_query(q, &None), "general");
+    }
+
+    #[test]
+    fn route_general_what_can_you_do() {
+        assert_eq!(route_query("What can you do?", &None), "general");
+    }
+
+    #[test]
+    fn route_general_explain_oauth() {
+        assert_eq!(route_query("Explain OAuth", &None), "general");
+    }
+
+    #[test]
+    fn route_general_brainstorm() {
+        assert_eq!(route_query("Help me brainstorm a SaaS idea", &None), "general");
+    }
+
+    #[test]
+    fn route_general_hey() {
+        assert_eq!(route_query("Hey", &None), "general");
     }
 
     #[test]
@@ -672,5 +748,122 @@ mod tests {
         }];
         let bounded = build_bounded_history(&messages, MAX_HISTORY_MESSAGES, 100);
         assert!(bounded.is_empty());
+    }
+
+    #[test]
+    fn general_context_includes_current_query() {
+        let (_, user_prompt) = build_general_context("What is Rust?", &[]);
+        assert!(
+            user_prompt.contains("What is Rust?"),
+            "user prompt must include the current query"
+        );
+    }
+
+    #[test]
+    fn general_context_includes_newest_history() {
+        let history = vec![
+            AskSivloHistoryMessage {
+                role: "user".into(),
+                content: "first message".into(),
+            },
+            AskSivloHistoryMessage {
+                role: "assistant".into(),
+                content: "second message".into(),
+            },
+        ];
+        let (_, user_prompt) = build_general_context("follow up", &history);
+        assert!(
+            user_prompt.contains("first message"),
+            "bounded history should include prior messages"
+        );
+        assert!(
+            user_prompt.contains("second message"),
+            "bounded history should include prior messages"
+        );
+    }
+
+    #[test]
+    fn general_context_strips_citation_markers() {
+        let history = vec![AskSivloHistoryMessage {
+            role: "assistant".into(),
+            content: "The answer is [S1] correct and [s3] verified".into(),
+        }];
+        let (_, user_prompt) = build_general_context("next question", &history);
+        assert!(
+            !user_prompt.contains("[S1]"),
+            "uppercase citation marker should be stripped from history"
+        );
+        assert!(
+            !user_prompt.contains("[s3]"),
+            "lowercase citation marker should be stripped from history"
+        );
+        assert!(
+            user_prompt.contains("The answer is  correct and  verified"),
+            "sanitized content should preserve non-marker text"
+        );
+    }
+
+    #[test]
+    fn general_context_no_meeting_evidence() {
+        let (_, user_prompt) = build_general_context("test query", &[]);
+        assert!(
+            !user_prompt.contains("<meeting_evidence>"),
+            "general prompt must not contain meeting evidence boundary"
+        );
+        assert!(
+            !user_prompt.contains("</meeting_evidence>"),
+            "general prompt must not contain meeting evidence boundary"
+        );
+    }
+
+    #[test]
+    fn general_context_pressure_query_preserved_under_budget() {
+        // Query: ~13000 Unicode chars — exceeds normal API validation (4000) but
+        // tests the pure helper contract independently.
+        let query = "é".repeat(13000);
+
+        // History: 10 messages, each ~450 chars → total ~4500 exceeds MAX_HISTORY_CHARS
+        // so build_bounded_history will trim older messages.
+        let history: Vec<AskSivloHistoryMessage> = (0..10)
+            .map(|i| AskSivloHistoryMessage {
+                role: "user".into(),
+                content: format!("{} message {}", "x".repeat(440), i),
+            })
+            .collect();
+
+        let (system_prompt, user_prompt) = build_general_context(&query, &history);
+
+        let prompt_chars = user_prompt.chars().count();
+        assert!(
+            prompt_chars <= MAX_USER_PROMPT_CHARS,
+            "user prompt {} exceeds MAX_USER_PROMPT_CHARS {}",
+            prompt_chars,
+            MAX_USER_PROMPT_CHARS
+        );
+
+        // Full query must remain intact (no truncation of the query itself)
+        assert!(
+            user_prompt.contains(&query),
+            "query must be preserved intact under budget pressure"
+        );
+
+        // System prompt must use the general constant
+        assert!(
+            system_prompt.contains("general-purpose assistant"),
+            "system prompt must be SYSTEM_PROMPT_GENERAL"
+        );
+
+        // Newest history messages survive preferentially — last message should be present
+        assert!(
+            user_prompt.contains("message 9"),
+            "newest history message must survive budget trimming"
+        );
+
+        // At least one older message should be dropped (message 0 has ~446 chars)
+        // The total history is ~4500, bounded to MAX_HISTORY_CHARS=4000, so ~1 message dropped
+        assert!(
+            !user_prompt.contains("message 0"),
+            "oldest history message should be dropped first under budget pressure"
+        );
     }
 }
